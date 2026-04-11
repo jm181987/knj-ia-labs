@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      generations: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string
+          duration: string | null
+          error_message: string | null
+          id: string
+          image_count: number | null
+          mode: string | null
+          model: string | null
+          negative_prompt: string | null
+          parameters: Json | null
+          prompt: string
+          reference_image_url: string | null
+          result_urls: Json | null
+          status: Database["public"]["Enums"]["generation_status"]
+          task_id: string | null
+          type: Database["public"]["Enums"]["generation_type"]
+          updated_at: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string
+          duration?: string | null
+          error_message?: string | null
+          id?: string
+          image_count?: number | null
+          mode?: string | null
+          model?: string | null
+          negative_prompt?: string | null
+          parameters?: Json | null
+          prompt: string
+          reference_image_url?: string | null
+          result_urls?: Json | null
+          status?: Database["public"]["Enums"]["generation_status"]
+          task_id?: string | null
+          type: Database["public"]["Enums"]["generation_type"]
+          updated_at?: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string
+          duration?: string | null
+          error_message?: string | null
+          id?: string
+          image_count?: number | null
+          mode?: string | null
+          model?: string | null
+          negative_prompt?: string | null
+          parameters?: Json | null
+          prompt?: string
+          reference_image_url?: string | null
+          result_urls?: Json | null
+          status?: Database["public"]["Enums"]["generation_status"]
+          task_id?: string | null
+          type?: Database["public"]["Enums"]["generation_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +82,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      generation_status: "pending" | "processing" | "completed" | "failed"
+      generation_type: "video" | "image"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +210,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      generation_status: ["pending", "processing", "completed", "failed"],
+      generation_type: ["video", "image"],
+    },
   },
 } as const
