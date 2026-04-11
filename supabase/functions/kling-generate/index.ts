@@ -222,7 +222,12 @@ Deno.serve(async (req) => {
     }
 
     if (action === "get-balance") {
-      const result = await klingRequest("/v1/account/balance", "GET");
+      const now = Date.now();
+      const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+      const result = await klingRequest(
+        `/account/costs?start_time=${thirtyDaysAgo}&end_time=${now}`,
+        "GET"
+      );
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
