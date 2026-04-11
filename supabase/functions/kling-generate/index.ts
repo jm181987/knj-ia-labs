@@ -221,6 +221,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "get-balance") {
+      const result = await klingRequest("/v1/account/balance", "GET");
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "list-generations") {
       const query = supabase
         .from("generations")
