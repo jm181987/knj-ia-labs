@@ -12,6 +12,15 @@ import { generateVideo, generateImage } from "@/lib/kling";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+function getErrorMessage(code: number, message?: string): string {
+  const errorMap: Record<number, string> = {
+    1102: "Saldo insuficiente en tu cuenta de Kling API. Los créditos de la web de Kling y los de la API son independientes. Necesitas comprar un paquete de API en klingai.com → API → Billing.",
+    1101: "Parámetros inválidos. Revisa tu prompt y opciones.",
+    1001: "Error de autenticación. Verifica tus claves de API.",
+  };
+  return errorMap[code] || message || "Error desconocido al generar";
+}
+
 export default function GeneratePage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
