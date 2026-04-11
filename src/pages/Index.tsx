@@ -12,6 +12,15 @@ import { generateVideo, generateImage } from "@/lib/kling";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+function getErrorMessage(code: number, message?: string): string {
+  const errorMap: Record<number, string> = {
+    1102: "Saldo insuficiente en tu cuenta de Kling API. Los créditos de la web de Kling y los de la API son independientes. Necesitas comprar un paquete de API en klingai.com → API → Billing.",
+    1101: "Parámetros inválidos. Revisa tu prompt y opciones.",
+    1001: "Error de autenticación. Verifica tus claves de API.",
+  };
+  return errorMap[code] || message || "Error desconocido al generar";
+}
+
 export default function GeneratePage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -49,7 +58,7 @@ export default function GeneratePage() {
       if (res.code === 0) {
         toast({ title: "¡Video en generación!", description: "Revisa el historial para ver el progreso." });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "Error", description: String(e), variant: "destructive" });
@@ -72,7 +81,7 @@ export default function GeneratePage() {
       if (res.code === 0) {
         toast({ title: "¡Imagen en generación!", description: "Revisa el historial para ver el progreso." });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "Error", description: String(e), variant: "destructive" });
