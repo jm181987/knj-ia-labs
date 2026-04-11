@@ -58,7 +58,7 @@ export default function GeneratePage() {
       if (res.code === 0) {
         toast({ title: "¡Video en generación!", description: "Revisa el historial para ver el progreso." });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "Error", description: String(e), variant: "destructive" });
@@ -81,7 +81,7 @@ export default function GeneratePage() {
       if (res.code === 0) {
         toast({ title: "¡Imagen en generación!", description: "Revisa el historial para ver el progreso." });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "Error", description: String(e), variant: "destructive" });
