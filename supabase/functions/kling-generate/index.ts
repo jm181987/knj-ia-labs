@@ -221,41 +221,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (action === "get-balance") {
-      const now = Date.now();
-      const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
-      // Try both base URLs
-      const token = await generateJWT();
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-      const urls = [
-        `https://api.klingai.com/account/costs?start_time=${oneYearAgo}&end_time=${now}`,
-        `https://api-singapore.klingai.com/account/costs?start_time=${oneYearAgo}&end_time=${now}`,
-      ];
-      
-      let bestResult = null;
-      for (const url of urls) {
-        try {
-          const res = await fetch(url, { method: "GET", headers });
-          const json = await res.json();
-          console.log(`Balance from ${url}:`, JSON.stringify(json));
-          if (json.data?.resource_pack_subscribe_infos) {
-            bestResult = json;
-            break;
-          }
-          if (!bestResult) bestResult = json;
-        } catch (e) {
-          console.error(`Error fetching ${url}:`, e);
-        }
-      }
-
-      return new Response(JSON.stringify(bestResult || { code: -1, message: "No balance data" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     if (action === "list-generations") {
       const query = supabase
         .from("generations")
