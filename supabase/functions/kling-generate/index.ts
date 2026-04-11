@@ -254,9 +254,6 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify(bestResult || { code: -1, message: "No balance data" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     if (action === "list-generations") {
