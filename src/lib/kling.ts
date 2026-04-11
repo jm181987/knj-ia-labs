@@ -44,9 +44,6 @@ export async function checkImageStatus(taskId: string) {
   return callKling({ action: "check-image-status", task_id: taskId });
 }
 
-export async function getBalance(): Promise<KlingResponse> {
-  return callKling({ action: "get-balance" });
-}
 
 export interface Generation {
   id: string;

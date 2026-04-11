@@ -6,9 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Video, Image } from "lucide-react";
+import { Loader2, Sparkles, Video, Image, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateVideo, generateImage } from "@/lib/kling";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function GeneratePage() {
   const { toast } = useToast();
@@ -256,6 +258,70 @@ export default function GeneratePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="w-full justify-start gap-2 text-muted-foreground">
+            <Info className="h-4 w-4" />
+            Ver tabla de costos por generación
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <Card className="mt-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Costos en créditos Kling</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h4 className="font-medium text-sm mb-2">Video</h4>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Modelo</TableHead>
+                    <TableHead>Duración</TableHead>
+                    <TableHead>Modo</TableHead>
+                    <TableHead className="text-right">Créditos</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>5s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">10</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>10s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">20</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>5s</TableCell><TableCell>Pro</TableCell><TableCell className="text-right">35</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>10s</TableCell><TableCell>Pro</TableCell><TableCell className="text-right">70</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.5</TableCell><TableCell>5s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">10</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.5</TableCell><TableCell>10s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">20</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.6</TableCell><TableCell>5s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">10</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.6</TableCell><TableCell>10s</TableCell><TableCell>Estándar</TableCell><TableCell className="text-right">20</TableCell></TableRow>
+                </TableBody>
+              </Table>
+
+              <h4 className="font-medium text-sm mt-4 mb-2">Imagen</h4>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Modelo</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead className="text-right">Créditos</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>1 imagen</TableCell><TableCell className="text-right">1</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1</TableCell><TableCell>4 imágenes</TableCell><TableCell className="text-right">4</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.5</TableCell><TableCell>1 imagen</TableCell><TableCell className="text-right">1</TableCell></TableRow>
+                  <TableRow><TableCell>Kling v1.5</TableCell><TableCell>4 imágenes</TableCell><TableCell className="text-right">4</TableCell></TableRow>
+                </TableBody>
+              </Table>
+
+              <p className="text-xs text-muted-foreground mt-3">
+                * Los costos son aproximados y pueden variar. Consulta{" "}
+                <a href="https://klingai.com" target="_blank" rel="noopener noreferrer" className="underline text-primary">
+                  klingai.com
+                </a>{" "}
+                para precios actualizados y tu saldo.
+              </p>
+            </CardContent>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
