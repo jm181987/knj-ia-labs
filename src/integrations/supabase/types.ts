@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          generation_id: string | null
+          id: string
+          reason: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          reason: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          reason?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           aspect_ratio: string | null
@@ -160,6 +190,27 @@ export type Database = {
           },
         ]
       }
+      pricing: {
+        Row: {
+          credits: number
+          description: string | null
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          credits: number
+          description?: string | null
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          credits?: number
+          description?: string | null
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -184,6 +235,24 @@ export type Database = {
           email?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -215,6 +284,10 @@ export type Database = {
     Functions: {
       add_credits_system: {
         Args: { _amount: number; _reason: string; _user_id: string }
+        Returns: number
+      }
+      consume_credits: {
+        Args: { _amount: number; _generation_id?: string; _reason: string }
         Returns: number
       }
       has_role: {
