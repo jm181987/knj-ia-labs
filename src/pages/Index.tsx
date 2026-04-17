@@ -10,6 +10,7 @@ import { Loader2, Sparkles, Video, Image, Info, Wand2, ScanEye } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { generateVideo, generateImage } from "@/lib/kling";
 import { generateImageAI, improvePrompt, describeImage } from "@/lib/lovableAi";
+import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
 
 // Unified model list — provider determines routing
 const VIDEO_MODELS = [
