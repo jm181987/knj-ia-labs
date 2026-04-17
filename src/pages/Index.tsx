@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Sparkles, Video, Image, Info, Wand2, ScanEye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateVideo, generateImage } from "@/lib/kling";
-import { generateImageAI, improvePrompt, describeImage } from "@/lib/lovableAi";
+import { generateImageAI, improvePrompt, describeImage } from "@/lib/geminiDirect";
 import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
 
 // Unified model list — provider determines routing
