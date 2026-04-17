@@ -622,7 +622,7 @@ export default function AdminPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar precio</DialogTitle>
-            <DialogDescription>{editingPrice?.label}</DialogDescription>
+            <DialogDescription>{editingPrice?.description || editingPrice?.key}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label>Créditos</Label>
