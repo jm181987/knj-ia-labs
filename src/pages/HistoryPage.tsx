@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
-import { listGenerations, checkVideoStatus, checkImageStatus, type Generation } from "@/lib/kling";
+import { listGenerations, checkVideoStatus, checkImageStatus, type Generation } from "@/lib/wavespeed";
 import { Loader2, Video, Image, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
