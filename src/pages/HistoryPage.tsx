@@ -5,8 +5,10 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { listGenerations, checkVideoStatus, checkImageStatus, type Generation } from "@/lib/wavespeed";
 import { Loader2, Video, Image, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function HistoryPage() {
+  const { t } = useTranslation();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("all");
@@ -30,7 +32,6 @@ export default function HistoryPage() {
     fetchGenerations();
   }, [fetchGenerations]);
 
-  // Poll processing tasks
   useEffect(() => {
     const processing = generations.filter((g) => g.status === "processing");
     if (processing.length === 0) return;
@@ -54,31 +55,31 @@ export default function HistoryPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Historial</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Todas tus generaciones</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("history.title")}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("history.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => { setLoading(true); fetchGenerations(); }}>
-          <RefreshCw className="h-4 w-4 mr-1" /> Actualizar
+          <RefreshCw className="h-4 w-4 mr-1" /> {t("history.refresh")}
         </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Tipo" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder={t("history.filterType")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="video">Video</SelectItem>
-            <SelectItem value="image">Imagen</SelectItem>
+            <SelectItem value="all">{t("common.all")}</SelectItem>
+            <SelectItem value="video">{t("history.video")}</SelectItem>
+            <SelectItem value="image">{t("history.image")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder={t("history.filterStatus")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="pending">Pendiente</SelectItem>
-            <SelectItem value="processing">Procesando</SelectItem>
-            <SelectItem value="completed">Completado</SelectItem>
-            <SelectItem value="failed">Error</SelectItem>
+            <SelectItem value="all">{t("common.all")}</SelectItem>
+            <SelectItem value="pending">{t("history.statusPending")}</SelectItem>
+            <SelectItem value="processing">{t("history.statusProcessing")}</SelectItem>
+            <SelectItem value="completed">{t("history.statusCompleted")}</SelectItem>
+            <SelectItem value="failed">{t("history.statusFailed")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -89,8 +90,8 @@ export default function HistoryPage() {
         </div>
       ) : generations.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">No hay generaciones aún</p>
-          <p className="text-sm mt-1">Ve a "Generar" para crear tu primer contenido</p>
+          <p className="text-lg">{t("history.empty")}</p>
+          <p className="text-sm mt-1">{t("history.emptyHint")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -114,7 +115,7 @@ export default function HistoryPage() {
                     </div>
                     <p className="text-sm truncate">{gen.prompt}</p>
                     <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                      {gen.model && <span>Modelo: {gen.model}</span>}
+                      {gen.model && <span>{t("history.model")}: {gen.model}</span>}
                       {gen.aspect_ratio && <span>• {gen.aspect_ratio}</span>}
                       {gen.type === "video" && gen.duration && <span>• {gen.duration}s</span>}
                     </div>

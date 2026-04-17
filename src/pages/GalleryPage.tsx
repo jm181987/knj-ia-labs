@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { listGenerations, type Generation } from "@/lib/wavespeed";
 import { Loader2, Download, Video, Image } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function GalleryPage() {
+  const { t } = useTranslation();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("all");
@@ -38,15 +40,15 @@ export default function GalleryPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Galería</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Tus creaciones completadas</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("gallery.title")}</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("gallery.subtitle")}</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="video" className="gap-1"><Video className="h-3 w-3" /> Videos</TabsTrigger>
-          <TabsTrigger value="image" className="gap-1"><Image className="h-3 w-3" /> Imágenes</TabsTrigger>
+          <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
+          <TabsTrigger value="video" className="gap-1"><Video className="h-3 w-3" /> {t("gallery.videos")}</TabsTrigger>
+          <TabsTrigger value="image" className="gap-1"><Image className="h-3 w-3" /> {t("gallery.images")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -56,7 +58,7 @@ export default function GalleryPage() {
         </div>
       ) : allItems.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">No hay contenido completado aún</p>
+          <p className="text-lg">{t("gallery.empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">

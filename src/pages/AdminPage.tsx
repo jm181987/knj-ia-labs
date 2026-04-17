@@ -15,6 +15,7 @@ import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
+import { useTranslation } from "react-i18next";
 
 interface UserRow {
   id: string;
@@ -66,6 +67,7 @@ const emptyPkg: Omit<PackageRow, "id"> = {
 };
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [pricing, setPricing] = useState<PricingRow[]>([]);
@@ -76,7 +78,7 @@ export default function AdminPage() {
 
   const [rechargeUser, setRechargeUser] = useState<UserRow | null>(null);
   const [rechargeAmount, setRechargeAmount] = useState("10");
-  const [rechargeReason, setRechargeReason] = useState("Recarga manual");
+  const [rechargeReason, setRechargeReason] = useState(t("admin.manualRecharge"));
   const [rechargeSign, setRechargeSign] = useState<"+" | "-">("+");
   const [submitting, setSubmitting] = useState(false);
 
@@ -126,7 +128,7 @@ export default function AdminPage() {
         setWelcomeCredits(String(settings.value));
       }
     } catch (e) {
-      toast({ title: "Error cargando datos", description: String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -137,7 +139,7 @@ export default function AdminPage() {
   const handleSaveWelcomeCredits = async () => {
     const n = parseInt(welcomeCredits);
     if (isNaN(n) || n < 0) {
-      toast({ title: "Valor inválido", description: "Debe ser un número >= 0", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
       return;
     }
     setSavingSettings(true);
@@ -146,9 +148,9 @@ export default function AdminPage() {
         .from("app_settings")
         .upsert({ key: "welcome_credits", value: n }, { onConflict: "key" });
       if (error) throw error;
-      toast({ title: "Configuración guardada", description: `Nuevos usuarios recibirán ${n} créditos.` });
+      toast({ title: t("common.success") });
     } catch (e) {
-      toast({ title: "Error guardando", description: String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
       setSavingSettings(false);
     }
@@ -158,7 +160,7 @@ export default function AdminPage() {
     if (!rechargeUser) return;
     const amount = parseInt(rechargeAmount);
     if (!amount || amount <= 0) {
-      toast({ title: "Cantidad inválida", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -167,16 +169,16 @@ export default function AdminPage() {
       const { error } = await (supabase as any).rpc("add_credits", {
         _user_id: rechargeUser.id,
         _amount: signed,
-        _reason: rechargeReason || (signed > 0 ? "Recarga manual" : "Ajuste manual"),
+        _reason: rechargeReason || t("admin.manualRecharge"),
       });
       if (error) throw error;
-      toast({ title: `${signed > 0 ? "+" : ""}${signed} créditos aplicados a ${rechargeUser.email}` });
+      toast({ title: `${signed > 0 ? "+" : ""}${signed} ${t("common.credits")} → ${rechargeUser.email}` });
       setRechargeUser(null);
       setRechargeAmount("10");
-      setRechargeReason("Recarga manual");
+      setRechargeReason(t("admin.manualRecharge"));
       await loadAll();
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -186,7 +188,7 @@ export default function AdminPage() {
     if (!editingPrice) return;
     const credits = parseInt(priceValue);
     if (isNaN(credits) || credits < 0) {
-      toast({ title: "Valor inválido", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -196,11 +198,11 @@ export default function AdminPage() {
         .update({ credits, updated_at: new Date().toISOString() })
         .eq("key", editingPrice.key);
       if (error) throw error;
-      toast({ title: "Precio actualizado" });
+      toast({ title: t("common.success") });
       setEditingPrice(null);
       await loadAll();
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -209,7 +211,7 @@ export default function AdminPage() {
   const handleSavePkg = async () => {
     if (!editingPkg) return;
     if (!editingPkg.name || editingPkg.credits <= 0 || editingPkg.price_uyu <= 0) {
-      toast({ title: "Completa nombre, créditos (>0) y precio (>0)", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -226,18 +228,17 @@ export default function AdminPage() {
       if (pkgIsNew) {
         const { error } = await (supabase as any).from("credit_packages").insert(payload);
         if (error) throw error;
-        toast({ title: "Paquete creado" });
       } else {
         const id = (editingPkg as PackageRow).id;
         const { error } = await (supabase as any).from("credit_packages").update(payload).eq("id", id);
         if (error) throw error;
-        toast({ title: "Paquete actualizado" });
       }
+      toast({ title: t("common.success") });
       setEditingPkg(null);
       setPkgIsNew(false);
       await loadAll();
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -246,7 +247,7 @@ export default function AdminPage() {
   const handleSetPassword = async () => {
     if (!pwUser) return;
     if (!pwValue || pwValue.length < 6) {
-      toast({ title: "Contraseña muy corta", description: "Mínimo 6 caracteres", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("auth.password"), variant: "destructive" });
       return;
     }
     setPwSubmitting(true);
@@ -256,25 +257,25 @@ export default function AdminPage() {
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast({ title: "Contraseña actualizada", description: `Nueva contraseña aplicada a ${pwUser.email}` });
+      toast({ title: t("common.success"), description: pwUser.email || "" });
       setPwUser(null);
       setPwValue("");
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setPwSubmitting(false);
     }
   };
 
   const handleDeletePkg = async (id: string) => {
-    if (!confirm("¿Eliminar este paquete? No afecta pagos ya realizados.")) return;
+    if (!confirm(t("admin.deletePkgConfirm"))) return;
     try {
       const { error } = await (supabase as any).from("credit_packages").delete().eq("id", id);
       if (error) throw error;
-      toast({ title: "Paquete eliminado" });
+      toast({ title: t("common.success") });
       await loadAll();
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     }
   };
 
@@ -290,8 +291,8 @@ export default function AdminPage() {
       <div className="flex items-center gap-3">
         <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-primary shrink-0" />
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Panel de administración</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">Gestiona usuarios, créditos, paquetes, precios y pagos.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("admin.title")}</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">{t("admin.subtitle")}</p>
         </div>
       </div>
 
@@ -300,20 +301,20 @@ export default function AdminPage() {
       <Tabs defaultValue="users">
         <div className="w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
           <TabsList className="w-max">
-            <TabsTrigger value="users">Usuarios</TabsTrigger>
-            <TabsTrigger value="packages">Paquetes</TabsTrigger>
-            <TabsTrigger value="pricing">Precios</TabsTrigger>
-            <TabsTrigger value="payments">Pagos</TabsTrigger>
-            <TabsTrigger value="transactions">Transacciones</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
+            <TabsTrigger value="users">{t("admin.tabUsers")}</TabsTrigger>
+            <TabsTrigger value="packages">{t("admin.tabPackages")}</TabsTrigger>
+            <TabsTrigger value="pricing">{t("admin.tabPricing")}</TabsTrigger>
+            <TabsTrigger value="payments">{t("admin.tabPayments")}</TabsTrigger>
+            <TabsTrigger value="transactions">{t("admin.tabTransactions")}</TabsTrigger>
+            <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="users">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
-              <CardTitle>Usuarios</CardTitle>
-              <CardDescription>{loading ? "Cargando..." : `${users.length} usuarios registrados`}</CardDescription>
+              <CardTitle>{t("admin.users")}</CardTitle>
+              <CardDescription>{loading ? t("admin.loadingShort") : t("admin.usersCount", { count: users.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -323,11 +324,11 @@ export default function AdminPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Rol</TableHead>
-                        <TableHead className="text-right">Saldo</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead>{t("admin.name")}</TableHead>
+                        <TableHead>{t("admin.email")}</TableHead>
+                        <TableHead>{t("admin.role")}</TableHead>
+                        <TableHead className="text-right">{t("admin.balance")}</TableHead>
+                        <TableHead className="text-right">{t("admin.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -347,10 +348,10 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell className="text-right space-x-1 whitespace-nowrap">
                             <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
-                              <Plus className="h-3 w-3 mr-1" /> Recargar
+                              <Plus className="h-3 w-3 mr-1" /> {t("admin.recharge")}
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
-                              <Key className="h-3 w-3 mr-1" /> Contraseña
+                              <Key className="h-3 w-3 mr-1" /> {t("admin.password")}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -367,15 +368,14 @@ export default function AdminPage() {
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Paquetes de créditos</CardTitle>
-                <CardDescription>Visibles en /app/pricing para los usuarios.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> {t("admin.packages")}</CardTitle>
+                <CardDescription>{t("admin.packagesDesc")}</CardDescription>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={async () => {
-                    // Paquetes calculados con: costo WaveSpeed (USD) × 42 UYU/USD × 3 (markup 200%) ÷ 0.9025 (comisión MP 7.99% + IVA)
                     const recommended = [
                       { name: "Starter", credits: 100, price_uyu: 199, sort_order: 1, highlighted: false, active: true },
                       { name: "Pro", credits: 500, price_uyu: 949, sort_order: 2, highlighted: true, active: true },
@@ -383,22 +383,21 @@ export default function AdminPage() {
                       { name: "Ultra", credits: 5000, price_uyu: 8999, sort_order: 4, highlighted: false, active: true },
                     ];
                     try {
-                      // Borrar todos los paquetes existentes
                       const { error: delErr } = await (supabase as any).from("credit_packages").delete().neq("id", "00000000-0000-0000-0000-000000000000");
                       if (delErr) throw delErr;
                       const { error: insErr } = await (supabase as any).from("credit_packages").insert(recommended);
                       if (insErr) throw insErr;
-                      toast({ title: "Paquetes aplicados", description: `${recommended.length} paquetes con markup 200% + comisión MP.` });
+                      toast({ title: t("common.success") });
                       loadAll();
                     } catch (e) {
-                      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+                      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
                     }
                   }}
                 >
-                  Aplicar paquetes recomendados
+                  {t("admin.applyRecommended")}
                 </Button>
                 <Button size="sm" onClick={() => { setEditingPkg({ ...emptyPkg }); setPkgIsNew(true); }}>
-                  <Plus className="h-4 w-4 mr-1" /> Nuevo
+                  <Plus className="h-4 w-4 mr-1" /> {t("admin.new")}
                 </Button>
               </div>
             </CardHeader>
@@ -407,11 +406,11 @@ export default function AdminPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead className="text-right">Créditos</TableHead>
-                      <TableHead className="text-right">Precio (UYU)</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
+                      <TableHead>{t("admin.name")}</TableHead>
+                      <TableHead className="text-right">{t("admin.credits")}</TableHead>
+                      <TableHead className="text-right">{t("admin.priceUyu")}</TableHead>
+                      <TableHead>{t("admin.status")}</TableHead>
+                      <TableHead className="text-right">{t("admin.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -419,12 +418,12 @@ export default function AdminPage() {
                       <TableRow key={p.id}>
                         <TableCell className="font-medium whitespace-nowrap">
                           {p.name}
-                          {p.highlighted && <Badge className="ml-2" variant="outline">Destacado</Badge>}
+                          {p.highlighted && <Badge className="ml-2" variant="outline">{t("admin.highlighted")}</Badge>}
                         </TableCell>
                         <TableCell className="text-right font-mono">{p.credits}</TableCell>
                         <TableCell className="text-right font-mono whitespace-nowrap">${Number(p.price_uyu).toLocaleString("es-UY")}</TableCell>
                         <TableCell>
-                          <Badge variant={p.active ? "default" : "secondary"}>{p.active ? "Activo" : "Inactivo"}</Badge>
+                          <Badge variant={p.active ? "default" : "secondary"}>{p.active ? t("admin.active") : t("admin.inactive")}</Badge>
                         </TableCell>
                         <TableCell className="text-right space-x-1 whitespace-nowrap">
                           <Button size="sm" variant="ghost" onClick={() => { setEditingPkg(p); setPkgIsNew(false); }}>
@@ -437,7 +436,7 @@ export default function AdminPage() {
                       </TableRow>
                     ))}
                     {packages.length === 0 && (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Crea tu primer paquete.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{t("admin.noPackagesYet")}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -450,8 +449,8 @@ export default function AdminPage() {
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader className="flex flex-row items-start justify-between gap-4 flex-wrap">
               <div>
-                <CardTitle>Precios por generación</CardTitle>
-                <CardDescription>Costo en créditos por modelo y configuración.</CardDescription>
+                <CardTitle>{t("admin.pricingTitle")}</CardTitle>
+                <CardDescription>{t("admin.pricingDesc")}</CardDescription>
               </div>
               <Button
                 size="sm"
@@ -490,14 +489,14 @@ export default function AdminPage() {
                     }
                     const { error: upErr } = await (supabase as any).from("pricing").upsert(wavespeedPricing, { onConflict: "key" });
                     if (upErr) throw upErr;
-                    toast({ title: "Precios sincronizados", description: `${wavespeedPricing.length} keys de WaveSpeed insertadas, ${oldKeys.length} viejas borradas.` });
+                    toast({ title: t("common.success") });
                     loadAll();
                   } catch (e) {
-                    toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+                    toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
                   }
                 }}
               >
-                Sincronizar precios WaveSpeed
+                {t("admin.syncPrices")}
               </Button>
             </CardHeader>
             <CardContent>
@@ -505,9 +504,9 @@ export default function AdminPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead className="font-mono text-xs">Key</TableHead>
-                      <TableHead className="text-right">Créditos</TableHead>
+                      <TableHead>{t("admin.description")}</TableHead>
+                      <TableHead className="font-mono text-xs">{t("admin.key")}</TableHead>
+                      <TableHead className="text-right">{t("admin.credits")}</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -534,20 +533,20 @@ export default function AdminPage() {
         <TabsContent value="payments">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> Pagos Mercado Pago</CardTitle>
-              <CardDescription>{payments.length} pagos recientes</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> {t("admin.paymentsTitle")}</CardTitle>
+              <CardDescription>{t("admin.paymentsCount", { count: payments.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Usuario</TableHead>
-                      <TableHead className="text-right">Monto (UYU)</TableHead>
-                      <TableHead className="text-right">Créditos</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="font-mono text-xs">MP ID</TableHead>
+                      <TableHead>{t("admin.date")}</TableHead>
+                      <TableHead>{t("admin.user")}</TableHead>
+                      <TableHead className="text-right">{t("admin.amountUyu")}</TableHead>
+                      <TableHead className="text-right">{t("admin.credits")}</TableHead>
+                      <TableHead>{t("admin.status")}</TableHead>
+                      <TableHead className="font-mono text-xs">{t("admin.mpId")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -564,7 +563,7 @@ export default function AdminPage() {
                       </TableRow>
                     ))}
                     {payments.length === 0 && (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin pagos todavía.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{t("admin.noPayments")}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -576,33 +575,33 @@ export default function AdminPage() {
         <TabsContent value="transactions">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
-              <CardTitle>Últimas transacciones</CardTitle>
-              <CardDescription>{txs.length} movimientos recientes</CardDescription>
+              <CardTitle>{t("admin.txTitle")}</CardTitle>
+              <CardDescription>{t("admin.txCount", { count: txs.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Usuario</TableHead>
-                      <TableHead>Motivo</TableHead>
-                      <TableHead className="text-right">Cambio</TableHead>
+                      <TableHead>{t("admin.date")}</TableHead>
+                      <TableHead>{t("admin.user")}</TableHead>
+                      <TableHead>{t("admin.reason")}</TableHead>
+                      <TableHead className="text-right">{t("admin.change")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {txs.map((t) => (
-                      <TableRow key={t.id}>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(t.created_at).toLocaleString()}</TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">{t.user_email}</TableCell>
-                        <TableCell className="text-sm">{t.reason}</TableCell>
-                        <TableCell className={`text-right font-mono font-medium ${t.amount > 0 ? "text-green-500" : "text-destructive"}`}>
-                          {t.amount > 0 ? "+" : ""}{t.amount}
+                    {txs.map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(tx.created_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">{tx.user_email}</TableCell>
+                        <TableCell className="text-sm">{tx.reason}</TableCell>
+                        <TableCell className={`text-right font-mono font-medium ${tx.amount > 0 ? "text-green-500" : "text-destructive"}`}>
+                          {tx.amount > 0 ? "+" : ""}{tx.amount}
                         </TableCell>
                       </TableRow>
                     ))}
                     {txs.length === 0 && (
-                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Sin transacciones todavía.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{t("admin.noTx")}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -614,14 +613,14 @@ export default function AdminPage() {
         <TabsContent value="settings">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
-              <CardTitle>Configuración general</CardTitle>
-              <CardDescription>Ajustes globales de la aplicación</CardDescription>
+              <CardTitle>{t("admin.settingsTitle")}</CardTitle>
+              <CardDescription>{t("admin.settingsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 max-w-md">
               <div className="space-y-2">
-                <Label htmlFor="welcome-credits">Créditos de bienvenida</Label>
+                <Label htmlFor="welcome-credits">{t("admin.welcomeCredits")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Cantidad de créditos que reciben los nuevos usuarios al registrarse. Usa 0 para desactivar.
+                  {t("admin.welcomeCreditsDesc")}
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -632,7 +631,7 @@ export default function AdminPage() {
                     onChange={(e) => setWelcomeCredits(e.target.value)}
                   />
                   <Button onClick={handleSaveWelcomeCredits} disabled={savingSettings}>
-                    {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}
+                    {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : t("common.save")}
                   </Button>
                 </div>
               </div>
@@ -645,32 +644,32 @@ export default function AdminPage() {
       <Dialog open={!!rechargeUser} onOpenChange={(o) => !o && setRechargeUser(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajustar saldo de {rechargeUser?.email}</DialogTitle>
-            <DialogDescription>Saldo actual: <strong>{rechargeUser?.balance}</strong> créditos</DialogDescription>
+            <DialogTitle>{t("admin.adjustBalance", { email: rechargeUser?.email || "" })}</DialogTitle>
+            <DialogDescription>{t("admin.currentBalanceLabel")} <strong>{rechargeUser?.balance}</strong> {t("common.credits")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
               <Button variant={rechargeSign === "+" ? "default" : "outline"} size="sm" onClick={() => setRechargeSign("+")}>
-                <Plus className="h-3 w-3 mr-1" /> Sumar
+                <Plus className="h-3 w-3 mr-1" /> {t("admin.add")}
               </Button>
               <Button variant={rechargeSign === "-" ? "destructive" : "outline"} size="sm" onClick={() => setRechargeSign("-")}>
-                <Minus className="h-3 w-3 mr-1" /> Restar
+                <Minus className="h-3 w-3 mr-1" /> {t("admin.subtract")}
               </Button>
             </div>
             <div className="space-y-2">
-              <Label>Cantidad</Label>
+              <Label>{t("admin.amount")}</Label>
               <Input type="number" min="1" value={rechargeAmount} onChange={(e) => setRechargeAmount(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Motivo</Label>
-              <Input value={rechargeReason} onChange={(e) => setRechargeReason(e.target.value)} placeholder="Ej: Pago efectivo, ajuste, etc." />
+              <Label>{t("admin.reason")}</Label>
+              <Input value={rechargeReason} onChange={(e) => setRechargeReason(e.target.value)} placeholder={t("admin.reasonPh")} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setRechargeUser(null)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setRechargeUser(null)}>{t("common.cancel")}</Button>
             <Button onClick={handleRecharge} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Aplicar
+              {t("common.apply")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -680,29 +679,29 @@ export default function AdminPage() {
       <Dialog open={!!pwUser} onOpenChange={(o) => { if (!o) { setPwUser(null); setPwValue(""); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cambiar contraseña</DialogTitle>
+            <DialogTitle>{t("admin.changePassword")}</DialogTitle>
             <DialogDescription>
-              Setear nueva contraseña para <strong>{pwUser?.email}</strong>. El usuario podrá iniciar sesión inmediatamente con esta contraseña.
+              {t("admin.changePasswordDesc")} <strong>{pwUser?.email}</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Nueva contraseña</Label>
+            <Label>{t("admin.newPassword")}</Label>
             <Input
               type="text"
               value={pwValue}
               onChange={(e) => setPwValue(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t("admin.newPasswordPh")}
               autoComplete="off"
             />
             <p className="text-xs text-muted-foreground">
-              Comunicale esta contraseña al usuario por un canal seguro. Recomendale cambiarla después.
+              {t("admin.passwordHint")}
             </p>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setPwUser(null); setPwValue(""); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setPwUser(null); setPwValue(""); }}>{t("common.cancel")}</Button>
             <Button onClick={handleSetPassword} disabled={pwSubmitting}>
               {pwSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Aplicar
+              {t("common.apply")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -712,18 +711,18 @@ export default function AdminPage() {
       <Dialog open={!!editingPrice} onOpenChange={(o) => !o && setEditingPrice(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar precio</DialogTitle>
+            <DialogTitle>{t("admin.editPrice")}</DialogTitle>
             <DialogDescription>{editingPrice?.description || editingPrice?.key}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Créditos</Label>
+            <Label>{t("admin.credits")}</Label>
             <Input type="number" min="0" value={priceValue} onChange={(e) => setPriceValue(e.target.value)} />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditingPrice(null)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setEditingPrice(null)}>{t("common.cancel")}</Button>
             <Button onClick={handleSavePrice} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Guardar
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -733,31 +732,31 @@ export default function AdminPage() {
       <Dialog open={!!editingPkg} onOpenChange={(o) => { if (!o) { setEditingPkg(null); setPkgIsNew(false); } }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{pkgIsNew ? "Nuevo paquete" : "Editar paquete"}</DialogTitle>
-            <DialogDescription>Define nombre, créditos y precio en pesos uruguayos.</DialogDescription>
+            <DialogTitle>{pkgIsNew ? t("admin.newPackage") : t("admin.editPackage")}</DialogTitle>
+            <DialogDescription>{t("admin.packageDialogDesc")}</DialogDescription>
           </DialogHeader>
           {editingPkg && (
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Nombre</Label>
+                <Label>{t("admin.name")}</Label>
                 <Input
                   value={editingPkg.name}
                   onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })}
-                  placeholder="Ej: Paquete básico"
+                  placeholder={t("admin.namePh")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Descripción (opcional)</Label>
+                <Label>{t("admin.descriptionOptional")}</Label>
                 <Textarea
                   value={editingPkg.description || ""}
                   onChange={(e) => setEditingPkg({ ...editingPkg, description: e.target.value })}
-                  placeholder="Ideal para empezar"
+                  placeholder={t("admin.descriptionPh")}
                   rows={2}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Créditos</Label>
+                  <Label>{t("admin.credits")}</Label>
                   <Input
                     type="number" min="1"
                     value={editingPkg.credits}
@@ -765,7 +764,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Precio (UYU)</Label>
+                  <Label>{t("admin.priceUyu")}</Label>
                   <Input
                     type="number" min="1" step="0.01"
                     value={editingPkg.price_uyu}
@@ -774,7 +773,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Orden de visualización</Label>
+                <Label>{t("admin.sortOrder")}</Label>
                 <Input
                   type="number"
                   value={editingPkg.sort_order}
@@ -783,8 +782,8 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
                 <div>
-                  <Label>Activo</Label>
-                  <p className="text-xs text-muted-foreground">Visible para los usuarios</p>
+                  <Label>{t("admin.active")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("admin.activeDesc")}</p>
                 </div>
                 <Switch
                   checked={editingPkg.active}
@@ -793,8 +792,8 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
                 <div>
-                  <Label>Destacado</Label>
-                  <p className="text-xs text-muted-foreground">Marca como "Más popular"</p>
+                  <Label>{t("admin.highlighted")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("admin.highlightedDesc")}</p>
                 </div>
                 <Switch
                   checked={editingPkg.highlighted}
@@ -804,10 +803,10 @@ export default function AdminPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setEditingPkg(null); setPkgIsNew(false); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setEditingPkg(null); setPkgIsNew(false); }}>{t("common.cancel")}</Button>
             <Button onClick={handleSavePkg} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {pkgIsNew ? "Crear" : "Guardar"}
+              {pkgIsNew ? t("common.create") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

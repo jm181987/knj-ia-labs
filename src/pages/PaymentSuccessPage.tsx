@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, Coins } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function PaymentSuccessPage() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const paymentId = params.get("payment_id");
   const [status, setStatus] = useState<"loading" | "approved" | "pending">("loading");
@@ -42,17 +44,17 @@ export default function PaymentSuccessPage() {
           {status === "loading" ? (
             <>
               <Loader2 className="h-16 w-16 text-primary mx-auto animate-spin" />
-              <CardTitle className="mt-4">Confirmando tu pago…</CardTitle>
+              <CardTitle className="mt-4">{t("payment.confirming")}</CardTitle>
             </>
           ) : status === "approved" ? (
             <>
               <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
-              <CardTitle className="mt-4">¡Pago aprobado!</CardTitle>
+              <CardTitle className="mt-4">{t("payment.approved")}</CardTitle>
             </>
           ) : (
             <>
               <Loader2 className="h-16 w-16 text-yellow-500 mx-auto" />
-              <CardTitle className="mt-4">Procesando tu pago</CardTitle>
+              <CardTitle className="mt-4">{t("payment.processing")}</CardTitle>
             </>
           )}
         </CardHeader>
@@ -60,21 +62,21 @@ export default function PaymentSuccessPage() {
           {status === "approved" && credits !== null ? (
             <>
               <p className="text-muted-foreground">
-                Se acreditaron <strong className="text-foreground inline-flex items-center gap-1">
-                  <Coins className="h-4 w-4 text-primary" /> {credits} créditos
-                </strong> a tu cuenta.
+                {t("payment.creditedPrefix")}{" "}
+                <strong className="text-foreground inline-flex items-center gap-1">
+                  <Coins className="h-4 w-4 text-primary" /> {credits} {t("common.credits")}
+                </strong>{" "}
+                {t("payment.creditedSuffix")}
               </p>
               <Button asChild className="w-full">
-                <Link to="/app">Empezar a generar</Link>
+                <Link to="/app">{t("payment.startGenerating")}</Link>
               </Button>
             </>
           ) : status === "pending" ? (
             <>
-              <p className="text-muted-foreground">
-                Tu pago está siendo procesado. Recibirás los créditos en cuanto Mercado Pago lo confirme (puede tardar unos minutos).
-              </p>
+              <p className="text-muted-foreground">{t("payment.processingDesc")}</p>
               <Button asChild variant="outline" className="w-full">
-                <Link to="/app">Volver a la app</Link>
+                <Link to="/app">{t("payment.backToApp")}</Link>
               </Button>
             </>
           ) : null}
