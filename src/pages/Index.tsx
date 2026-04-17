@@ -91,10 +91,18 @@ export default function GeneratePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Generar contenido</h1>
-        <p className="text-muted-foreground mt-1">Crea videos e imágenes con inteligencia artificial</p>
+    <div className="max-w-3xl mx-auto space-y-8">
+      <div className="text-center space-y-4 py-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium text-primary-foreground/90">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          Modelos avanzados de IA en un solo lugar
+        </div>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
+          Crea <span className="text-gradient">imágenes realistas</span> y videos cinemáticos con IA
+        </h1>
+        <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
+          Un único panel para generar video e imagen con los mejores modelos de Kling. Simple, rápido y sin complicaciones.
+        </p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -108,7 +116,7 @@ export default function GeneratePage() {
         </TabsList>
 
         <TabsContent value="video">
-          <Card>
+          <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader>
               <CardTitle className="text-lg">Generar Video</CardTitle>
             </CardHeader>
@@ -196,7 +204,7 @@ export default function GeneratePage() {
         </TabsContent>
 
         <TabsContent value="image">
-          <Card>
+          <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader>
               <CardTitle className="text-lg">Generar Imagen</CardTitle>
             </CardHeader>
