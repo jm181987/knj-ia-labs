@@ -31,6 +31,27 @@ function ModelSelect({ value, onChange, models }: { value: string; onChange: (v:
   );
 }
 
+function CostBadge({ cost, balance }: { cost: number | null; balance: number | null }) {
+  if (cost === null) {
+    return (
+      <Badge variant="secondary" className="gap-1.5">
+        <Loader2 className="h-3 w-3 animate-spin" /> Costo…
+      </Badge>
+    );
+  }
+  const insufficient = balance !== null && balance < cost;
+  return (
+    <Badge
+      variant={insufficient ? "destructive" : "secondary"}
+      className="gap-1.5 font-mono"
+      title={insufficient ? "Saldo insuficiente" : `Tu saldo: ${balance ?? "—"} créditos`}
+    >
+      {insufficient ? <AlertCircle className="h-3 w-3" /> : <Coins className="h-3 w-3" />}
+      {cost} {cost === 1 ? "crédito" : "créditos"}
+    </Badge>
+  );
+}
+
 export default function GeneratePage() {
   const { toast } = useToast();
   const { balance } = useCredits();
