@@ -33,6 +33,7 @@ function ModelSelect({ value, onChange, models }: { value: string; onChange: (v:
 
 export default function GeneratePage() {
   const { toast } = useToast();
+  const { balance } = useCredits();
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("video");
 
@@ -52,6 +53,35 @@ export default function GeneratePage() {
   const [iNegative, setINegative] = useState("");
   const [iRefImage, setIRefImage] = useState("");
   const iModel = useMemo(() => IMAGE_MODELS.find((m) => m.id === iModelId)!, [iModelId]);
+
+  // Costos dinámicos por modelo + parámetros
+  const [vCost, setVCost] = useState<number | null>(null);
+  const [iCost, setICost] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    setVCost(null);
+    fetchCost(getPricingKey({ type: "video", model: vModelId, duration: vDuration, mode: "std" }))
+      .then((c) => !cancel && setVCost(c))
+      .catch(() => !cancel && setVCost(null));
+    return () => { cancel = true; };
+  }, [vModelId, vDuration]);
+
+  useEffect(() => {
+    let cancel = false;
+    setICost(null);
+    fetchCost(getPricingKey({ type: "image", model: iModelId }))
+      .then((c) => !cancel && setICost(c))
+      .catch(() => !cancel && setICost(null));
+    return () => { cancel = true; };
+  }, [iModelId]);
+
+  // Ajusta duración si el modelo no la soporta
+  useEffect(() => {
+    const allowed = (vModel.durations || [5, 10]).map(String);
+    if (!allowed.includes(vDuration)) setVDuration(allowed[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vModelId]);
 
   const handleGenerateVideo = async () => {
     if (!vPrompt.trim()) return;
