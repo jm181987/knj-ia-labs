@@ -367,9 +367,37 @@ export default function AdminPage() {
                 <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Paquetes de créditos</CardTitle>
                 <CardDescription>Visibles en /app/pricing para los usuarios.</CardDescription>
               </div>
-              <Button size="sm" className="w-full sm:w-auto" onClick={() => { setEditingPkg({ ...emptyPkg }); setPkgIsNew(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> Nuevo paquete
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    // Paquetes calculados con: costo WaveSpeed (USD) × 42 UYU/USD × 3 (markup 200%) ÷ 0.9025 (comisión MP 7.99% + IVA)
+                    const recommended = [
+                      { name: "Starter", credits: 100, price_uyu: 199, sort_order: 1, highlighted: false, active: true },
+                      { name: "Pro", credits: 500, price_uyu: 949, sort_order: 2, highlighted: true, active: true },
+                      { name: "Premium", credits: 1500, price_uyu: 2749, sort_order: 3, highlighted: false, active: true },
+                      { name: "Ultra", credits: 5000, price_uyu: 8999, sort_order: 4, highlighted: false, active: true },
+                    ];
+                    try {
+                      // Borrar todos los paquetes existentes
+                      const { error: delErr } = await (supabase as any).from("credit_packages").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+                      if (delErr) throw delErr;
+                      const { error: insErr } = await (supabase as any).from("credit_packages").insert(recommended);
+                      if (insErr) throw insErr;
+                      toast({ title: "Paquetes aplicados", description: `${recommended.length} paquetes con markup 200% + comisión MP.` });
+                      loadAll();
+                    } catch (e) {
+                      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+                    }
+                  }}
+                >
+                  Aplicar paquetes recomendados
+                </Button>
+                <Button size="sm" onClick={() => { setEditingPkg({ ...emptyPkg }); setPkgIsNew(true); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Nuevo
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
