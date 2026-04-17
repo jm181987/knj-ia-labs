@@ -1,5 +1,6 @@
-import { Sparkles, History, Image, Video, Shield, Coins } from "lucide-react";
+import { Sparkles, History, Image, Shield, Coins } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import knjLogo from "@/assets/knj-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -31,7 +32,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 flex items-center gap-2">
-          <Video className="h-6 w-6 text-primary shrink-0" />
+          <img src={knjLogo} alt="KNJ IA" className="h-8 w-8 shrink-0 object-contain" />
           {!collapsed && (
             <span className="font-bold text-lg tracking-tight">
               KNJ<span className="text-primary"> IA</span>
