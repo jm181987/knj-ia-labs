@@ -228,9 +228,9 @@ export default function GeneratePage() {
               {vModel.supportsImage && (
                 <ReferenceImageInput value={vRefImage} onChange={setVRefImage} />
               )}
-              <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim()} className="w-full" size="lg">
+              <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim() || vCost === null || (balance !== null && balance < vCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Video
+                Generar Video {vCost !== null && <span className="ml-2 opacity-80 text-xs">· {vCost} créditos</span>}
               </Button>
             </CardContent>
           </Card>
