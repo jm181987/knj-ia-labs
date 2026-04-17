@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Video, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Coins, Loader2, Sparkles, Video, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MODELS, submitGeneration, type WSModel } from "@/lib/wavespeed";
-import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
+import { consumeCredits, fetchCost, getPricingKey, useCredits } from "@/hooks/useCredits";
 import { ReferenceImageInput } from "@/components/ReferenceImageInput";
 
 const VIDEO_MODELS = MODELS.filter((m) => m.type === "video");
