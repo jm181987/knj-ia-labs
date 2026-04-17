@@ -30,8 +30,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return jsonResponse({ error: "No autenticado" }, 401);
     const user = userData.user;
 
-    const { package_id, return_origin } = await req.json();
-    if (!package_id) return jsonResponse({ error: "Falta package_id" }, 400);
+    const { package_id, custom_amount, return_origin } = await req.json();
 
     // Service role para leer/escribir
     const supabase = createClient(
@@ -39,22 +38,58 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: pkg, error: pkgErr } = await supabase
-      .from("credit_packages")
-      .select("*")
-      .eq("id", package_id)
-      .eq("active", true)
-      .maybeSingle();
-    if (pkgErr || !pkg) return jsonResponse({ error: "Paquete no disponible" }, 404);
+    let itemTitle = "";
+    let itemDescription = "";
+    let itemId = "";
+    let amountUYU = 0;
+    let credits = 0;
+    let pkgIdForPayment: string | null = null;
+
+    if (custom_amount !== undefined && custom_amount !== null) {
+      const amt = Number(custom_amount);
+      if (!Number.isFinite(amt) || amt < 80) {
+        return jsonResponse({ error: "El monto mínimo es $80 UYU" }, 400);
+      }
+      // Ratio basado en el paquete Starter ($1.99 UYU por crédito).
+      // Lo leemos dinámicamente del paquete más pequeño activo para mantener consistencia.
+      const { data: refPkg } = await supabase
+        .from("credit_packages")
+        .select("price_uyu, credits")
+        .eq("active", true)
+        .order("credits", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      const ratio = refPkg ? Number(refPkg.price_uyu) / Number(refPkg.credits) : 1.99;
+      credits = Math.floor(amt / ratio);
+      amountUYU = Math.round(amt);
+      itemId = "custom";
+      itemTitle = "Recarga personalizada";
+      itemDescription = `${credits} créditos para KNJ IA`;
+    } else {
+      if (!package_id) return jsonResponse({ error: "Falta package_id o custom_amount" }, 400);
+      const { data: pkg, error: pkgErr } = await supabase
+        .from("credit_packages")
+        .select("*")
+        .eq("id", package_id)
+        .eq("active", true)
+        .maybeSingle();
+      if (pkgErr || !pkg) return jsonResponse({ error: "Paquete no disponible" }, 404);
+      pkgIdForPayment = pkg.id;
+      amountUYU = Number(pkg.price_uyu);
+      credits = pkg.credits;
+      itemId = pkg.id;
+      itemTitle = pkg.name;
+      itemDescription = `${pkg.credits} créditos para KNJ IA`;
+    }
 
     // Crear fila pending
     const { data: payment, error: payErr } = await supabase
       .from("payments")
       .insert({
         user_id: user.id,
-        package_id: pkg.id,
-        amount_uyu: pkg.price_uyu,
-        credits: pkg.credits,
+        package_id: pkgIdForPayment,
+        amount_uyu: amountUYU,
+        credits,
         status: "pending",
       })
       .select()
@@ -73,12 +108,12 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         items: [{
-          id: pkg.id,
-          title: pkg.name,
-          description: `${pkg.credits} créditos para KNJ IA`,
+          id: itemId,
+          title: itemTitle,
+          description: itemDescription,
           quantity: 1,
           currency_id: "UYU",
-          unit_price: Number(pkg.price_uyu),
+          unit_price: amountUYU,
         }],
         payer: { email: user.email },
         external_reference: payment.id,
@@ -90,7 +125,7 @@ Deno.serve(async (req) => {
         auto_return: "approved",
         notification_url: `${supabaseUrl}/functions/v1/mp-webhook`,
         statement_descriptor: "KNJ IA",
-        metadata: { payment_id: payment.id, user_id: user.id, credits: pkg.credits },
+        metadata: { payment_id: payment.id, user_id: user.id, credits },
       }),
     });
 
