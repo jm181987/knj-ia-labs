@@ -85,10 +85,13 @@ export default function AdminPage() {
   const [editingPkg, setEditingPkg] = useState<PackageRow | Omit<PackageRow, "id"> | null>(null);
   const [pkgIsNew, setPkgIsNew] = useState(false);
 
+  const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }] =
+      const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }, { data: settings }] =
         await Promise.all([
           (supabase as any).from("profiles").select("id, email, display_name, created_at").order("created_at", { ascending: false }),
           (supabase as any).from("user_roles").select("user_id, role"),
@@ -97,6 +100,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
+          (supabase as any).from("app_settings").select("key, value").eq("key", "welcome_credits").maybeSingle(),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
@@ -112,6 +116,10 @@ export default function AdminPage() {
       const emailMap = new Map<string, string>(((profiles as any[]) || []).map((p) => [p.id, p.email]));
       setTxs(((tx as any[]) || []).map((t) => ({ ...t, user_email: emailMap.get(t.user_id) || t.user_id.slice(0, 8) })));
       setPayments(((pays as PaymentRow[]) || []).map((p) => ({ ...p, user_email: emailMap.get(p.user_id) || p.user_id.slice(0, 8) })));
+
+      if (settings?.value !== undefined && settings?.value !== null) {
+        setWelcomeCredits(String(settings.value));
+      }
     } catch (e) {
       toast({ title: "Error cargando datos", description: String(e), variant: "destructive" });
     } finally {
@@ -120,6 +128,26 @@ export default function AdminPage() {
   };
 
   useEffect(() => { loadAll(); }, []);
+
+  const handleSaveWelcomeCredits = async () => {
+    const n = parseInt(welcomeCredits);
+    if (isNaN(n) || n < 0) {
+      toast({ title: "Valor inválido", description: "Debe ser un número >= 0", variant: "destructive" });
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("app_settings")
+        .upsert({ key: "welcome_credits", value: n }, { onConflict: "key" });
+      if (error) throw error;
+      toast({ title: "Configuración guardada", description: `Nuevos usuarios recibirán ${n} créditos.` });
+    } catch (e) {
+      toast({ title: "Error guardando", description: String(e), variant: "destructive" });
+    } finally {
+      setSavingSettings(false);
+    }
+  };
 
   const handleRecharge = async () => {
     if (!rechargeUser) return;
@@ -246,6 +274,7 @@ export default function AdminPage() {
           <TabsTrigger value="pricing">Precios</TabsTrigger>
           <TabsTrigger value="payments">Pagos</TabsTrigger>
           <TabsTrigger value="transactions">Transacciones</TabsTrigger>
+          <TabsTrigger value="settings">Configuración</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -457,6 +486,35 @@ export default function AdminPage() {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card className="border-border/60 bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Configuración general</CardTitle>
+              <CardDescription>Ajustes globales de la aplicación</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="welcome-credits">Créditos de bienvenida</Label>
+                <p className="text-sm text-muted-foreground">
+                  Cantidad de créditos que reciben los nuevos usuarios al registrarse. Usa 0 para desactivar.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    id="welcome-credits"
+                    type="number"
+                    min="0"
+                    value={welcomeCredits}
+                    onChange={(e) => setWelcomeCredits(e.target.value)}
+                  />
+                  <Button onClick={handleSaveWelcomeCredits} disabled={savingSettings}>
+                    {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
