@@ -6,9 +6,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Video, Image, Info } from "lucide-react";
+import { Loader2, Sparkles, Video, Image, Info, Wand2, ScanEye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateVideo, generateImage } from "@/lib/kling";
+import { generateImageAI, improvePrompt, describeImage } from "@/lib/lovableAi";
+
+// Unified model list — provider determines routing
+const VIDEO_MODELS = [
+  { value: "kling-v1", label: "Kling v1", provider: "kling" },
+  { value: "kling-v1-5", label: "Kling v1.5", provider: "kling" },
+  { value: "kling-v1-6", label: "Kling v1.6", provider: "kling" },
+];
+const IMAGE_MODELS = [
+  { value: "kling-v1", label: "Kling v1", provider: "kling" },
+  { value: "kling-v1-5", label: "Kling v1.5", provider: "kling" },
+  { value: "google/gemini-2.5-flash-image", label: "Nano Banana (Gemini)", provider: "lovable" },
+  { value: "google/gemini-3.1-flash-image-preview", label: "Nano Banana 2 (Gemini)", provider: "lovable" },
+  { value: "google/gemini-3-pro-image-preview", label: "Nano Banana Pro (Gemini)", provider: "lovable" },
+];
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -71,22 +86,75 @@ export default function GeneratePage() {
     if (!iPrompt.trim()) return;
     setLoading(true);
     try {
-      const res = await generateImage({
-        prompt: iPrompt,
-        model: iModel,
-        aspect_ratio: iAspect,
-        image_count: parseInt(iCount),
-        negative_prompt: iNegative || undefined,
-      });
-      if (res.code === 0) {
-        toast({ title: "¡Imagen en generación!", description: "Revisa el historial para ver el progreso." });
+      const provider = IMAGE_MODELS.find((m) => m.value === iModel)?.provider;
+      let res: { code: number; message?: string };
+      if (provider === "lovable") {
+        res = await generateImageAI({
+          prompt: iPrompt,
+          model: iModel,
+          aspect_ratio: iAspect,
+          image_count: parseInt(iCount),
+        });
+        if (res.code === 0) {
+          toast({ title: "¡Imagen lista!", description: "Mira la galería o el historial." });
+        } else {
+          toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        }
       } else {
-        toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
+        res = await generateImage({
+          prompt: iPrompt,
+          model: iModel,
+          aspect_ratio: iAspect,
+          image_count: parseInt(iCount),
+          negative_prompt: iNegative || undefined,
+        });
+        if (res.code === 0) {
+          toast({ title: "¡Imagen en generación!", description: "Revisa el historial para ver el progreso." });
+        } else {
+          toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
+        }
       }
     } catch (e) {
       toast({ title: "Error", description: String(e), variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [improving, setImproving] = useState(false);
+  const handleImprove = async (type: "video" | "image") => {
+    const current = type === "video" ? vPrompt : iPrompt;
+    if (!current.trim()) return;
+    setImproving(true);
+    try {
+      const improved = await improvePrompt(current, type);
+      if (type === "video") setVPrompt(improved);
+      else setIPrompt(improved);
+      toast({ title: "Prompt mejorado ✨" });
+    } catch (e) {
+      toast({ title: "Error", description: String(e), variant: "destructive" });
+    } finally {
+      setImproving(false);
+    }
+  };
+
+  const [describing, setDescribing] = useState(false);
+  const handleDescribe = async () => {
+    if (!vRefImage.trim()) {
+      toast({ title: "Añade primero la URL de la imagen de referencia", variant: "destructive" });
+      return;
+    }
+    setDescribing(true);
+    try {
+      const desc = await describeImage(vRefImage);
+      if (desc) {
+        setVPrompt(desc);
+        toast({ title: "Descripción generada ✨" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: String(e), variant: "destructive" });
+    } finally {
+      setDescribing(false);
     }
   };
 
@@ -122,7 +190,13 @@ export default function GeneratePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Prompt *</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Prompt *</Label>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleImprove("video")} disabled={improving || !vPrompt.trim()} className="h-7 gap-1.5 text-xs">
+                    {improving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    Mejorar con IA
+                  </Button>
+                </div>
                 <Textarea
                   placeholder="Describe el video que quieres generar..."
                   value={vPrompt}
@@ -136,9 +210,9 @@ export default function GeneratePage() {
                   <Select value={vModel} onValueChange={setVModel}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="kling-v1">Kling v1</SelectItem>
-                      <SelectItem value="kling-v1-5">Kling v1.5</SelectItem>
-                      <SelectItem value="kling-v1-6">Kling v1.6</SelectItem>
+                      {VIDEO_MODELS.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -183,7 +257,13 @@ export default function GeneratePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL imagen de referencia (opcional)</Label>
+                <div className="flex items-center justify-between">
+                  <Label>URL imagen de referencia (opcional)</Label>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleDescribe} disabled={describing || !vRefImage.trim()} className="h-7 gap-1.5 text-xs">
+                    {describing ? <Loader2 className="h-3 w-3 animate-spin" /> : <ScanEye className="h-3 w-3" />}
+                    Describir imagen
+                  </Button>
+                </div>
                 <Input
                   placeholder="https://..."
                   value={vRefImage}
@@ -210,7 +290,13 @@ export default function GeneratePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Prompt *</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Prompt *</Label>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => handleImprove("image")} disabled={improving || !iPrompt.trim()} className="h-7 gap-1.5 text-xs">
+                    {improving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    Mejorar con IA
+                  </Button>
+                </div>
                 <Textarea
                   placeholder="Describe la imagen que quieres generar..."
                   value={iPrompt}
@@ -224,8 +310,9 @@ export default function GeneratePage() {
                   <Select value={iModel} onValueChange={setIModel}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="kling-v1">Kling v1</SelectItem>
-                      <SelectItem value="kling-v1-5">Kling v1.5</SelectItem>
+                      {IMAGE_MODELS.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
