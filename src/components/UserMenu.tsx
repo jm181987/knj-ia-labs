@@ -21,6 +21,7 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
   const { user, isAdmin, signOut } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [wsBalance, setWsBalance] = useState<number | null>(null);
 
   useEffect(() => {
