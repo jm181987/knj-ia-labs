@@ -6,8 +6,10 @@ import { useCredits } from "@/hooks/useCredits";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Coins, Check, Sparkles, ImageIcon, Video } from "lucide-react";
+import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
@@ -35,6 +37,14 @@ export default function PricingPage() {
   const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("200");
+
+  const MIN_CUSTOM = 80;
+  const ratio = packages.length
+    ? Math.min(...packages.map((p) => Number(p.price_uyu) / p.credits))
+    : 1.99;
+  const customAmountNum = Number(customAmount) || 0;
+  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / ratio) : 0;
 
   useEffect(() => {
     (async () => {
@@ -64,6 +74,34 @@ export default function PricingPage() {
     try {
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
         body: { package_id: pkg.id, return_origin: window.location.origin },
+      });
+      if (error) throw error;
+      const url = (data as any)?.init_point;
+      if (!url) throw new Error("No se obtuvo URL de Mercado Pago");
+      window.location.href = url;
+    } catch (e) {
+      toast({
+        title: "Error iniciando pago",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+      setBuying(null);
+    }
+  };
+
+  const handleBuyCustom = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (customAmountNum < MIN_CUSTOM) {
+      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      return;
+    }
+    setBuying("custom");
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-create-preference", {
+        body: { custom_amount: customAmountNum, return_origin: window.location.origin },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
@@ -172,6 +210,83 @@ export default function PricingPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Recarga personalizada */}
+      {!loading && packages.length > 0 && (
+        <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+            </CardTitle>
+            <CardDescription>
+              Elegí cuánto querés cargar. Mínimo ${MIN_CUSTOM} UYU, sin máximo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="custom-amount">Monto a cargar (UYU)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="custom-amount"
+                    type="number"
+                    inputMode="numeric"
+                    min={MIN_CUSTOM}
+                    step={10}
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    className="pl-7 text-lg font-semibold"
+                    placeholder={`${MIN_CUSTOM}`}
+                  />
+                </div>
+                {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
+                  <p className="text-xs text-destructive">El mínimo es ${MIN_CUSTOM} UYU</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
+                <Coins className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-2xl font-bold leading-none">
+                    {customCredits.toLocaleString("es-UY")}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    créditos · {ratio.toFixed(2)} UYU c/u
+                  </div>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleBuyCustom}
+                disabled={buying === "custom" || customAmountNum < MIN_CUSTOM}
+              >
+                {buying === "custom" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo…
+                  </>
+                ) : (
+                  "Comprar con Mercado Pago"
+                )}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <span className="text-xs text-muted-foreground self-center mr-1">Sugerencias:</span>
+              {[100, 200, 500, 1000, 2500, 5000].map((v) => (
+                <Button
+                  key={v}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setCustomAmount(String(v))}
+                >
+                  ${v.toLocaleString("es-UY")}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Tabla de costos por generación */}
