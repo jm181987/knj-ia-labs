@@ -53,8 +53,17 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
                 {user.user_metadata?.display_name || user.email?.split("@")[0]}
               </span>
               <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-medium gap-1">
-                <Coins className="h-2.5 w-2.5" />
-                {balance ?? "—"} créditos
+                {isAdmin ? (
+                  <>
+                    <Wallet className="h-2.5 w-2.5" />
+                    {wsBalance === null ? "—" : `$${wsBalance.toFixed(2)}`} WaveSpeed
+                  </>
+                ) : (
+                  <>
+                    <Coins className="h-2.5 w-2.5" />
+                    {balance ?? "—"} créditos
+                  </>
+                )}
               </Badge>
             </div>
           )}
