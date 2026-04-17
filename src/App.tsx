@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import NotFound from "./pages/NotFound";
+import Landing from "./pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -17,14 +18,23 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route
+            path="/app/*"
+            element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="history" element={<HistoryPage />} />
+                  <Route path="gallery" element={<GalleryPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
