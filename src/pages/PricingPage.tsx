@@ -40,11 +40,9 @@ export default function PricingPage() {
   const [customAmount, setCustomAmount] = useState<string>("200");
 
   const MIN_CUSTOM = 80;
-  const ratio = packages.length
-    ? Math.min(...packages.map((p) => Number(p.price_uyu) / p.credits))
-    : 1.99;
+  const RATIO = 1.99; // UYU por crédito (fijo)
   const customAmountNum = Number(customAmount) || 0;
-  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / ratio) : 0;
+  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
 
   useEffect(() => {
     (async () => {
@@ -252,7 +250,7 @@ export default function PricingPage() {
                     {customCredits.toLocaleString("es-UY")}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    créditos · {ratio.toFixed(2)} UYU c/u
+                    créditos · {RATIO.toFixed(2)} UYU c/u
                   </div>
                 </div>
               </div>
