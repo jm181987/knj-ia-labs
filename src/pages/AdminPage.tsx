@@ -23,7 +23,7 @@ interface UserRow {
   roles: string[];
   balance: number;
 }
-interface PricingRow { key: string; credits: number; label: string }
+interface PricingRow { key: string; credits: number; description: string | null }
 interface TxRow {
   id: string;
   user_id: string;
@@ -100,7 +100,7 @@ export default function AdminPage() {
           (supabase as any).from("profiles").select("id, email, display_name, created_at").order("created_at", { ascending: false }),
           (supabase as any).from("user_roles").select("user_id, role"),
           (supabase as any).from("user_credits").select("user_id, balance"),
-          (supabase as any).from("pricing").select("key, credits, label").order("key"),
+          (supabase as any).from("pricing").select("key, credits, description").order("key"),
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
@@ -428,7 +428,7 @@ export default function AdminPage() {
                 <TableBody>
                   {pricing.map((p) => (
                     <TableRow key={p.key}>
-                      <TableCell>{p.label}</TableCell>
+                      <TableCell>{p.description || "—"}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{p.key}</TableCell>
                       <TableCell className="text-right font-mono">{p.credits}</TableCell>
                       <TableCell className="text-right">
