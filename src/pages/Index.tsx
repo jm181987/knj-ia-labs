@@ -271,9 +271,9 @@ export default function GeneratePage() {
               {iModel.supportsImage && (
                 <ReferenceImageInput value={iRefImage} onChange={setIRefImage} label="Imagen de referencia (opcional, image-to-image)" />
               )}
-              <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim()} className="w-full" size="lg">
+              <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim() || iCost === null || (balance !== null && balance < iCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Imagen
+                Generar Imagen {iCost !== null && <span className="ml-2 opacity-80 text-xs">· {iCost} créditos</span>}
               </Button>
             </CardContent>
           </Card>
