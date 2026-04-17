@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import knjLogo from "@/assets/knj-logo.png";
+import { ToolsCarousel } from "@/components/ToolsCarousel";
 
 export default function Landing() {
   return (
@@ -161,6 +162,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Tools carousel */}
+      <ToolsCarousel />
 
       {/* Features */}
       <section id="features" className="border-t border-border/60 py-24">
