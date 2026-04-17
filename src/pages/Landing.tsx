@@ -144,7 +144,7 @@ export default function Landing() {
                       loop
                       playsInline
                       preload="metadata"
-                      className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[2.5] group-hover:z-50 group-hover:shadow-2xl group-hover:rounded-lg"
+                      className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[1.8] group-hover:shadow-2xl group-hover:rounded-lg"
                     />
                     <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-medium text-white flex items-center gap-1 transition-opacity group-hover:opacity-0">
                       <Video className="h-2.5 w-2.5" />
@@ -156,7 +156,7 @@ export default function Landing() {
                     src={item.src}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[2.5] group-hover:z-50 group-hover:shadow-2xl group-hover:rounded-lg"
+                    className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[1.8] group-hover:shadow-2xl group-hover:rounded-lg"
                   />
                 )}
               </div>
