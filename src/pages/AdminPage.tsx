@@ -22,20 +22,20 @@ export default function AdminPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const { data: profiles, error: pErr } = await supabase
+        const { data: profiles, error: pErr } = await (supabase as any)
           .from("profiles")
           .select("id, email, display_name, created_at")
           .order("created_at", { ascending: false });
         if (pErr) throw pErr;
 
-        const { data: roles, error: rErr } = await supabase
+        const { data: roles, error: rErr } = await (supabase as any)
           .from("user_roles")
           .select("user_id, role");
         if (rErr) throw rErr;
 
-        const merged: ProfileRow[] = (profiles || []).map((p) => ({
+        const merged: ProfileRow[] = ((profiles as any[]) || []).map((p) => ({
           ...p,
-          roles: (roles || []).filter((r) => r.user_id === p.id).map((r) => r.role),
+          roles: ((roles as any[]) || []).filter((r) => r.user_id === p.id).map((r) => r.role),
         }));
         setUsers(merged);
       } catch (e) {
