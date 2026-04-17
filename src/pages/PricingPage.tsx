@@ -174,6 +174,70 @@ export default function PricingPage() {
         </div>
       )}
 
+      {/* Tabla de costos por generación */}
+      {!loading && pricing.length > 0 && (
+        <Card className="border-border/60 bg-card/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" /> Costo en créditos por generación
+            </CardTitle>
+            <CardDescription>
+              Cuánto consume cada modelo. Usá la última columna para ver cuántas generaciones podés hacer con cada paquete.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Modelo / configuración</TableHead>
+                    <TableHead className="text-right">Créditos</TableHead>
+                    {packages.map((pkg) => (
+                      <TableHead key={pkg.id} className="text-right whitespace-nowrap">
+                        {pkg.name} ({pkg.credits})
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pricing.map((p) => {
+                    const isVideo = p.key.startsWith("video_");
+                    return (
+                      <TableRow key={p.key}>
+                        <TableCell>
+                          {isVideo ? (
+                            <Badge variant="outline" className="gap-1">
+                              <Video className="h-3 w-3" /> Video
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="gap-1">
+                              <ImageIcon className="h-3 w-3" /> Imagen
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">{p.description || p.key}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
+                          {p.credits}
+                        </TableCell>
+                        {packages.map((pkg) => (
+                          <TableCell key={pkg.id} className="text-right font-mono text-muted-foreground">
+                            {Math.floor(pkg.credits / p.credits).toLocaleString("es-UY")}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              💡 La última columna muestra cuántas generaciones de cada tipo podés hacer comprando ese paquete (asumiendo que solo usás ese modelo).
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center text-xs text-muted-foreground space-y-1 pt-4">
         <p>Procesado de forma segura por Mercado Pago Uruguay.</p>
         <p>Los créditos se acreditan automáticamente al confirmarse el pago.</p>
