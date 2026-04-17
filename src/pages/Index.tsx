@@ -168,7 +168,7 @@ export default function GeneratePage() {
           Crea <span className="text-gradient">imágenes realistas</span> y videos cinemáticos con IA
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
-          Un único panel para generar video e imagen con los mejores modelos de Kling. Simple, rápido y sin complicaciones.
+          Un único panel para generar video e imagen con los mejores modelos de IA. Simple, rápido y sin complicaciones.
         </p>
       </div>
 

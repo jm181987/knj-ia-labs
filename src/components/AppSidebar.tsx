@@ -31,7 +31,7 @@ export function AppSidebar() {
           <Video className="h-6 w-6 text-primary shrink-0" />
           {!collapsed && (
             <span className="font-bold text-lg tracking-tight">
-              Kling<span className="text-primary">.ai</span>
+              KNJ<span className="text-primary"> IA</span>
             </span>
           )}
         </div>

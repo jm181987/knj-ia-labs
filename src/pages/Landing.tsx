@@ -22,7 +22,7 @@ export default function Landing() {
         style={{ backgroundImage: "var(--gradient-banner)" }}
       >
         <Sparkles className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-        LANZAMIENTO — Kling v1.6 ya disponible
+        LANZAMIENTO — Nuevos modelos de IA disponibles
       </div>
 
       {/* Header */}
@@ -33,7 +33,7 @@ export default function Landing() {
               <Wand2 className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg tracking-tight">
-              Kling<span className="text-gradient">Studio</span>
+              KNJ<span className="text-gradient"> IA</span>
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
@@ -73,7 +73,7 @@ export default function Landing() {
             y videos cinemáticos con IA
           </h1>
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Un único panel para generar video e imagen con los mejores modelos de Kling.
+            Un único panel para generar video e imagen con los mejores modelos de IA.
             Simple, rápido y sin complicaciones.
           </p>
 
@@ -162,7 +162,7 @@ export default function Landing() {
               {
                 icon: Video,
                 title: "Videos cinemáticos",
-                desc: "Texto a video y imagen a video con Kling v1, v1.5 y v1.6 — modos estándar y profesional.",
+                desc: "Texto a video y imagen a video con modelos de última generación — modos estándar y profesional.",
               },
               {
                 icon: ImageIcon,
@@ -233,7 +233,7 @@ export default function Landing() {
             <div className="rounded-2xl border border-primary/40 bg-primary/5 p-6 shadow-elegant relative overflow-hidden">
               <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
               <div className="text-xs uppercase tracking-wider text-primary font-semibold">
-                KlingStudio
+                KNJ IA
               </div>
               <h3 className="text-xl font-semibold mt-1">Todo en un solo lugar</h3>
               <ul className="mt-5 space-y-3 text-sm">
@@ -284,7 +284,7 @@ export default function Landing() {
             <div className="h-6 w-6 rounded-md gradient-primary flex items-center justify-center">
               <Wand2 className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span>© {new Date().getFullYear()} KlingStudio</span>
+            <span>© {new Date().getFullYear()} KNJ IA</span>
           </div>
           <div className="flex items-center gap-5">
             <a href="#features" className="hover:text-foreground transition-colors">Funciones</a>
