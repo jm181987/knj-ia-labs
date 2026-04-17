@@ -274,6 +274,7 @@ export default function AdminPage() {
           <TabsTrigger value="pricing">Precios</TabsTrigger>
           <TabsTrigger value="payments">Pagos</TabsTrigger>
           <TabsTrigger value="transactions">Transacciones</TabsTrigger>
+          <TabsTrigger value="settings">Configuración</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
