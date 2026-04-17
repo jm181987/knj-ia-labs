@@ -230,7 +230,17 @@ Sidebar.displayName = "Sidebar";
 
 const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.ComponentProps<typeof Button>>(
   ({ className, onClick, ...props }, ref) => {
-    const { toggleSidebar } = useSidebar();
+    const { toggleSidebar, isMobile, openMobile } = useSidebar();
+    const lastToggleRef = React.useRef(0);
+
+    const handleToggle = (event: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>) => {
+      // Debounce: ignore duplicate events within 300ms (touchstart -> click ghost click)
+      const now = Date.now();
+      if (now - lastToggleRef.current < 300) return;
+      lastToggleRef.current = now;
+      onClick?.(event as React.MouseEvent<HTMLButtonElement>);
+      toggleSidebar();
+    };
 
     return (
       <Button
@@ -239,9 +249,19 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         variant="ghost"
         size="icon"
         className={cn("h-7 w-7", className)}
-        onClick={(event) => {
-          onClick?.(event);
-          toggleSidebar();
+        onPointerDown={(e) => {
+          // On mobile, prevent the synthetic click and overlay-outside detection
+          if (isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggle(e);
+          }
+        }}
+        onClick={(e) => {
+          // Desktop only — on mobile we already handled it on pointerdown
+          if (!isMobile) {
+            handleToggle(e);
+          }
         }}
         {...props}
       >
