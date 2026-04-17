@@ -13,6 +13,10 @@ import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
+import PricingPage from "./pages/PricingPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentFailurePage from "./pages/PaymentFailurePage";
+import PaymentPendingPage from "./pages/PaymentPendingPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +30,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/payment/success" element={<PaymentSuccessPage />} />
+            <Route path="/payment/failure" element={<PaymentFailurePage />} />
+            <Route path="/payment/pending" element={<PaymentPendingPage />} />
             <Route
               path="/app/*"
               element={
@@ -35,6 +42,7 @@ const App = () => (
                       <Route path="/" element={<Index />} />
                       <Route path="history" element={<HistoryPage />} />
                       <Route path="gallery" element={<GalleryPage />} />
+                      <Route path="pricing" element={<PricingPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
