@@ -85,6 +85,9 @@ export default function AdminPage() {
   const [editingPkg, setEditingPkg] = useState<PackageRow | Omit<PackageRow, "id"> | null>(null);
   const [pkgIsNew, setPkgIsNew] = useState(false);
 
+  const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const loadAll = async () => {
     setLoading(true);
     try {
