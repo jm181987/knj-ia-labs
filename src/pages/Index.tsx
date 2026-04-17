@@ -159,7 +159,10 @@ export default function GeneratePage() {
 
         <TabsContent value="video">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
-            <CardHeader><CardTitle className="text-lg">Generar Video</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-lg">Generar Video</CardTitle>
+              <CostBadge cost={vCost} balance={balance} />
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Prompt *</Label>
