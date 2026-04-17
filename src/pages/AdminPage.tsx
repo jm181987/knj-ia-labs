@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2 } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -87,6 +87,10 @@ export default function AdminPage() {
 
   const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
   const [savingSettings, setSavingSettings] = useState(false);
+
+  const [pwUser, setPwUser] = useState<UserRow | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -238,6 +242,29 @@ export default function AdminPage() {
     }
   };
 
+  const handleSetPassword = async () => {
+    if (!pwUser) return;
+    if (!pwValue || pwValue.length < 6) {
+      toast({ title: "Contraseña muy corta", description: "Mínimo 6 caracteres", variant: "destructive" });
+      return;
+    }
+    setPwSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-set-password", {
+        body: { user_id: pwUser.id, new_password: pwValue },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Contraseña actualizada", description: `Nueva contraseña aplicada a ${pwUser.email}` });
+      setPwUser(null);
+      setPwValue("");
+    } catch (e) {
+      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setPwSubmitting(false);
+    }
+  };
+
   const handleDeletePkg = async (id: string) => {
     if (!confirm("¿Eliminar este paquete? No afecta pagos ya realizados.")) return;
     try {
@@ -312,9 +339,12 @@ export default function AdminPage() {
                             <Coins className="h-3 w-3 text-primary" /> {u.balance}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-x-1">
                           <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
                             <Plus className="h-3 w-3 mr-1" /> Recargar
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
+                            <Key className="h-3 w-3 mr-1" /> Contraseña
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -549,6 +579,38 @@ export default function AdminPage() {
             <Button variant="ghost" onClick={() => setRechargeUser(null)}>Cancelar</Button>
             <Button onClick={handleRecharge} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Aplicar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog setear contraseña */}
+      <Dialog open={!!pwUser} onOpenChange={(o) => { if (!o) { setPwUser(null); setPwValue(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar contraseña</DialogTitle>
+            <DialogDescription>
+              Setear nueva contraseña para <strong>{pwUser?.email}</strong>. El usuario podrá iniciar sesión inmediatamente con esta contraseña.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Nueva contraseña</Label>
+            <Input
+              type="text"
+              value={pwValue}
+              onChange={(e) => setPwValue(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              Comunicale esta contraseña al usuario por un canal seguro. Recomendale cambiarla después.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setPwUser(null); setPwValue(""); }}>Cancelar</Button>
+            <Button onClick={handleSetPassword} disabled={pwSubmitting}>
+              {pwSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Aplicar
             </Button>
           </DialogFooter>
