@@ -6,7 +6,8 @@ import { useCredits } from "@/hooks/useCredits";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, Check, Sparkles } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2, Coins, Check, Sparkles, ImageIcon, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
@@ -19,23 +20,37 @@ interface Pkg {
   sort_order: number;
 }
 
+interface PricingRow {
+  key: string;
+  credits: number;
+  description: string | null;
+}
+
 export default function PricingPage() {
   const { user } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [packages, setPackages] = useState<Pkg[]>([]);
+  const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any)
-        .from("credit_packages")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true });
-      setPackages((data as Pkg[]) || []);
+      const [{ data: pkgs }, { data: prices }] = await Promise.all([
+        (supabase as any)
+          .from("credit_packages")
+          .select("*")
+          .eq("active", true)
+          .order("sort_order", { ascending: true }),
+        (supabase as any)
+          .from("pricing")
+          .select("key, credits, description")
+          .order("credits", { ascending: true }),
+      ]);
+      setPackages((pkgs as Pkg[]) || []);
+      setPricing((prices as PricingRow[]) || []);
       setLoading(false);
     })();
   }, []);
