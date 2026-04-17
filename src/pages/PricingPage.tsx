@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Pkg {
   id: string;
@@ -29,6 +30,7 @@ interface PricingRow {
 }
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ export default function PricingPage() {
   const [customAmount, setCustomAmount] = useState<string>("200");
 
   const MIN_CUSTOM = 80;
-  const RATIO = 1.99; // UYU por crédito (fijo)
+  const RATIO = 1.99;
   const customAmountNum = Number(customAmount) || 0;
   const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
 
@@ -75,11 +77,11 @@ export default function PricingPage() {
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
-      if (!url) throw new Error("No se obtuvo URL de Mercado Pago");
+      if (!url) throw new Error(t("pricing.noMpUrl"));
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error iniciando pago",
+        title: t("pricing.paymentErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
@@ -93,7 +95,7 @@ export default function PricingPage() {
       return;
     }
     if (customAmountNum < MIN_CUSTOM) {
-      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      toast({ title: t("pricing.invalidAmountTitle"), description: t("pricing.invalidAmountDesc", { min: MIN_CUSTOM }), variant: "destructive" });
       return;
     }
     setBuying("custom");
@@ -103,11 +105,11 @@ export default function PricingPage() {
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
-      if (!url) throw new Error("No se obtuvo URL de Mercado Pago");
+      if (!url) throw new Error(t("pricing.noMpUrl"));
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error iniciando pago",
+        title: t("pricing.paymentErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
@@ -119,17 +121,17 @@ export default function PricingPage() {
     <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
       <div className="text-center space-y-3 px-1">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm">
-          <Sparkles className="h-4 w-4" /> Recarga de créditos
+          <Sparkles className="h-4 w-4" /> {t("pricing.badge")}
         </div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Compra créditos para generar</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{t("pricing.title")}</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-          Pago seguro con Mercado Pago. Acepta tarjetas, Abitab, RedPagos y más.
+          {t("pricing.subtitle")}
         </p>
         {user && balance !== null && (
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border">
             <Coins className="h-4 w-4 text-primary" />
-            <span className="text-sm">Saldo actual:</span>
-            <span className="font-bold">{balance} créditos</span>
+            <span className="text-sm">{t("pricing.currentBalance")}</span>
+            <span className="font-bold">{balance} {t("common.credits")}</span>
           </div>
         )}
       </div>
@@ -141,7 +143,7 @@ export default function PricingPage() {
       ) : packages.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            No hay paquetes disponibles. Contacta al administrador.
+            {t("pricing.noPackages")}
           </CardContent>
         </Card>
       ) : (
@@ -154,7 +156,7 @@ export default function PricingPage() {
               } bg-card/80 backdrop-blur`}
             >
               {pkg.highlighted && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Más popular</Badge>
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">{t("pricing.popular")}</Badge>
               )}
               <CardHeader className="pb-3">
                 <CardTitle className="text-xl sm:text-2xl">{pkg.name}</CardTitle>
@@ -167,26 +169,26 @@ export default function PricingPage() {
                     <span className="text-muted-foreground text-sm">UYU</span>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
-                    {(Number(pkg.price_uyu) / pkg.credits).toFixed(2)} UYU por crédito
+                    {(Number(pkg.price_uyu) / pkg.credits).toFixed(2)} {t("pricing.perCredit")}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 py-3 border-y border-border">
                   <Coins className="h-5 w-5 text-primary" />
                   <span className="text-2xl font-bold">{pkg.credits.toLocaleString("es-UY")}</span>
-                  <span className="text-muted-foreground">créditos</span>
+                  <span className="text-muted-foreground">{t("common.credits")}</span>
                 </div>
                 <ul className="space-y-2 text-sm flex-1">
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Generación de imágenes y videos</span>
+                    <span>{t("pricing.feat1")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Sin caducidad</span>
+                    <span>{t("pricing.feat2")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Pago en pesos uruguayos</span>
+                    <span>{t("pricing.feat3")}</span>
                   </li>
                 </ul>
                 <Button
@@ -198,10 +200,10 @@ export default function PricingPage() {
                 >
                   {buying === pkg.id ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo…
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                     </>
                   ) : (
-                    "Comprar con Mercado Pago"
+                    t("pricing.buy")
                   )}
                 </Button>
               </CardContent>
@@ -210,21 +212,20 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Recarga personalizada */}
       {!loading && packages.length > 0 && (
         <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+              <Wand2 className="h-5 w-5 text-primary" /> {t("pricing.customTitle")}
             </CardTitle>
             <CardDescription>
-              Elegí cuánto querés cargar. Mínimo ${MIN_CUSTOM} UYU, sin máximo.
+              {t("pricing.customDesc", { min: MIN_CUSTOM })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
               <div className="space-y-2">
-                <Label htmlFor="custom-amount">Monto a cargar (UYU)</Label>
+                <Label htmlFor="custom-amount">{t("pricing.amountLabel")}</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
@@ -240,7 +241,7 @@ export default function PricingPage() {
                   />
                 </div>
                 {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
-                  <p className="text-xs text-destructive">El mínimo es ${MIN_CUSTOM} UYU</p>
+                  <p className="text-xs text-destructive">{t("pricing.minError", { min: MIN_CUSTOM })}</p>
                 )}
               </div>
               <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
@@ -250,7 +251,7 @@ export default function PricingPage() {
                     {customCredits.toLocaleString("es-UY")}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    créditos · {RATIO.toFixed(2)} UYU c/u
+                    {t("pricing.creditsEach", { ratio: RATIO.toFixed(2) })}
                   </div>
                 </div>
               </div>
@@ -261,15 +262,15 @@ export default function PricingPage() {
               >
                 {buying === "custom" ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo…
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                   </>
                 ) : (
-                  "Comprar con Mercado Pago"
+                  t("pricing.buy")
                 )}
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-4">
-              <span className="text-xs text-muted-foreground self-center mr-1">Sugerencias:</span>
+              <span className="text-xs text-muted-foreground self-center mr-1">{t("pricing.suggestions")}</span>
               {[100, 200, 500, 1000, 2500, 5000].map((v) => (
                 <Button
                   key={v}
@@ -287,15 +288,14 @@ export default function PricingPage() {
         </Card>
       )}
 
-      {/* Tabla de costos por generación */}
       {!loading && pricing.length > 0 && (
         <Card className="border-border/60 bg-card/80 backdrop-blur">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-primary" /> Costo en créditos por generación
+              <Coins className="h-5 w-5 text-primary" /> {t("pricing.costsTitle")}
             </CardTitle>
             <CardDescription>
-              Cuánto consume cada modelo. Usá la última columna para ver cuántas generaciones podés hacer con cada paquete.
+              {t("pricing.costsDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -303,9 +303,9 @@ export default function PricingPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Modelo / configuración</TableHead>
-                    <TableHead className="text-right">Créditos</TableHead>
+                    <TableHead>{t("pricing.colType")}</TableHead>
+                    <TableHead>{t("pricing.colModel")}</TableHead>
+                    <TableHead className="text-right">{t("pricing.colCredits")}</TableHead>
                     {packages.map((pkg) => (
                       <TableHead key={pkg.id} className="text-right whitespace-nowrap">
                         {pkg.name} ({pkg.credits})
@@ -321,11 +321,11 @@ export default function PricingPage() {
                         <TableCell>
                           {isVideo ? (
                             <Badge variant="outline" className="gap-1">
-                              <Video className="h-3 w-3" /> Video
+                              <Video className="h-3 w-3" /> {t("history.video")}
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="gap-1">
-                              <ImageIcon className="h-3 w-3" /> Imagen
+                              <ImageIcon className="h-3 w-3" /> {t("history.image")}
                             </Badge>
                           )}
                         </TableCell>
@@ -345,15 +345,15 @@ export default function PricingPage() {
               </Table>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
-              💡 La última columna muestra cuántas generaciones de cada tipo podés hacer comprando ese paquete (asumiendo que solo usás ese modelo).
+              {t("pricing.tableHint")}
             </p>
           </CardContent>
         </Card>
       )}
 
       <div className="text-center text-xs text-muted-foreground space-y-1 pt-4">
-        <p>Procesado de forma segura por Mercado Pago Uruguay.</p>
-        <p>Los créditos se acreditan automáticamente al confirmarse el pago.</p>
+        <p>{t("pricing.footer1")}</p>
+        <p>{t("pricing.footer2")}</p>
       </div>
     </div>
   );
