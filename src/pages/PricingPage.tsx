@@ -81,6 +81,34 @@ export default function PricingPage() {
     }
   };
 
+  const handleBuyCustom = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (customAmountNum < MIN_CUSTOM) {
+      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      return;
+    }
+    setBuying("custom");
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-create-preference", {
+        body: { custom_amount: customAmountNum, return_origin: window.location.origin },
+      });
+      if (error) throw error;
+      const url = (data as any)?.init_point;
+      if (!url) throw new Error("No se obtuvo URL de Mercado Pago");
+      window.location.href = url;
+    } catch (e) {
+      toast({
+        title: "Error iniciando pago",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+      setBuying(null);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
       <div className="text-center space-y-3 px-1">
