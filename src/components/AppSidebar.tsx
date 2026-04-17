@@ -1,9 +1,9 @@
-import { Sparkles, History, Image, Video } from "lucide-react";
+import { Sparkles, History, Image, Video, Shield } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -12,6 +12,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/hooks/useAuth";
 
 const items = [
   { title: "Generar", url: "/app", icon: Sparkles },
@@ -22,7 +24,7 @@ const items = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
+  const { isAdmin } = useAuth();
 
   return (
     <Sidebar collapsible="icon">
@@ -54,10 +56,28 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin"
+                      end
+                      className="hover:bg-accent/50"
+                      activeClassName="bg-accent text-accent-foreground font-medium"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-border/40 p-2">
+        <UserMenu collapsed={collapsed} />
+      </SidebarFooter>
     </Sidebar>
   );
 }
