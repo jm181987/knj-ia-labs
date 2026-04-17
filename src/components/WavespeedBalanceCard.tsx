@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw, Wallet, AlertCircle } from "lucide-react";
+import { Loader2, RefreshCw, Wallet, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export function WavespeedBalanceCard() {
@@ -45,9 +45,16 @@ export function WavespeedBalanceCard() {
             </CardDescription>
           </div>
         </div>
-        <Button size="sm" variant="outline" onClick={load} disabled={loading}>
-          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="default" asChild>
+            <a href="https://wavespeed.ai/top-up" target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3 w-3 mr-1" /> Recargar
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" onClick={load} disabled={loading}>
+            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {error ? (
