@@ -152,7 +152,14 @@ const Sidebar = React.forwardRef<
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet
+        open={openMobile}
+        onOpenChange={(o) => {
+          console.log("[Sidebar Sheet] onOpenChange", { from: openMobile, to: o });
+          setOpenMobile(o);
+        }}
+        {...props}
+      >
         <SheetContent
           data-sidebar="sidebar"
           data-mobile="true"
@@ -165,15 +172,21 @@ const Sidebar = React.forwardRef<
           side={side}
           onPointerDownOutside={(e) => {
             const target = e.target as HTMLElement | null;
+            console.log("[Sidebar Sheet] onPointerDownOutside", { tag: target?.tagName, isTrigger: !!target?.closest('[data-sidebar="trigger"]') });
             if (target?.closest('[data-sidebar="trigger"]')) {
               e.preventDefault();
             }
           }}
           onInteractOutside={(e) => {
             const target = e.target as HTMLElement | null;
+            console.log("[Sidebar Sheet] onInteractOutside", { tag: target?.tagName, isTrigger: !!target?.closest('[data-sidebar="trigger"]') });
             if (target?.closest('[data-sidebar="trigger"]')) {
               e.preventDefault();
             }
+          }}
+          onCloseAutoFocus={(e) => {
+            // Prevent focus returning to the trigger which can re-fire on mobile
+            e.preventDefault();
           }}
         >
           <div className="flex h-full w-full flex-col">{children}</div>
