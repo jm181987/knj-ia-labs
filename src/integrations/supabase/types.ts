@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_packages: {
+        Row: {
+          active: boolean
+          created_at: string
+          credits: number
+          id: string
+          name: string
+          price_uyu: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          credits: number
+          id?: string
+          name: string
+          price_uyu: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          credits?: number
+          id?: string
+          name?: string
+          price_uyu?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           aspect_ratio: string | null
@@ -74,6 +107,59 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_uyu: number
+          approved_at: string | null
+          created_at: string
+          credits: number
+          id: string
+          mp_payment_id: string | null
+          mp_preference_id: string | null
+          mp_response: Json | null
+          package_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_uyu: number
+          approved_at?: string | null
+          created_at?: string
+          credits: number
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          mp_response?: Json | null
+          package_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_uyu?: number
+          approved_at?: string | null
+          created_at?: string
+          credits?: number
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          mp_response?: Json | null
+          package_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "credit_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -127,6 +213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_credits_system: {
+        Args: { _amount: number; _reason: string; _user_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
