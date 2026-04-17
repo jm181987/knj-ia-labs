@@ -489,6 +489,35 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="settings">
+          <Card className="border-border/60 bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Configuración general</CardTitle>
+              <CardDescription>Ajustes globales de la aplicación</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="welcome-credits">Créditos de bienvenida</Label>
+                <p className="text-sm text-muted-foreground">
+                  Cantidad de créditos que reciben los nuevos usuarios al registrarse. Usa 0 para desactivar.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    id="welcome-credits"
+                    type="number"
+                    min="0"
+                    value={welcomeCredits}
+                    onChange={(e) => setWelcomeCredits(e.target.value)}
+                  />
+                  <Button onClick={handleSaveWelcomeCredits} disabled={savingSettings}>
+                    {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Dialog recarga */}
