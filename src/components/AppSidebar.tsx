@@ -56,6 +56,7 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
+                      onClick={handleNavClick}
                       className="hover:bg-accent/50"
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
@@ -71,6 +72,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/admin"
                       end
+                      onClick={handleNavClick}
                       className="hover:bg-accent/50"
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
