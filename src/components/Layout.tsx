@@ -22,7 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Powered by <span className="text-gradient font-semibold">KNJ IA</span>
             </div>
           </header>
-          <main className="flex-1 p-6 lg:p-10 overflow-auto">{children}</main>
+          <main className="flex-1 p-3 sm:p-6 lg:p-10 overflow-auto">{children}</main>
         </div>
       </div>
     </SidebarProvider>

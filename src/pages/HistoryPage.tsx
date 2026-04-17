@@ -52,19 +52,19 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Historial</h1>
-          <p className="text-muted-foreground mt-1">Todas tus generaciones</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Historial</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Todas tus generaciones</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => { setLoading(true); fetchGenerations(); }}>
+        <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => { setLoading(true); fetchGenerations(); }}>
           <RefreshCw className="h-4 w-4 mr-1" /> Actualizar
         </Button>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Tipo" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Tipo" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="video">Video</SelectItem>
@@ -72,7 +72,7 @@ export default function HistoryPage() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="pending">Pendiente</SelectItem>

@@ -38,8 +38,8 @@ export default function GalleryPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Galería</h1>
-        <p className="text-muted-foreground mt-1">Tus creaciones completadas</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Galería</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Tus creaciones completadas</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -59,7 +59,7 @@ export default function GalleryPage() {
           <p className="text-lg">No hay contenido completado aún</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {allItems.map((item) => (
             <div
               key={item.key}

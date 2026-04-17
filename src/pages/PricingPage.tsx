@@ -85,7 +85,7 @@ export default function PricingPage() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
           <Sparkles className="h-4 w-4" /> Recarga de créditos
         </div>
-        <h1 className="text-4xl font-bold tracking-tight">Compra créditos para generar</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Compra créditos para generar</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Pago seguro con Mercado Pago. Acepta tarjetas, Abitab, RedPagos y más.
         </p>
@@ -186,7 +186,7 @@ export default function PricingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -216,7 +216,7 @@ export default function PricingPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm">{p.description || p.key}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">{p.description || p.key}</TableCell>
                         <TableCell className="text-right font-mono font-semibold">
                           {p.credits}
                         </TableCell>
