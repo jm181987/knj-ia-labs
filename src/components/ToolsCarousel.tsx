@@ -36,7 +36,7 @@ const tools: Tool[] = [
   { name: "FLUX 2",        tag: "Black Forest",  logo: fluxLogo,       glow: "200,200,200" },
   { name: "Higgsfield",    tag: "Higgsfield AI", logo: higgsfieldLogo, glow: "249,115,22" },
   { name: "LTXV",          tag: "Lightricks",    logo: ltxvLogo,       glow: "236,72,153" },
-  { name: "Gemini",        tag: "Google",        logo: geminiLogo,     glow: "99,102,241" },
+  { name: "FLUX.1 Dev",    tag: "Black Forest",  logo: fluxLogo,       glow: "180,180,180" },
 ];
 
 export function ToolsCarousel() {
