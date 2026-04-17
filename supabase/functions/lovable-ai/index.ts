@@ -2,11 +2,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -15,32 +14,31 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  try { return JSON.stringify(error); } catch { return "Unknown error"; }
+function getErr(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  try { return JSON.stringify(e); } catch { return "Unknown error"; }
 }
 
-async function callAI(body: Record<string, unknown>) {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY no configurada");
+async function callGemini(model: string, payload: unknown) {
+  const key = Deno.env.get("GEMINI_API_KEY");
+  if (!key) throw new Error("GEMINI_API_KEY no configurada");
 
-  const res = await fetch(AI_URL, {
+  const res = await fetch(`${GEMINI_BASE}/${model}:generateContent?key=${key}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 
-  if (res.status === 429) throw new Error("Límite de uso alcanzado, intenta en un momento.");
-  if (res.status === 402) throw new Error("Sin créditos en Lovable AI. Agrega fondos en Settings → Workspace → Usage.");
+  const text = await res.text();
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { /* */ }
+
   if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`AI gateway error ${res.status}: ${t}`);
+    const msg = data?.error?.message || `Gemini error ${res.status}`;
+    throw new Error(msg);
   }
-  return await res.json();
+  return data;
 }
 
 function getSupabase() {
@@ -50,6 +48,16 @@ function getSupabase() {
   );
 }
 
+// Map our friendly model ids -> real Gemini model ids
+const MODEL_MAP: Record<string, string> = {
+  "gemini-2.5-flash-image": "gemini-2.5-flash-image",
+  "gemini-3-pro-image-preview": "gemini-3-pro-image-preview",
+  // Fallback aliases used by the UI
+  "google/gemini-2.5-flash-image": "gemini-2.5-flash-image",
+  "google/gemini-3-pro-image-preview": "gemini-3-pro-image-preview",
+  "google/gemini-3.1-flash-image-preview": "gemini-3-pro-image-preview",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -57,29 +65,34 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body?.action as string;
 
-    // === Generate image with Nano Banana ===
+    // === Generate image ===
     if (action === "generate-image") {
-      const { prompt, model = "google/gemini-2.5-flash-image", image_count = 1, aspect_ratio = "1:1" } = body;
+      const { prompt, model = "gemini-2.5-flash-image", image_count = 1, aspect_ratio = "1:1" } = body;
       if (!prompt) return jsonResponse({ code: -1, message: "Falta prompt" }, 400);
 
+      const realModel = MODEL_MAP[model] || "gemini-2.5-flash-image";
       const supabase = getSupabase();
       const urls: string[] = [];
 
-      // Lovable AI no soporta n>1 nativo; iteramos
       for (let i = 0; i < Math.min(image_count, 4); i++) {
-        const data = await callAI({
-          model,
-          messages: [{
-            role: "user",
-            content: `${prompt}${aspect_ratio !== "1:1" ? ` (aspect ratio ${aspect_ratio})` : ""}`,
+        const data = await callGemini(realModel, {
+          contents: [{
+            parts: [{ text: `${prompt}${aspect_ratio !== "1:1" ? ` (aspect ratio ${aspect_ratio})` : ""}` }],
           }],
-          modalities: ["image", "text"],
+          generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
         });
-        const imgUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        if (imgUrl) urls.push(imgUrl);
+
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        for (const p of parts) {
+          if (p.inlineData?.data) {
+            const mime = p.inlineData.mimeType || "image/png";
+            urls.push(`data:${mime};base64,${p.inlineData.data}`);
+            break;
+          }
+        }
       }
 
-      if (urls.length === 0) throw new Error("La IA no devolvió imágenes");
+      if (urls.length === 0) throw new Error("Gemini no devolvió imágenes");
 
       const { data: row, error } = await supabase.from("generations").insert({
         type: "image",
@@ -89,7 +102,7 @@ Deno.serve(async (req) => {
         image_count: urls.length,
         status: "completed",
         result_urls: urls,
-        parameters: { provider: "lovable-ai", model, aspect_ratio },
+        parameters: { provider: "gemini-direct", model, aspect_ratio },
       }).select().single();
       if (error) throw new Error(`DB: ${error.message}`);
 
@@ -101,42 +114,44 @@ Deno.serve(async (req) => {
       const { prompt, type = "image" } = body;
       if (!prompt) return jsonResponse({ code: -1, message: "Falta prompt" }, 400);
 
-      const data = await callAI({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `Eres un experto en escribir prompts para modelos de IA generativa de ${type === "video" ? "video (Kling, Veo)" : "imagen (Nano Banana, Kling)"}. Reescribe el prompt del usuario en inglés, añadiendo detalles cinematográficos, iluminación, composición, estilo visual y calidad. Devuelve SOLO el prompt mejorado, sin comentarios ni comillas.`,
-          },
-          { role: "user", content: prompt },
-        ],
+      const sys = `Eres un experto en escribir prompts para modelos de IA generativa de ${type === "video" ? "video (Kling, Veo)" : "imagen (Nano Banana, Kling)"}. Reescribe el prompt del usuario en inglés, añadiendo detalles cinematográficos, iluminación, composición, estilo visual y calidad. Devuelve SOLO el prompt mejorado, sin comentarios ni comillas.`;
+
+      const data = await callGemini("gemini-2.5-flash", {
+        contents: [{ parts: [{ text: `${sys}\n\nPrompt original:\n${prompt}` }] }],
       });
-      const improved = data?.choices?.[0]?.message?.content?.trim() || prompt;
+      const improved = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || prompt;
       return jsonResponse({ code: 0, data: { prompt: improved } });
     }
 
-    // === Describe reference image ===
+    // === Describe image ===
     if (action === "describe-image") {
       const { image_url } = body;
       if (!image_url) return jsonResponse({ code: -1, message: "Falta image_url" }, 400);
 
-      const data = await callAI({
-        model: "google/gemini-2.5-flash",
-        messages: [{
-          role: "user",
-          content: [
-            { type: "text", text: "Describe esta imagen como un prompt detallado en inglés para un modelo de generación de video/imagen IA. Incluye sujeto, estilo, iluminación, composición, ambiente. Devuelve SOLO el prompt." },
-            { type: "image_url", image_url: { url: image_url } },
+      // Download image and convert to base64 for Gemini inline
+      const imgRes = await fetch(image_url);
+      if (!imgRes.ok) throw new Error("No se pudo descargar la imagen de referencia");
+      const mime = imgRes.headers.get("content-type") || "image/jpeg";
+      const buf = new Uint8Array(await imgRes.arrayBuffer());
+      let binary = "";
+      for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]);
+      const b64 = btoa(binary);
+
+      const data = await callGemini("gemini-2.5-flash", {
+        contents: [{
+          parts: [
+            { text: "Describe esta imagen como un prompt detallado en inglés para un modelo de generación de video/imagen IA. Incluye sujeto, estilo, iluminación, composición, ambiente. Devuelve SOLO el prompt." },
+            { inlineData: { mimeType: mime, data: b64 } },
           ],
         }],
       });
-      const desc = data?.choices?.[0]?.message?.content?.trim() || "";
+      const desc = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
       return jsonResponse({ code: 0, data: { prompt: desc } });
     }
 
     return jsonResponse({ code: -1, message: "Acción desconocida" }, 400);
-  } catch (error) {
-    console.error("lovable-ai error:", error);
-    return jsonResponse({ code: -1, message: getErrorMessage(error) }, 500);
+  } catch (e) {
+    console.error("gemini-direct error:", e);
+    return jsonResponse({ code: -1, message: getErr(e) }, 500);
   }
 });
