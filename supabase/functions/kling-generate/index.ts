@@ -8,6 +8,47 @@ const corsHeaders = {
 
 const KLING_BASE_URL = "https://api.klingai.com";
 
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function getRequiredEnv(name: string): string {
+  const value = Deno.env.get(name);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+
+  if (typeof error === "object" && error !== null) {
+    const maybeMessage = Reflect.get(error, "message");
+    if (typeof maybeMessage === "string" && maybeMessage.length > 0) {
+      return maybeMessage;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return "Unknown error";
+    }
+  }
+
+  if (typeof error === "string") return error;
+  return "Unknown error";
+}
+
+function assertNoDbError(error: { message?: string } | null, context: string) {
+  if (error) {
+    throw new Error(`${context}: ${error.message || "Unknown database error"}`);
+  }
+}
+
 function base64UrlEncode(data: Uint8Array): string {
   let binary = "";
   for (let i = 0; i < data.length; i++) {
@@ -17,9 +58,8 @@ function base64UrlEncode(data: Uint8Array): string {
 }
 
 async function generateJWT(): Promise<string> {
-  const accessKey = Deno.env.get("KLING_ACCESS_KEY");
-  const secretKey = Deno.env.get("KLING_SECRET_KEY");
-  if (!accessKey || !secretKey) throw new Error("Kling API keys not configured");
+  const accessKey = getRequiredEnv("KLING_ACCESS_KEY");
+  const secretKey = getRequiredEnv("KLING_SECRET_KEY");
 
   const header = { alg: "HS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
@@ -59,13 +99,24 @@ async function klingRequest(path: string, method: string, body?: unknown) {
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(`${KLING_BASE_URL}${path}`, opts);
-  return res.json();
+  const text = await res.text();
+  const payload = text ? JSON.parse(text) : null;
+
+  if (!res.ok) {
+    const apiMessage =
+      payload && typeof payload === "object" && "message" in payload
+        ? String(payload.message)
+        : `Kling request failed with status ${res.status}`;
+    throw new Error(apiMessage);
+  }
+
+  return payload;
 }
 
 function getSupabase() {
   return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    getRequiredEnv("SUPABASE_URL"),
+    getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY")
   );
 }
 
@@ -75,7 +126,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, ...params } = await req.json();
+    const body = await req.json();
+    const action =
+      typeof body?.action === "string" && body.action.length > 0 ? body.action : null;
+
+    if (!action) {
+      return jsonResponse({ code: -1, message: "Missing action" }, 400);
+    }
+
+    const { action: _action, ...params } = body;
     const supabase = getSupabase();
 
     if (action === "generate-video") {
@@ -99,7 +158,7 @@ Deno.serve(async (req) => {
       const result = await klingRequest(endpoint, "POST", body);
 
       if (result.code === 0 && result.data?.task_id) {
-        await supabase.from("generations").insert({
+        const { error } = await supabase.from("generations").insert({
           type: "video",
           prompt: params.prompt,
           negative_prompt: params.negative_prompt || null,
@@ -112,11 +171,10 @@ Deno.serve(async (req) => {
           status: "processing",
           parameters: params,
         });
+        assertNoDbError(error, "Failed to save video generation");
       }
 
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(result);
     }
 
     if (action === "generate-image") {
@@ -131,7 +189,7 @@ Deno.serve(async (req) => {
       const result = await klingRequest("/v1/images/generations", "POST", body);
 
       if (result.code === 0 && result.data?.task_id) {
-        await supabase.from("generations").insert({
+        const { error } = await supabase.from("generations").insert({
           type: "image",
           prompt: params.prompt,
           negative_prompt: params.negative_prompt || null,
@@ -142,11 +200,10 @@ Deno.serve(async (req) => {
           status: "processing",
           parameters: params,
         });
+        assertNoDbError(error, "Failed to save image generation");
       }
 
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(result);
     }
 
     if (action === "check-video-status") {
@@ -169,7 +226,7 @@ Deno.serve(async (req) => {
           status = "failed";
         }
 
-        await supabase
+        const { error } = await supabase
           .from("generations")
           .update({
             status,
@@ -178,11 +235,10 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq("task_id", params.task_id);
+        assertNoDbError(error, "Failed to update video generation status");
       }
 
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(result);
     }
 
     if (action === "check-image-status") {
@@ -205,7 +261,7 @@ Deno.serve(async (req) => {
           status = "failed";
         }
 
-        await supabase
+        const { error } = await supabase
           .from("generations")
           .update({
             status,
@@ -214,11 +270,10 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq("task_id", params.task_id);
+        assertNoDbError(error, "Failed to update image generation status");
       }
 
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(result);
     }
 
     if (action === "list-generations") {
@@ -232,31 +287,20 @@ Deno.serve(async (req) => {
       if (params.limit) query.limit(params.limit);
 
       const { data, error } = await query;
-      if (error) throw error;
+      assertNoDbError(error, "Failed to list generations");
 
-      return new Response(JSON.stringify({ code: 0, data }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ code: 0, data });
     }
 
-    return new Response(
-      JSON.stringify({ code: -1, message: "Unknown action" }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({ code: -1, message: "Unknown action" }, 400);
   } catch (error) {
     console.error("Edge function error:", error);
-    return new Response(
-      JSON.stringify({
-        code: -1,
-        message: error instanceof Error ? error.message : "Unknown error",
-      }),
+    return jsonResponse(
       {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        code: -1,
+        message: getErrorMessage(error),
+      },
+      500
     );
   }
 });
