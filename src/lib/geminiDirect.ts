@@ -7,7 +7,7 @@ interface AIResponse {
 }
 
 async function call(body: Record<string, unknown>): Promise<AIResponse> {
-  const { data, error } = await supabase.functions.invoke("lovable-ai", { body });
+  const { data, error } = await supabase.functions.invoke("gemini-direct", { body });
   if (error) throw error;
   return data as AIResponse;
 }
