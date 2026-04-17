@@ -130,7 +130,7 @@ export default function Landing() {
             ].map((item, i) => (
               <div
                 key={i}
-                className={`relative rounded-xl overflow-hidden border border-border/60 bg-card group ${
+                className={`relative rounded-xl overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-300 hover:z-50 ${
                   i === 0 || i === 7 ? "row-span-2 col-span-2" : ""
                 }`}
               >
@@ -144,9 +144,9 @@ export default function Landing() {
                       loop
                       playsInline
                       preload="metadata"
-                      className="w-full h-full object-cover aspect-square group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[1.8] group-hover:shadow-2xl group-hover:rounded-lg"
                     />
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-medium text-white flex items-center gap-1">
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-medium text-white flex items-center gap-1 transition-opacity group-hover:opacity-0">
                       <Video className="h-2.5 w-2.5" />
                       VIDEO
                     </div>
@@ -156,7 +156,7 @@ export default function Landing() {
                     src={item.src}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-cover aspect-square group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover aspect-square transition-all duration-500 ease-out group-hover:scale-[1.8] group-hover:shadow-2xl group-hover:rounded-lg"
                   />
                 )}
               </div>
