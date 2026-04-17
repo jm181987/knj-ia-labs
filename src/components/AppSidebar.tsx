@@ -1,4 +1,5 @@
 import { Sparkles, History, Image, Shield, Coins } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "@/components/NavLink";
 import knjLogo from "@/assets/knj-logo.png";
 import {
@@ -14,19 +15,21 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UserMenu } from "@/components/UserMenu";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
-
-const items = [
-  { title: "Generar", url: "/app", icon: Sparkles },
-  { title: "Historial", url: "/app/history", icon: History },
-  { title: "Galería", url: "/app/gallery", icon: Image },
-  { title: "Comprar créditos", url: "/app/pricing", icon: Coins },
-];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { isAdmin } = useAuth();
+  const { t } = useTranslation();
+
+  const items = [
+    { titleKey: "nav.generate", url: "/app", icon: Sparkles },
+    { titleKey: "nav.history", url: "/app/history", icon: History },
+    { titleKey: "nav.gallery", url: "/app/gallery", icon: Image },
+    { titleKey: "nav.buyCredits", url: "/app/pricing", icon: Coins },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -40,11 +43,11 @@ export function AppSidebar() {
           )}
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -53,7 +56,7 @@ export function AppSidebar() {
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -68,7 +71,7 @@ export function AppSidebar() {
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
                       <Shield className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Admin</span>}
+                      {!collapsed && <span>{t("nav.admin")}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -77,7 +80,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-border/40 p-2">
+      <SidebarFooter className="border-t border-border/40 p-2 space-y-1">
+        {!collapsed && (
+          <div className="px-1">
+            <LanguageSwitcher variant="outline" />
+          </div>
+        )}
         <UserMenu collapsed={collapsed} />
       </SidebarFooter>
     </Sidebar>

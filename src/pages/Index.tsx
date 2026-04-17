@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,10 +33,11 @@ function ModelSelect({ value, onChange, models }: { value: string; onChange: (v:
 }
 
 function CostBadge({ cost, balance }: { cost: number | null; balance: number | null }) {
+  const { t } = useTranslation();
   if (cost === null) {
     return (
       <Badge variant="secondary" className="gap-1.5">
-        <Loader2 className="h-3 w-3 animate-spin" /> Costo…
+        <Loader2 className="h-3 w-3 animate-spin" /> {t("generate.costLoading")}
       </Badge>
     );
   }
@@ -44,16 +46,17 @@ function CostBadge({ cost, balance }: { cost: number | null; balance: number | n
     <Badge
       variant={insufficient ? "destructive" : "secondary"}
       className="gap-1.5 font-mono"
-      title={insufficient ? "Saldo insuficiente" : `Tu saldo: ${balance ?? "—"} créditos`}
+      title={insufficient ? t("generate.insufficient") : `${t("generate.yourBalance")}: ${balance ?? "—"} ${t("common.credits")}`}
     >
       {insufficient ? <AlertCircle className="h-3 w-3" /> : <Coins className="h-3 w-3" />}
-      {cost} {cost === 1 ? "crédito" : "créditos"}
+      {cost} {cost === 1 ? t("common.credit") : t("common.credits")}
     </Badge>
   );
 }
 
 export default function GeneratePage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { balance } = useCredits();
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("video");
@@ -120,12 +123,12 @@ export default function GeneratePage() {
         image_url: vRefImage || undefined,
       });
       if (res.code === 0) {
-        toast({ title: `¡Video en generación! (-${cost} créditos)`, description: "Revisa el historial para ver el progreso." });
+        toast({ title: `${t("generate.videoQueued")} (-${cost} ${t("common.credits")})`, description: t("generate.checkHistory") });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: t("common.error"), description: res.message || t("common.error"), variant: "destructive" });
       }
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -146,12 +149,12 @@ export default function GeneratePage() {
         image_url: iRefImage || undefined,
       });
       if (res.code === 0) {
-        toast({ title: `¡Imagen en generación! (-${cost} créditos)`, description: "Revisa el historial." });
+        toast({ title: `${t("generate.imageQueued")} (-${cost} ${t("common.credits")})`, description: t("generate.checkHistory") });
       } else {
-        toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
+        toast({ title: t("common.error"), description: res.message || t("common.error"), variant: "destructive" });
       }
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -162,51 +165,51 @@ export default function GeneratePage() {
       <div className="text-center space-y-4 py-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium text-primary-foreground/90">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
-          Powered by WaveSpeed AI · 700+ modelos
+          {t("generate.heroBadge")}
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05]">
-          Crea <span className="text-gradient">imágenes</span> y videos cinemáticos con IA
+          {t("generate.heroTitle1")} <span className="text-gradient">{t("generate.heroTitleHighlight")}</span> {t("generate.heroTitle2")}
         </h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
-          Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y más en un solo panel.
+          {t("generate.heroSub")}
         </p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="video" className="gap-2"><Video className="h-4 w-4" /> Video</TabsTrigger>
-          <TabsTrigger value="image" className="gap-2"><ImageIcon className="h-4 w-4" /> Imagen</TabsTrigger>
+          <TabsTrigger value="video" className="gap-2"><Video className="h-4 w-4" /> {t("generate.tabVideo")}</TabsTrigger>
+          <TabsTrigger value="image" className="gap-2"><ImageIcon className="h-4 w-4" /> {t("generate.tabImage")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="video">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-              <CardTitle className="text-lg">Generar Video</CardTitle>
+              <CardTitle className="text-lg">{t("generate.videoTitle")}</CardTitle>
               <CostBadge cost={vCost} balance={balance} />
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Prompt *</Label>
-                <Textarea placeholder="Describe el video que quieres generar..." value={vPrompt} onChange={(e) => setVPrompt(e.target.value)} rows={3} />
+                <Label>{t("generate.prompt")}</Label>
+                <Textarea placeholder={t("generate.promptVideoPh")} value={vPrompt} onChange={(e) => setVPrompt(e.target.value)} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Modelo</Label>
+                  <Label>{t("generate.model")}</Label>
                   <ModelSelect value={vModelId} onChange={setVModelId} models={VIDEO_MODELS} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Duración</Label>
+                  <Label>{t("generate.duration")}</Label>
                   <Select value={vDuration} onValueChange={setVDuration}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(vModel.durations || [5, 10]).map((d) => (
-                        <SelectItem key={d} value={String(d)}>{d} segundos</SelectItem>
+                        <SelectItem key={d} value={String(d)}>{d} {t("generate.seconds")}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Aspecto</Label>
+                  <Label>{t("generate.aspect")}</Label>
                   <Select value={vAspect} onValueChange={setVAspect}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -217,20 +220,20 @@ export default function GeneratePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Marca</Label>
+                  <Label>{t("generate.brand")}</Label>
                   <Input value={vModel.brand} disabled />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Prompt negativo (opcional)</Label>
-                <Input placeholder="Lo que NO quieres en el video..." value={vNegative} onChange={(e) => setVNegative(e.target.value)} />
+                <Label>{t("generate.negative")}</Label>
+                <Input placeholder={t("generate.negativeVideoPh")} value={vNegative} onChange={(e) => setVNegative(e.target.value)} />
               </div>
               {vModel.supportsImage && (
                 <ReferenceImageInput value={vRefImage} onChange={setVRefImage} />
               )}
               <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim() || vCost === null || (balance !== null && balance < vCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Video {vCost !== null && <span className="ml-2 opacity-80 text-xs">· {vCost} créditos</span>}
+                {t("generate.btnVideo")} {vCost !== null && <span className="ml-2 opacity-80 text-xs">· {vCost} {t("common.credits")}</span>}
               </Button>
             </CardContent>
           </Card>
@@ -239,21 +242,21 @@ export default function GeneratePage() {
         <TabsContent value="image">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-              <CardTitle className="text-lg">Generar Imagen</CardTitle>
+              <CardTitle className="text-lg">{t("generate.imageTitle")}</CardTitle>
               <CostBadge cost={iCost} balance={balance} />
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Prompt *</Label>
-                <Textarea placeholder="Describe la imagen que quieres generar..." value={iPrompt} onChange={(e) => setIPrompt(e.target.value)} rows={3} />
+                <Label>{t("generate.prompt")}</Label>
+                <Textarea placeholder={t("generate.promptImagePh")} value={iPrompt} onChange={(e) => setIPrompt(e.target.value)} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Modelo</Label>
+                  <Label>{t("generate.model")}</Label>
                   <ModelSelect value={iModelId} onChange={setIModelId} models={IMAGE_MODELS} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Aspecto</Label>
+                  <Label>{t("generate.aspect")}</Label>
                   <Select value={iAspect} onValueChange={setIAspect}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -265,15 +268,15 @@ export default function GeneratePage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Prompt negativo (opcional)</Label>
-                <Input placeholder="Lo que NO quieres en la imagen..." value={iNegative} onChange={(e) => setINegative(e.target.value)} />
+                <Label>{t("generate.negative")}</Label>
+                <Input placeholder={t("generate.negativeImagePh")} value={iNegative} onChange={(e) => setINegative(e.target.value)} />
               </div>
               {iModel.supportsImage && (
-                <ReferenceImageInput value={iRefImage} onChange={setIRefImage} label="Imagen de referencia (opcional, image-to-image)" />
+                <ReferenceImageInput value={iRefImage} onChange={setIRefImage} />
               )}
               <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim() || iCost === null || (balance !== null && balance < iCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Imagen {iCost !== null && <span className="ml-2 opacity-80 text-xs">· {iCost} créditos</span>}
+                {t("generate.btnImage")} {iCost !== null && <span className="ml-2 opacity-80 text-xs">· {iCost} {t("common.credits")}</span>}
               </Button>
             </CardContent>
           </Card>
