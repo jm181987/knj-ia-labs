@@ -63,7 +63,7 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
                 ) : (
                   <>
                     <Coins className="h-2.5 w-2.5" />
-                    {balance ?? "—"} créditos
+                    {balance ?? "—"} {t("common.credits")}
                   </>
                 )}
               </Badge>
@@ -72,19 +72,19 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("userMenu.myAccount")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>
-          <UserIcon className="h-4 w-4 mr-2" /> Perfil (próximamente)
+          <UserIcon className="h-4 w-4 mr-2" /> {t("userMenu.profileSoon")}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => navigate("/admin")}>
-            <Shield className="h-4 w-4 mr-2" /> Panel admin
+            <Shield className="h-4 w-4 mr-2" /> {t("userMenu.adminPanel")}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut} className="text-destructive">
-          <LogOut className="h-4 w-4 mr-2" /> Cerrar sesión
+          <LogOut className="h-4 w-4 mr-2" /> {t("userMenu.signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
