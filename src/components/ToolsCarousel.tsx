@@ -64,10 +64,10 @@ export function ToolsCarousel() {
               {list.map((t, i) => (
                 <div
                   key={`${t.name}-${i}`}
-                  className="shrink-0 basis-[180px] sm:basis-[200px]"
+                  className="shrink-0 basis-[230px] sm:basis-[260px]"
                 >
                   <div
-                    className="group relative h-36 rounded-2xl border border-border/60 bg-card/40 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105"
+                    className="group relative h-48 rounded-2xl border border-border/60 bg-card/40 backdrop-blur p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:scale-105"
                     style={{
                       boxShadow: `0 0 0 1px rgba(${t.glow},0.15), 0 8px 32px -8px rgba(${t.glow},0.35)`,
                     }}
