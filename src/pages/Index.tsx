@@ -61,6 +61,8 @@ export default function GeneratePage() {
     if (!vPrompt.trim()) return;
     setLoading(true);
     try {
+      const cost = await fetchCost(getPricingKey({ type: "video", model: vModel, duration: vDuration, mode: vMode }));
+      await consumeCredits(cost, `video:${vModel}:${vDuration}s:${vMode}`);
       const res = await generateVideo({
         prompt: vPrompt,
         model: vModel,
@@ -71,12 +73,12 @@ export default function GeneratePage() {
         reference_image_url: vRefImage || undefined,
       });
       if (res.code === 0) {
-        toast({ title: "¡Video en generación!", description: "Revisa el historial para ver el progreso." });
+        toast({ title: `¡Video en generación! (-${cost} créditos)`, description: "Revisa el historial para ver el progreso." });
       } else {
         toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
+      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
