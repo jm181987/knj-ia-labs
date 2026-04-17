@@ -295,14 +295,16 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="users">
-        <TabsList>
-          <TabsTrigger value="users">Usuarios</TabsTrigger>
-          <TabsTrigger value="packages">Paquetes</TabsTrigger>
-          <TabsTrigger value="pricing">Precios</TabsTrigger>
-          <TabsTrigger value="payments">Pagos</TabsTrigger>
-          <TabsTrigger value="transactions">Transacciones</TabsTrigger>
-          <TabsTrigger value="settings">Configuración</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+          <TabsList className="w-max">
+            <TabsTrigger value="users">Usuarios</TabsTrigger>
+            <TabsTrigger value="packages">Paquetes</TabsTrigger>
+            <TabsTrigger value="pricing">Precios</TabsTrigger>
+            <TabsTrigger value="payments">Pagos</TabsTrigger>
+            <TabsTrigger value="transactions">Transacciones</TabsTrigger>
+            <TabsTrigger value="settings">Configuración</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="users">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
