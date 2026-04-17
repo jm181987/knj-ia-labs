@@ -37,9 +37,9 @@ export const MODELS: WSModel[] = [
 
   // ===== IMAGE =====
   { id: "nano-banana-2", label: "Nano Banana 2", brand: "Google", type: "image",
-    modelPath: "google/nano-banana-2/text-to-image", aspects: ["1:1","16:9","9:16","3:2","2:3"] },
+    modelPath: "google/nano-banana-2/text-to-image", supportsImage: true, aspects: ["1:1","16:9","9:16","3:2","2:3"] },
   { id: "seedream-4.5", label: "Seedream 4.5", brand: "ByteDance", type: "image",
-    modelPath: "bytedance/seedream-v4/text-to-image", aspects: ["1:1","16:9","9:16","3:2","2:3"] },
+    modelPath: "bytedance/seedream-v4/text-to-image", supportsImage: true, aspects: ["1:1","16:9","9:16","3:2","2:3"] },
   { id: "flux-2", label: "FLUX 2", brand: "Black Forest", type: "image",
     modelPath: "wavespeed-ai/flux-2-dev", aspects: ["1:1","16:9","9:16","3:2","2:3"] },
   { id: "flux-dev", label: "FLUX.1 Dev", brand: "Black Forest", type: "image",
