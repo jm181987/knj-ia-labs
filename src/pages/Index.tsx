@@ -10,6 +10,7 @@ import { Loader2, Sparkles, Video, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MODELS, submitGeneration, type WSModel } from "@/lib/wavespeed";
 import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
+import { ReferenceImageInput } from "@/components/ReferenceImageInput";
 
 const VIDEO_MODELS = MODELS.filter((m) => m.type === "video");
 const IMAGE_MODELS = MODELS.filter((m) => m.type === "image");
@@ -48,6 +49,7 @@ export default function GeneratePage() {
   const [iPrompt, setIPrompt] = useState("");
   const [iAspect, setIAspect] = useState("1:1");
   const [iNegative, setINegative] = useState("");
+  const [iRefImage, setIRefImage] = useState("");
   const iModel = useMemo(() => IMAGE_MODELS.find((m) => m.id === iModelId)!, [iModelId]);
 
   const handleGenerateVideo = async () => {
@@ -89,6 +91,7 @@ export default function GeneratePage() {
         prompt: iPrompt,
         aspect_ratio: iAspect,
         negative_prompt: iNegative || undefined,
+        image_url: iRefImage || undefined,
       });
       if (res.code === 0) {
         toast({ title: `¡Imagen en generación! (-${cost} créditos)`, description: "Revisa el historial." });
@@ -168,10 +171,7 @@ export default function GeneratePage() {
                 <Input placeholder="Lo que NO quieres en el video..." value={vNegative} onChange={(e) => setVNegative(e.target.value)} />
               </div>
               {vModel.supportsImage && (
-                <div className="space-y-2">
-                  <Label>URL imagen de referencia (opcional)</Label>
-                  <Input placeholder="https://..." value={vRefImage} onChange={(e) => setVRefImage(e.target.value)} />
-                </div>
+                <ReferenceImageInput value={vRefImage} onChange={setVRefImage} />
               )}
               <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim()} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
@@ -210,6 +210,9 @@ export default function GeneratePage() {
                 <Label>Prompt negativo (opcional)</Label>
                 <Input placeholder="Lo que NO quieres en la imagen..." value={iNegative} onChange={(e) => setINegative(e.target.value)} />
               </div>
+              {iModel.supportsImage && (
+                <ReferenceImageInput value={iRefImage} onChange={setIRefImage} label="Imagen de referencia (opcional, image-to-image)" />
+              )}
               <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim()} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Generar Imagen
