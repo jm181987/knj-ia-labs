@@ -129,6 +129,26 @@ export default function AdminPage() {
 
   useEffect(() => { loadAll(); }, []);
 
+  const handleSaveWelcomeCredits = async () => {
+    const n = parseInt(welcomeCredits);
+    if (isNaN(n) || n < 0) {
+      toast({ title: "Valor inválido", description: "Debe ser un número >= 0", variant: "destructive" });
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("app_settings")
+        .upsert({ key: "welcome_credits", value: n }, { onConflict: "key" });
+      if (error) throw error;
+      toast({ title: "Configuración guardada", description: `Nuevos usuarios recibirán ${n} créditos.` });
+    } catch (e) {
+      toast({ title: "Error guardando", description: String(e), variant: "destructive" });
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   const handleRecharge = async () => {
     if (!rechargeUser) return;
     const amount = parseInt(rechargeAmount);
