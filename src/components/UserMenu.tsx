@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Coins, LogOut, Shield, User as UserIcon } from "lucide-react";
+import { Coins, LogOut, Shield, User as UserIcon, Wallet } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +14,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
+import { supabase } from "@/integrations/supabase/client";
 
 export function UserMenu({ collapsed }: { collapsed?: boolean }) {
   const { user, isAdmin, signOut } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
+  const [wsBalance, setWsBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("wavespeed-balance");
+        if (error || (data as any)?.error) return;
+        if (!cancelled) setWsBalance((data as any)?.balance_usd ?? null);
+      } catch { /* ignore */ }
+    };
+    load();
+    const id = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isAdmin]);
 
   if (!user) return null;
   const initials = (user.user_metadata?.display_name || user.email || "?").slice(0, 2).toUpperCase();
