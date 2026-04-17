@@ -67,34 +67,35 @@ export function ToolsCarousel() {
                   className="shrink-0 basis-[180px] sm:basis-[200px]"
                 >
                   <div
-                    className="group relative h-36 rounded-2xl border border-border/60 bg-card/40 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105"
+                    className="group relative h-40 rounded-2xl border-2 bg-card p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:scale-105"
                     style={{
-                      boxShadow: `0 0 0 1px rgba(${t.glow},0.15), 0 8px 32px -8px rgba(${t.glow},0.35)`,
+                      borderColor: `rgba(${t.glow},0.4)`,
+                      boxShadow: `0 0 24px -4px rgba(${t.glow},0.45)`,
                     }}
                   >
                     {/* Glow background */}
                     <div
-                      className="absolute -inset-px rounded-2xl opacity-30 group-hover:opacity-60 transition-opacity blur-xl -z-10"
-                      style={{ background: `radial-gradient(circle at center, rgba(${t.glow},0.6), transparent 70%)` }}
+                      className="absolute -inset-px rounded-2xl opacity-25 group-hover:opacity-50 transition-opacity blur-2xl -z-10"
+                      style={{ background: `radial-gradient(circle at center, rgba(${t.glow},0.7), transparent 70%)` }}
                     />
                     <div
-                      className="h-14 w-14 flex items-center justify-center"
+                      className="h-14 w-14 rounded-xl bg-white flex items-center justify-center shadow-md"
                       style={{
-                        filter: `drop-shadow(0 0 6px rgba(${t.glow},0.9)) drop-shadow(0 0 14px rgba(${t.glow},0.55))`,
+                        boxShadow: `0 0 16px rgba(${t.glow},0.6), 0 4px 12px rgba(0,0,0,0.15)`,
                       }}
                     >
                       <img
                         src={t.logo}
                         alt={`${t.name} logo`}
                         loading="lazy"
-                        width={56}
-                        height={56}
-                        className="h-14 w-14 object-contain"
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 object-contain"
                       />
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-semibold">{t.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{t.tag}</div>
+                      <div className="text-base font-bold text-foreground leading-tight">{t.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{t.tag}</div>
                     </div>
                   </div>
                 </div>
