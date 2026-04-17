@@ -37,6 +37,7 @@ export type Database = {
           active: boolean
           created_at: string
           credits: number
+          highlighted: boolean
           id: string
           name: string
           price_uyu: number
@@ -47,6 +48,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           credits: number
+          highlighted?: boolean
           id?: string
           name: string
           price_uyu: number
@@ -57,6 +59,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           credits?: number
+          highlighted?: boolean
           id?: string
           name?: string
           price_uyu?: number
