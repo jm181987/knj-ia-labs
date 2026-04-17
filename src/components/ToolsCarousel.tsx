@@ -16,18 +16,19 @@ type Tool = {
   name: string;
   tag: string;
   logo: string;
+  glow: string; // rgb glow color
 };
 
 const tools: Tool[] = [
-  { name: "Sora 2", tag: "OpenAI", logo: openaiLogo },
-  { name: "Veo 3.1", tag: "Google", logo: googleLogo },
-  { name: "Kling 2.5", tag: "Kuaishou", logo: klingLogo },
-  { name: "Hailuo 2", tag: "MiniMax", logo: hailuoLogo },
-  { name: "Seedance", tag: "ByteDance", logo: seedanceLogo },
-  { name: "Higgsfield", tag: "Higgsfield AI", logo: higgsfieldLogo },
-  { name: "Nano Banana", tag: "Google", logo: nanoBananaLogo },
-  { name: "LTXV 13B", tag: "Lightricks", logo: ltxvLogo },
-  { name: "Gemini", tag: "Google DeepMind", logo: geminiLogo },
+  { name: "Sora 2",      tag: "OpenAI",          logo: openaiLogo,     glow: "255,255,255" },
+  { name: "Veo 3.1",     tag: "Google",          logo: googleLogo,     glow: "66,133,244" },
+  { name: "Kling 2.5",   tag: "Kuaishou",        logo: klingLogo,      glow: "168,85,247" },
+  { name: "Hailuo 2",    tag: "MiniMax",         logo: hailuoLogo,     glow: "56,189,248" },
+  { name: "Seedance",    tag: "ByteDance",       logo: seedanceLogo,   glow: "16,185,129" },
+  { name: "Higgsfield",  tag: "Higgsfield AI",   logo: higgsfieldLogo, glow: "249,115,22" },
+  { name: "Nano Banana", tag: "Google",          logo: nanoBananaLogo, glow: "250,204,21" },
+  { name: "LTXV 13B",    tag: "Lightricks",      logo: ltxvLogo,       glow: "236,72,153" },
+  { name: "Gemini",      tag: "Google DeepMind", logo: geminiLogo,     glow: "99,102,241" },
 ];
 
 export function ToolsCarousel() {
@@ -59,21 +60,36 @@ export function ToolsCarousel() {
           <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10 bg-gradient-to-l from-background to-transparent" />
 
           <div ref={emblaRef} className="overflow-hidden">
-            <div className="flex gap-4">
+            <div className="flex gap-4 py-6">
               {list.map((t, i) => (
                 <div
                   key={`${t.name}-${i}`}
                   className="shrink-0 basis-[180px] sm:basis-[200px]"
                 >
-                  <div className="group h-32 rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:shadow-elegant transition-all">
-                    <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center shadow-sm overflow-hidden">
+                  <div
+                    className="group relative h-36 rounded-2xl border border-border/60 bg-card/40 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105"
+                    style={{
+                      boxShadow: `0 0 0 1px rgba(${t.glow},0.15), 0 8px 32px -8px rgba(${t.glow},0.35)`,
+                    }}
+                  >
+                    {/* Glow background */}
+                    <div
+                      className="absolute -inset-px rounded-2xl opacity-30 group-hover:opacity-60 transition-opacity blur-xl -z-10"
+                      style={{ background: `radial-gradient(circle at center, rgba(${t.glow},0.6), transparent 70%)` }}
+                    />
+                    <div
+                      className="h-14 w-14 flex items-center justify-center"
+                      style={{
+                        filter: `drop-shadow(0 0 6px rgba(${t.glow},0.9)) drop-shadow(0 0 14px rgba(${t.glow},0.55))`,
+                      }}
+                    >
                       <img
                         src={t.logo}
                         alt={`${t.name} logo`}
                         loading="lazy"
-                        width={48}
-                        height={48}
-                        className="h-10 w-10 object-contain"
+                        width={56}
+                        height={56}
+                        className="h-14 w-14 object-contain"
                       />
                     </div>
                     <div className="text-center">
