@@ -35,8 +35,15 @@ async function callGemini(model: string, payload: unknown) {
   try { data = text ? JSON.parse(text) : null; } catch { /* */ }
 
   if (!res.ok) {
-    const msg = data?.error?.message || `Gemini error ${res.status}`;
-    throw new Error(msg);
+    const raw = data?.error?.message || `Gemini error ${res.status}`;
+    if (res.status === 429 || /quota/i.test(raw)) {
+      throw new Error(
+        `Cuota agotada en tu API key de Gemini para el modelo "${model}". ` +
+        `Nano Banana Pro requiere facturación habilitada en Google Cloud. ` +
+        `Usa Nano Banana (gemini-2.5-flash-image) o activa billing en https://aistudio.google.com/apikey`
+      );
+    }
+    throw new Error(raw);
   }
   return data;
 }
