@@ -41,6 +41,7 @@ const tools: Tool[] = [
 ];
 
 export function ToolsCarousel() {
+  const { t } = useTranslation();
   const autoplay = useRef(Autoplay({ delay: 1800, stopOnInteraction: false, stopOnMouseEnter: true }));
   const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
@@ -55,13 +56,13 @@ export function ToolsCarousel() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-4">
             <img src={wavespeedLogo} alt="WaveSpeed" className="h-3.5 w-3.5 object-contain" />
-            Powered by WaveSpeed AI · 700+ modelos
+            {t("tools.poweredBy")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            Herramientas <span className="text-gradient">disponibles</span>
+            {t("tools.title1")} <span className="text-gradient">{t("tools.titleHighlight")}</span>
           </h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y muchos más, en un solo panel.
+            {t("tools.sub")}
           </p>
         </div>
 
