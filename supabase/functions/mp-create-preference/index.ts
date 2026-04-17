@@ -50,16 +50,8 @@ Deno.serve(async (req) => {
       if (!Number.isFinite(amt) || amt < 80) {
         return jsonResponse({ error: "El monto mínimo es $80 UYU" }, 400);
       }
-      // Ratio basado en el paquete Starter ($1.99 UYU por crédito).
-      // Lo leemos dinámicamente del paquete más pequeño activo para mantener consistencia.
-      const { data: refPkg } = await supabase
-        .from("credit_packages")
-        .select("price_uyu, credits")
-        .eq("active", true)
-        .order("credits", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      const ratio = refPkg ? Number(refPkg.price_uyu) / Number(refPkg.credits) : 1.99;
+      // Ratio fijo: 1.99 UYU por crédito (mismo que el paquete Starter)
+      const ratio = 1.99;
       credits = Math.floor(amt / ratio);
       amountUYU = Math.round(amt);
       itemId = "custom";
