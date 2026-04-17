@@ -11,6 +11,10 @@ import higgsfieldLogo from "@/assets/logos/higgsfield.png";
 import nanoBananaLogo from "@/assets/logos/nano-banana.png";
 import ltxvLogo from "@/assets/logos/ltxv.png";
 import geminiLogo from "@/assets/logos/gemini.png";
+import wanLogo from "@/assets/logos/wan.png";
+import seedreamLogo from "@/assets/logos/seedream.png";
+import fluxLogo from "@/assets/logos/flux.png";
+import wavespeedLogo from "@/assets/logos/wavespeed.png";
 
 type Tool = {
   name: string;
@@ -19,16 +23,20 @@ type Tool = {
   glow: string; // rgb glow color
 };
 
+// Modelos disponibles vía WaveSpeed AI
 const tools: Tool[] = [
-  { name: "Sora 2",      tag: "OpenAI",          logo: openaiLogo,     glow: "255,255,255" },
-  { name: "Veo 3.1",     tag: "Google",          logo: googleLogo,     glow: "66,133,244" },
-  { name: "Kling 2.5",   tag: "Kuaishou",        logo: klingLogo,      glow: "168,85,247" },
-  { name: "Hailuo 2",    tag: "MiniMax",         logo: hailuoLogo,     glow: "56,189,248" },
-  { name: "Seedance",    tag: "ByteDance",       logo: seedanceLogo,   glow: "16,185,129" },
-  { name: "Higgsfield",  tag: "Higgsfield AI",   logo: higgsfieldLogo, glow: "249,115,22" },
-  { name: "Nano Banana", tag: "Google",          logo: nanoBananaLogo, glow: "250,204,21" },
-  { name: "LTXV 13B",    tag: "Lightricks",      logo: ltxvLogo,       glow: "236,72,153" },
-  { name: "Gemini",      tag: "Google DeepMind", logo: geminiLogo,     glow: "99,102,241" },
+  { name: "Sora 2",        tag: "OpenAI",        logo: openaiLogo,     glow: "255,255,255" },
+  { name: "Veo 3.1",       tag: "Google",        logo: googleLogo,     glow: "66,133,244" },
+  { name: "Kling 2.5 Pro", tag: "Kuaishou",      logo: klingLogo,      glow: "168,85,247" },
+  { name: "Seedance 2.0",  tag: "ByteDance",     logo: seedanceLogo,   glow: "16,185,129" },
+  { name: "Hailuo 02",     tag: "MiniMax",       logo: hailuoLogo,     glow: "56,189,248" },
+  { name: "WAN 2.7",       tag: "Alibaba",       logo: wanLogo,        glow: "249,115,22" },
+  { name: "Nano Banana 2", tag: "Google",        logo: nanoBananaLogo, glow: "250,204,21" },
+  { name: "Seedream 4.5",  tag: "ByteDance",     logo: seedreamLogo,   glow: "236,72,153" },
+  { name: "FLUX 2",        tag: "Black Forest",  logo: fluxLogo,       glow: "200,200,200" },
+  { name: "Higgsfield",    tag: "Higgsfield AI", logo: higgsfieldLogo, glow: "249,115,22" },
+  { name: "LTXV",          tag: "Lightricks",    logo: ltxvLogo,       glow: "236,72,153" },
+  { name: "Gemini",        tag: "Google",        logo: geminiLogo,     glow: "99,102,241" },
 ];
 
 export function ToolsCarousel() {
@@ -45,13 +53,14 @@ export function ToolsCarousel() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-4">
-            Modelos integrados
+            <img src={wavespeedLogo} alt="WaveSpeed" className="h-3.5 w-3.5 object-contain" />
+            Powered by WaveSpeed AI · 700+ modelos
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
             Herramientas <span className="text-gradient">disponibles</span>
           </h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Accede a los modelos de IA más potentes del mercado en un solo panel.
+            Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y muchos más, en un solo panel.
           </p>
         </div>
 
