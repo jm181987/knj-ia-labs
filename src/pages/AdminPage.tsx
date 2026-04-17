@@ -116,6 +116,10 @@ export default function AdminPage() {
       const emailMap = new Map<string, string>(((profiles as any[]) || []).map((p) => [p.id, p.email]));
       setTxs(((tx as any[]) || []).map((t) => ({ ...t, user_email: emailMap.get(t.user_id) || t.user_id.slice(0, 8) })));
       setPayments(((pays as PaymentRow[]) || []).map((p) => ({ ...p, user_email: emailMap.get(p.user_id) || p.user_id.slice(0, 8) })));
+
+      if (settings?.value !== undefined && settings?.value !== null) {
+        setWelcomeCredits(String(settings.value));
+      }
     } catch (e) {
       toast({ title: "Error cargando datos", description: String(e), variant: "destructive" });
     } finally {
