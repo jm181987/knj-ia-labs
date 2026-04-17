@@ -14,12 +14,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             style={{ backgroundImage: "var(--gradient-banner)" }}
           >
             <Sparkles className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-            Kling v1.6 ya disponible — crea videos cinemáticos con IA
+            Nuevos modelos disponibles — crea videos cinemáticos con IA
           </div>
           <header className="h-14 flex items-center border-b border-border/60 px-4 backdrop-blur-md bg-background/60 sticky top-0 z-10">
             <SidebarTrigger />
             <div className="ml-auto text-xs text-muted-foreground">
-              Powered by <span className="text-gradient font-semibold">Kling AI</span>
+              Powered by <span className="text-gradient font-semibold">KNJ IA</span>
             </div>
           </header>
           <main className="flex-1 p-6 lg:p-10 overflow-auto">{children}</main>
