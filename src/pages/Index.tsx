@@ -116,7 +116,7 @@ export default function GeneratePage() {
         </TabsList>
 
         <TabsContent value="video">
-          <Card>
+          <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader>
               <CardTitle className="text-lg">Generar Video</CardTitle>
             </CardHeader>
@@ -204,7 +204,7 @@ export default function GeneratePage() {
         </TabsContent>
 
         <TabsContent value="image">
-          <Card>
+          <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
             <CardHeader>
               <CardTitle className="text-lg">Generar Imagen</CardTitle>
             </CardHeader>
