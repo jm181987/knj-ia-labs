@@ -112,16 +112,16 @@ export default function Landing() {
         <div id="showcase" className="max-w-6xl mx-auto px-6 pb-24">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {[
-              { type: "video", src: "https://cdn.pixabay.com/video/2024/03/15/204058-924698132_tiny.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600" },
+              { type: "video", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600" },
-              { type: "video", src: "https://cdn.pixabay.com/video/2023/10/16/185231-874877755_tiny.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600" },
+              { type: "video", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600" },
-              { type: "video", src: "https://cdn.pixabay.com/video/2022/12/16/143131-781470063_tiny.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600" },
+              { type: "video", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600" },
-              { type: "video", src: "https://cdn.pixabay.com/video/2020/03/19/33597-400717210_tiny.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600" },
+              { type: "video", src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600" },
               { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600" },
             ].map((item, i) => (
