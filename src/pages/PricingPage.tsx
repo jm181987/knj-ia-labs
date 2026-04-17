@@ -6,8 +6,10 @@ import { useCredits } from "@/hooks/useCredits";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Coins, Check, Sparkles, ImageIcon, Video } from "lucide-react";
+import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
