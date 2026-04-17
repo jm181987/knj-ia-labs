@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listGenerations, type Generation } from "@/lib/kling";
+import { listGenerations, type Generation } from "@/lib/wavespeed";
 import { Loader2, Download, Video, Image } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
