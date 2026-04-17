@@ -33,10 +33,11 @@ function ModelSelect({ value, onChange, models }: { value: string; onChange: (v:
 }
 
 function CostBadge({ cost, balance }: { cost: number | null; balance: number | null }) {
+  const { t } = useTranslation();
   if (cost === null) {
     return (
       <Badge variant="secondary" className="gap-1.5">
-        <Loader2 className="h-3 w-3 animate-spin" /> Costo…
+        <Loader2 className="h-3 w-3 animate-spin" /> {t("generate.costLoading")}
       </Badge>
     );
   }
@@ -45,16 +46,17 @@ function CostBadge({ cost, balance }: { cost: number | null; balance: number | n
     <Badge
       variant={insufficient ? "destructive" : "secondary"}
       className="gap-1.5 font-mono"
-      title={insufficient ? "Saldo insuficiente" : `Tu saldo: ${balance ?? "—"} créditos`}
+      title={insufficient ? t("generate.insufficient") : `${t("generate.yourBalance")}: ${balance ?? "—"} ${t("common.credits")}`}
     >
       {insufficient ? <AlertCircle className="h-3 w-3" /> : <Coins className="h-3 w-3" />}
-      {cost} {cost === 1 ? "crédito" : "créditos"}
+      {cost} {cost === 1 ? t("common.credit") : t("common.credits")}
     </Badge>
   );
 }
 
 export default function GeneratePage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { balance } = useCredits();
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("video");
