@@ -163,6 +163,18 @@ const Sidebar = React.forwardRef<
             } as React.CSSProperties
           }
           side={side}
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-sidebar="trigger"]')) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-sidebar="trigger"]')) {
+              e.preventDefault();
+            }
+          }}
         >
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
