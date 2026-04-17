@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function AuthPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,20 +45,20 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
-        toast({ title: "¡Cuenta creada!", description: "Sesión iniciada." });
+        toast({ title: t("auth.accountCreated"), description: t("auth.sessionStarted") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast({ title: "Bienvenido de vuelta" });
+        toast({ title: t("auth.welcomeBack") });
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error de autenticación";
+      const msg = err instanceof Error ? err.message : t("auth.authError");
       const friendly = msg.includes("Invalid login credentials")
-        ? "Email o contraseña incorrectos"
+        ? t("auth.invalidCredentials")
         : msg.includes("already registered")
-        ? "Este email ya está registrado. Inicia sesión."
+        ? t("auth.alreadyRegistered")
         : msg;
-      toast({ title: "Error", description: friendly, variant: "destructive" });
+      toast({ title: t("common.error"), description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -64,39 +67,42 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen grid place-items-center p-4 bg-background">
       <div className="w-full max-w-md space-y-6">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-4">
-          <Sparkles className="h-6 w-6 text-primary" />
-          <span className="font-bold text-2xl tracking-tight">
-            KNJ<span className="text-primary"> IA</span>
-          </span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <span className="font-bold text-2xl tracking-tight">
+              KNJ<span className="text-primary"> IA</span>
+            </span>
+          </Link>
+          <LanguageSwitcher />
+        </div>
 
         <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
           <CardHeader>
-            <CardTitle>Acceso</CardTitle>
-            <CardDescription>Inicia sesión o crea tu cuenta para empezar a generar.</CardDescription>
+            <CardTitle>{t("auth.title")}</CardTitle>
+            <CardDescription>{t("auth.subtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={mode} onValueChange={(v) => setMode(v as "login" | "signup")}>
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Iniciar sesión</TabsTrigger>
-                <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
+                <TabsTrigger value="login">{t("auth.tabLogin")}</TabsTrigger>
+                <TabsTrigger value="signup">{t("auth.tabSignup")}</TabsTrigger>
               </TabsList>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === "signup" && (
                   <div className="space-y-2">
-                    <Label htmlFor="display_name">Nombre</Label>
+                    <Label htmlFor="display_name">{t("auth.name")}</Label>
                     <Input
                       id="display_name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Tu nombre"
+                      placeholder={t("auth.namePh")}
                     />
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -107,7 +113,7 @@ export default function AuthPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña *</Label>
+                  <Label htmlFor="password">{t("auth.password")}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -121,7 +127,7 @@ export default function AuthPage() {
 
                 <Button type="submit" disabled={loading} className="w-full" size="lg">
                   {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  {mode === "signup" ? "Crear cuenta" : "Iniciar sesión"}
+                  {mode === "signup" ? t("auth.btnSignup") : t("auth.btnLogin")}
                 </Button>
               </form>
             </Tabs>
