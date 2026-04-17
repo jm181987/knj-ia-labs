@@ -37,6 +37,14 @@ export default function PricingPage() {
   const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("200");
+
+  const MIN_CUSTOM = 80;
+  const ratio = packages.length
+    ? Math.min(...packages.map((p) => Number(p.price_uyu) / p.credits))
+    : 1.99;
+  const customAmountNum = Number(customAmount) || 0;
+  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / ratio) : 0;
 
   useEffect(() => {
     (async () => {
