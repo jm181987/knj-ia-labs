@@ -287,10 +287,10 @@ export default function AdminPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Shield className="h-7 w-7 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Panel de administración</h1>
-          <p className="text-muted-foreground text-sm">Gestiona usuarios, créditos, paquetes, precios y pagos.</p>
+        <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-primary shrink-0" />
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Panel de administración</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Gestiona usuarios, créditos, paquetes, precios y pagos.</p>
         </div>
       </div>
 
@@ -316,43 +316,45 @@ export default function AdminPage() {
               {loading ? (
                 <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead className="text-right">Saldo</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell className="font-medium">{u.display_name || "—"}</TableCell>
-                        <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell>
-                          {u.roles.map((r) => (
-                            <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="mr-1">{r}</Badge>
-                          ))}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          <span className="inline-flex items-center gap-1">
-                            <Coins className="h-3 w-3 text-primary" /> {u.balance}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right space-x-1">
-                          <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
-                            <Plus className="h-3 w-3 mr-1" /> Recargar
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
-                            <Key className="h-3 w-3 mr-1" /> Contraseña
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto -mx-6 px-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead className="text-right">Saldo</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium whitespace-nowrap">{u.display_name || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                          <TableCell>
+                            {u.roles.map((r) => (
+                              <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="mr-1">{r}</Badge>
+                            ))}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            <span className="inline-flex items-center gap-1">
+                              <Coins className="h-3 w-3 text-primary" /> {u.balance}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right space-x-1 whitespace-nowrap">
+                            <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
+                              <Plus className="h-3 w-3 mr-1" /> Recargar
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
+                              <Key className="h-3 w-3 mr-1" /> Contraseña
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -360,53 +362,55 @@ export default function AdminPage() {
 
         <TabsContent value="packages">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Paquetes de créditos</CardTitle>
                 <CardDescription>Visibles en /app/pricing para los usuarios.</CardDescription>
               </div>
-              <Button size="sm" onClick={() => { setEditingPkg({ ...emptyPkg }); setPkgIsNew(true); }}>
+              <Button size="sm" className="w-full sm:w-auto" onClick={() => { setEditingPkg({ ...emptyPkg }); setPkgIsNew(true); }}>
                 <Plus className="h-4 w-4 mr-1" /> Nuevo paquete
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead className="text-right">Créditos</TableHead>
-                    <TableHead className="text-right">Precio (UYU)</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {packages.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">
-                        {p.name}
-                        {p.highlighted && <Badge className="ml-2" variant="outline">Destacado</Badge>}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{p.credits}</TableCell>
-                      <TableCell className="text-right font-mono">${Number(p.price_uyu).toLocaleString("es-UY")}</TableCell>
-                      <TableCell>
-                        <Badge variant={p.active ? "default" : "secondary"}>{p.active ? "Activo" : "Inactivo"}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Button size="sm" variant="ghost" onClick={() => { setEditingPkg(p); setPkgIsNew(false); }}>
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleDeletePkg(p.id)}>
-                          <Trash2 className="h-3 w-3 text-destructive" />
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead className="text-right">Créditos</TableHead>
+                      <TableHead className="text-right">Precio (UYU)</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                  {packages.length === 0 && (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Crea tu primer paquete.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {packages.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {p.name}
+                          {p.highlighted && <Badge className="ml-2" variant="outline">Destacado</Badge>}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">{p.credits}</TableCell>
+                        <TableCell className="text-right font-mono whitespace-nowrap">${Number(p.price_uyu).toLocaleString("es-UY")}</TableCell>
+                        <TableCell>
+                          <Badge variant={p.active ? "default" : "secondary"}>{p.active ? "Activo" : "Inactivo"}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right space-x-1 whitespace-nowrap">
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingPkg(p); setPkgIsNew(false); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleDeletePkg(p.id)}>
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {packages.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Crea tu primer paquete.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -418,30 +422,32 @@ export default function AdminPage() {
               <CardDescription>Costo en créditos por modelo y configuración.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="font-mono text-xs">Key</TableHead>
-                    <TableHead className="text-right">Créditos</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pricing.map((p) => (
-                    <TableRow key={p.key}>
-                      <TableCell>{p.description || "—"}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{p.key}</TableCell>
-                      <TableCell className="text-right font-mono">{p.credits}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="sm" variant="ghost" onClick={() => { setEditingPrice(p); setPriceValue(String(p.credits)); }}>
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="font-mono text-xs">Key</TableHead>
+                      <TableHead className="text-right">Créditos</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {pricing.map((p) => (
+                      <TableRow key={p.key}>
+                        <TableCell className="whitespace-nowrap">{p.description || "—"}</TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">{p.key}</TableCell>
+                        <TableCell className="text-right font-mono">{p.credits}</TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingPrice(p); setPriceValue(String(p.credits)); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -453,35 +459,37 @@ export default function AdminPage() {
               <CardDescription>{payments.length} pagos recientes</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead className="text-right">Monto (UYU)</TableHead>
-                    <TableHead className="text-right">Créditos</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="font-mono text-xs">MP ID</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleString()}</TableCell>
-                      <TableCell className="text-sm">{p.user_email}</TableCell>
-                      <TableCell className="text-right font-mono">${Number(p.amount_uyu).toLocaleString("es-UY")}</TableCell>
-                      <TableCell className="text-right font-mono">{p.credits}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusColor(p.status) as any}>{p.status}</Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{p.mp_payment_id || "—"}</TableCell>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead className="text-right">Monto (UYU)</TableHead>
+                      <TableHead className="text-right">Créditos</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="font-mono text-xs">MP ID</TableHead>
                     </TableRow>
-                  ))}
-                  {payments.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin pagos todavía.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(p.created_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">{p.user_email}</TableCell>
+                        <TableCell className="text-right font-mono whitespace-nowrap">${Number(p.amount_uyu).toLocaleString("es-UY")}</TableCell>
+                        <TableCell className="text-right font-mono">{p.credits}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusColor(p.status) as any}>{p.status}</Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">{p.mp_payment_id || "—"}</TableCell>
+                      </TableRow>
+                    ))}
+                    {payments.length === 0 && (
+                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin pagos todavía.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -493,31 +501,33 @@ export default function AdminPage() {
               <CardDescription>{txs.length} movimientos recientes</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Motivo</TableHead>
-                    <TableHead className="text-right">Cambio</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {txs.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(t.created_at).toLocaleString()}</TableCell>
-                      <TableCell className="text-sm">{t.user_email}</TableCell>
-                      <TableCell className="text-sm">{t.reason}</TableCell>
-                      <TableCell className={`text-right font-mono font-medium ${t.amount > 0 ? "text-green-500" : "text-destructive"}`}>
-                        {t.amount > 0 ? "+" : ""}{t.amount}
-                      </TableCell>
+              <div className="overflow-x-auto -mx-6 px-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Motivo</TableHead>
+                      <TableHead className="text-right">Cambio</TableHead>
                     </TableRow>
-                  ))}
-                  {txs.length === 0 && (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Sin transacciones todavía.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {txs.map((t) => (
+                      <TableRow key={t.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(t.created_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">{t.user_email}</TableCell>
+                        <TableCell className="text-sm">{t.reason}</TableCell>
+                        <TableCell className={`text-right font-mono font-medium ${t.amount > 0 ? "text-green-500" : "text-destructive"}`}>
+                          {t.amount > 0 ? "+" : ""}{t.amount}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {txs.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Sin transacciones todavía.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
