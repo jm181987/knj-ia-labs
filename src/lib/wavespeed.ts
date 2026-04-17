@@ -94,3 +94,40 @@ export async function pollGeneration(generation_id: string) {
   if (error) return { code: 1, message: error.message };
   return data as { code: number; data?: { status: string; urls?: string[]; error?: string }; message?: string };
 }
+
+// ===== Compatibilidad con HistoryPage / GalleryPage =====
+export type Generation = {
+  id: string;
+  type: "video" | "image";
+  prompt: string;
+  model: string | null;
+  status: "pending" | "processing" | "completed" | "failed";
+  task_id: string | null;
+  result_urls: string[] | null;
+  error_message: string | null;
+  created_at: string;
+  aspect_ratio: string | null;
+  duration: string | null;
+};
+
+export async function listGenerations(filters?: { type?: string; status?: string }): Promise<Generation[]> {
+  let q = supabase.from("generations").select("*").order("created_at", { ascending: false }).limit(100);
+  if (filters?.type) q = q.eq("type", filters.type as "video" | "image");
+  if (filters?.status) q = q.eq("status", filters.status as "pending" | "processing" | "completed" | "failed");
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data || []).map((g: any) => ({
+    ...g,
+    result_urls: Array.isArray(g.result_urls) ? g.result_urls : [],
+  })) as Generation[];
+}
+
+// Antes hacían polling por task_id de Kling. Ahora buscamos por task_id en DB y delegamos.
+async function pollByTaskId(taskId: string) {
+  const { data: gen } = await supabase.from("generations").select("id").eq("task_id", taskId).maybeSingle();
+  if (!gen) return;
+  await pollGeneration(gen.id);
+}
+export const checkVideoStatus = (taskId: string) => pollByTaskId(taskId);
+export const checkImageStatus = (taskId: string) => pollByTaskId(taskId);
+
