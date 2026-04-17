@@ -10,6 +10,7 @@ import { Loader2, Sparkles, Video, Image, Info, Wand2, ScanEye } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { generateVideo, generateImage } from "@/lib/kling";
 import { generateImageAI, improvePrompt, describeImage } from "@/lib/lovableAi";
+import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
 
 // Unified model list — provider determines routing
 const VIDEO_MODELS = [
@@ -60,6 +61,8 @@ export default function GeneratePage() {
     if (!vPrompt.trim()) return;
     setLoading(true);
     try {
+      const cost = await fetchCost(getPricingKey({ type: "video", model: vModel, duration: vDuration, mode: vMode }));
+      await consumeCredits(cost, `video:${vModel}:${vDuration}s:${vMode}`);
       const res = await generateVideo({
         prompt: vPrompt,
         model: vModel,
@@ -70,12 +73,12 @@ export default function GeneratePage() {
         reference_image_url: vRefImage || undefined,
       });
       if (res.code === 0) {
-        toast({ title: "¡Video en generación!", description: "Revisa el historial para ver el progreso." });
+        toast({ title: `¡Video en generación! (-${cost} créditos)`, description: "Revisa el historial para ver el progreso." });
       } else {
         toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
       }
     } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
+      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -86,6 +89,8 @@ export default function GeneratePage() {
     setLoading(true);
     try {
       const provider = IMAGE_MODELS.find((m) => m.value === iModel)?.provider;
+      const cost = await fetchCost(getPricingKey({ type: "image", model: iModel })) * parseInt(iCount);
+      await consumeCredits(cost, `image:${iModel}:x${iCount}`);
       let res: { code: number; message?: string };
       if (provider === "gemini") {
         res = await generateImageAI({
@@ -95,7 +100,7 @@ export default function GeneratePage() {
           image_count: parseInt(iCount),
         });
         if (res.code === 0) {
-          toast({ title: "¡Imagen lista!", description: "Mira la galería o el historial." });
+          toast({ title: `¡Imagen lista! (-${cost} créditos)`, description: "Mira la galería o el historial." });
         } else {
           toast({ title: "Error", description: res.message || "Error al generar", variant: "destructive" });
         }
@@ -108,13 +113,13 @@ export default function GeneratePage() {
           negative_prompt: iNegative || undefined,
         });
         if (res.code === 0) {
-          toast({ title: "¡Imagen en generación!", description: "Revisa el historial para ver el progreso." });
+          toast({ title: `¡Imagen en generación! (-${cost} créditos)`, description: "Revisa el historial para ver el progreso." });
         } else {
           toast({ title: "Error", description: getErrorMessage(res.code, res.message), variant: "destructive" });
         }
       }
     } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
+      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
