@@ -230,17 +230,8 @@ Sidebar.displayName = "Sidebar";
 
 const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.ComponentProps<typeof Button>>(
   ({ className, onClick, ...props }, ref) => {
-    const { toggleSidebar, isMobile, openMobile } = useSidebar();
+    const { toggleSidebar, openMobile, isMobile } = useSidebar();
     const lastToggleRef = React.useRef(0);
-
-    const handleToggle = (event: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>) => {
-      // Debounce: ignore duplicate events within 300ms (touchstart -> click ghost click)
-      const now = Date.now();
-      if (now - lastToggleRef.current < 300) return;
-      lastToggleRef.current = now;
-      onClick?.(event as React.MouseEvent<HTMLButtonElement>);
-      toggleSidebar();
-    };
 
     return (
       <Button
@@ -248,20 +239,19 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         data-sidebar="trigger"
         variant="ghost"
         size="icon"
+        type="button"
         className={cn("h-7 w-7", className)}
-        onPointerDown={(e) => {
-          // On mobile, prevent the synthetic click and overlay-outside detection
-          if (isMobile) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleToggle(e);
+        onClick={(event) => {
+          const now = Date.now();
+          // Debounce duplicate clicks (e.g. ghost click after touch)
+          if (now - lastToggleRef.current < 400) {
+            console.log("[SidebarTrigger] click ignored (debounce)", { isMobile, openMobile });
+            return;
           }
-        }}
-        onClick={(e) => {
-          // Desktop only — on mobile we already handled it on pointerdown
-          if (!isMobile) {
-            handleToggle(e);
-          }
+          lastToggleRef.current = now;
+          console.log("[SidebarTrigger] click toggle", { isMobile, openMobile });
+          onClick?.(event);
+          toggleSidebar();
         }}
         {...props}
       >
