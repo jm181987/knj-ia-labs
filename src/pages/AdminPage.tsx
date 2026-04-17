@@ -91,7 +91,7 @@ export default function AdminPage() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }] =
+      const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }, { data: settings }] =
         await Promise.all([
           (supabase as any).from("profiles").select("id, email, display_name, created_at").order("created_at", { ascending: false }),
           (supabase as any).from("user_roles").select("user_id, role"),
@@ -100,6 +100,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
+          (supabase as any).from("app_settings").select("key, value").eq("key", "welcome_credits").maybeSingle(),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
