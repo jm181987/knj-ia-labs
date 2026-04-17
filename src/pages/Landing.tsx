@@ -12,6 +12,7 @@ import {
   X,
   ArrowRight,
 } from "lucide-react";
+import knjLogo from "@/assets/knj-logo.png";
 
 export default function Landing() {
   return (
@@ -29,9 +30,7 @@ export default function Landing() {
       <header className="sticky top-0 z-20 backdrop-blur-md bg-background/60 border-b border-border/60">
         <div className="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center shadow-elegant">
-              <Wand2 className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src={knjLogo} alt="KNJ IA" className="h-9 w-9 object-contain" />
             <span className="font-bold text-lg tracking-tight">
               KNJ<span className="text-gradient"> IA</span>
             </span>
@@ -281,9 +280,7 @@ export default function Landing() {
       <footer className="border-t border-border/60 py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md gradient-primary flex items-center justify-center">
-              <Wand2 className="h-3 w-3 text-primary-foreground" />
-            </div>
+            <img src={knjLogo} alt="KNJ IA" className="h-7 w-7 object-contain" />
             <span>© {new Date().getFullYear()} KNJ IA</span>
           </div>
           <div className="flex items-center gap-5">
