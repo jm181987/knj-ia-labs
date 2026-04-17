@@ -28,8 +28,8 @@ export function useCredits() {
     };
     load();
 
-    const channel = supabase
-      .channel(`credits:${user.id}`)
+    const channel = supabase.channel(`credits:${user.id}:${Math.random().toString(36).slice(2)}`);
+    channel
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_credits", filter: `user_id=eq.${user.id}` },
