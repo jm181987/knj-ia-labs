@@ -294,6 +294,8 @@ export default function AdminPage() {
         </div>
       </div>
 
+      <WavespeedBalanceCard />
+
       <Tabs defaultValue="users">
         <div className="w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
           <TabsList className="w-max">
