@@ -217,7 +217,10 @@ export default function GeneratePage() {
 
         <TabsContent value="image">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
-            <CardHeader><CardTitle className="text-lg">Generar Imagen</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-lg">Generar Imagen</CardTitle>
+              <CostBadge cost={iCost} balance={balance} />
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Prompt *</Label>
