@@ -80,13 +80,13 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+      <div className="text-center space-y-3 px-1">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm">
           <Sparkles className="h-4 w-4" /> Recarga de créditos
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Compra créditos para generar</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Compra créditos para generar</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
           Pago seguro con Mercado Pago. Acepta tarjetas, Abitab, RedPagos y más.
         </p>
         {user && balance !== null && (
@@ -109,7 +109,7 @@ export default function PricingPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {packages.map((pkg) => (
             <Card
               key={pkg.id}
@@ -120,14 +120,14 @@ export default function PricingPage() {
               {pkg.highlighted && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Más popular</Badge>
               )}
-              <CardHeader>
-                <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl sm:text-2xl">{pkg.name}</CardTitle>
                 {pkg.description && <CardDescription>{pkg.description}</CardDescription>}
               </CardHeader>
               <CardContent className="flex-1 flex flex-col space-y-4">
                 <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">${Number(pkg.price_uyu).toLocaleString("es-UY")}</span>
+                  <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-3xl sm:text-4xl font-bold">${Number(pkg.price_uyu).toLocaleString("es-UY")}</span>
                     <span className="text-muted-foreground text-sm">UYU</span>
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
