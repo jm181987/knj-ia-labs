@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
@@ -14,8 +15,10 @@ import {
 } from "lucide-react";
 import knjLogo from "@/assets/knj-logo.png";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function Landing() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col">
       {/* Promo banner */}
@@ -24,7 +27,7 @@ export default function Landing() {
         style={{ backgroundImage: "var(--gradient-banner)" }}
       >
         <Sparkles className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-        LANZAMIENTO — Nuevos modelos de IA disponibles
+        {t("landing.promo")}
       </div>
 
       {/* Header */}
@@ -37,18 +40,19 @@ export default function Landing() {
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Funciones</a>
-            <a href="#savings" className="hover:text-foreground transition-colors">Ahorro</a>
-            <a href="#showcase" className="hover:text-foreground transition-colors">Showcase</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
+            <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
+            <a href="#showcase" className="hover:text-foreground transition-colors">{t("nav.showcase")}</a>
+            <a href="#faq" className="hover:text-foreground transition-colors">{t("nav.faq")}</a>
           </nav>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link to="/app">
-              <Button variant="ghost" size="sm">Entrar</Button>
+              <Button variant="ghost" size="sm">{t("common.enter")}</Button>
             </Link>
             <Link to="/app">
               <Button size="sm" className="gap-1.5">
-                Empezar <ArrowRight className="h-3.5 w-3.5" />
+                {t("common.start")} <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
@@ -66,27 +70,26 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-6">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Modelos avanzados de IA en un solo lugar
+            {t("landing.heroBadge")}
           </div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
-            Crea <span className="text-gradient">imágenes realistas</span><br className="hidden sm:block" />
-            y videos cinemáticos con IA
+            {t("landing.heroTitle1")} <span className="text-gradient">{t("landing.heroTitleHighlight")}</span><br className="hidden sm:block" />
+            {t("landing.heroTitle2")}
           </h1>
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Un único panel para generar video e imagen con los mejores modelos de IA.
-            Simple, rápido y sin complicaciones.
+            {t("landing.heroSub")}
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-3 items-center justify-center">
             <Link to="/app">
               <Button size="lg" className="gap-2 shadow-elegant">
                 <Wand2 className="h-4 w-4" />
-                Empezar a crear
+                {t("landing.ctaCreate")}
               </Button>
             </Link>
             <a href="#showcase">
               <Button size="lg" variant="outline">
-                Ver ejemplos
+                {t("landing.ctaExamples")}
               </Button>
             </a>
           </div>
@@ -96,15 +99,15 @@ export default function Landing() {
               {[0, 1, 2, 3, 4].map((i) => (
                 <Star key={i} className="h-4 w-4 fill-warning text-warning" />
               ))}
-              <span className="ml-2">Recomendado por creadores</span>
+              <span className="ml-2">{t("landing.recommended")}</span>
             </div>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-success" /> Pago seguro
+              <ShieldCheck className="h-4 w-4 text-success" /> {t("landing.securePay")}
             </span>
             <span className="hidden sm:inline">•</span>
             <span className="flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-warning" /> Activación instantánea
+              <Zap className="h-4 w-4 text-warning" /> {t("landing.instant")}
             </span>
           </div>
         </div>
@@ -171,31 +174,18 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Todo lo que necesitas para crear
+              {t("landing.featuresTitle")}
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Una experiencia simple y centralizada. Genera, organiza y descarga
-              tu contenido sin saltar entre herramientas.
+              {t("landing.featuresSub")}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              {
-                icon: Video,
-                title: "Videos cinemáticos",
-                desc: "Texto a video y imagen a video con modelos de última generación — modos estándar y profesional.",
-              },
-              {
-                icon: ImageIcon,
-                title: "Imágenes realistas",
-                desc: "Genera múltiples variantes con prompts negativos y proporciones flexibles.",
-              },
-              {
-                icon: Zap,
-                title: "Flujo instantáneo",
-                desc: "Estado en tiempo real, historial completo y galería para revisitar tus mejores creaciones.",
-              },
+              { icon: Video, title: t("landing.feat1Title"), desc: t("landing.feat1Desc") },
+              { icon: ImageIcon, title: t("landing.feat2Title"), desc: t("landing.feat2Desc") },
+              { icon: Zap, title: t("landing.feat3Title"), desc: t("landing.feat3Desc") },
             ].map((f) => (
               <div
                 key={f.title}
@@ -217,25 +207,25 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              ¿Por qué pagar más por la misma tecnología?
+              {t("landing.savingsTitle")}
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Centraliza tu producción creativa en un solo panel y simplifica tu stack.
+              {t("landing.savingsSub")}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6">
               <div className="text-xs uppercase tracking-wider text-destructive font-semibold">
-                Costo estándar del mercado
+                {t("landing.marketCost")}
               </div>
-              <h3 className="text-xl font-semibold mt-1">Suscripciones separadas</h3>
+              <h3 className="text-xl font-semibold mt-1">{t("landing.separateSubs")}</h3>
               <ul className="mt-5 space-y-3 text-sm">
                 {[
-                  ["Generación de video IA", "≈ $50/mes"],
-                  ["Generación de imágenes IA", "≈ $35/mes"],
-                  ["Inteligencia de texto", "≈ $25/mes"],
-                  ["Múltiples logins y límites", "Cero integración"],
+                  ["AI video generation", "≈ $50/mo"],
+                  ["AI image generation", "≈ $35/mo"],
+                  ["Text intelligence", "≈ $25/mo"],
+                  ["Multiple logins & limits", "Zero integration"],
                 ].map(([k, v]) => (
                   <li key={k} className="flex items-start gap-3">
                     <X className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
@@ -247,8 +237,8 @@ export default function Landing() {
                 ))}
               </ul>
               <div className="mt-6 pt-5 border-t border-border/60 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total mensual aprox.</span>
-                <span className="text-2xl font-bold text-destructive">$140+/mes</span>
+                <span className="text-sm text-muted-foreground">{t("landing.totalMonthly")}</span>
+                <span className="text-2xl font-bold text-destructive">$140+/mo</span>
               </div>
             </div>
 
@@ -257,13 +247,12 @@ export default function Landing() {
               <div className="text-xs uppercase tracking-wider text-primary font-semibold">
                 KNJ IA
               </div>
-              <h3 className="text-xl font-semibold mt-1">Todo en un solo lugar</h3>
+              <h3 className="text-xl font-semibold mt-1">{t("landing.allInOne")}</h3>
               <ul className="mt-5 space-y-3 text-sm">
                 {[
-                  "Video e imagen con IA en el mismo panel",
-                  "Modelos avanzados siempre actualizados",
-                  "Generación, edición y descarga unificadas",
-                  "Experiencia simple y centralizada",
+                  t("landing.feat1Desc"),
+                  t("landing.feat2Desc"),
+                  t("landing.feat3Desc"),
                 ].map((k) => (
                   <li key={k} className="flex items-start gap-3">
                     <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
@@ -273,7 +262,7 @@ export default function Landing() {
               </ul>
               <Link to="/app" className="block mt-6">
                 <Button className="w-full gap-2">
-                  Quiero mi acceso ahora <ArrowRight className="h-4 w-4" />
+                  {t("landing.ctaAccess")} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -285,15 +274,15 @@ export default function Landing() {
       <section className="border-t border-border/60 py-24">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
-            Empieza a crear en <span className="text-gradient">menos de un minuto</span>
+            {t("landing.finalCta1")} <span className="text-gradient">{t("landing.finalCtaHighlight")}</span>
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
-            Sin instalación. Sin configuraciones complicadas. Solo tu prompt y la magia.
+            {t("landing.finalCtaSub")}
           </p>
           <Link to="/app" className="inline-block mt-8">
             <Button size="lg" className="gap-2 shadow-elegant">
               <Sparkles className="h-4 w-4" />
-              Entrar a la plataforma
+              {t("landing.ctaPlatform")}
             </Button>
           </Link>
         </div>
@@ -307,9 +296,9 @@ export default function Landing() {
             <span>© {new Date().getFullYear()} KNJ IA</span>
           </div>
           <div className="flex items-center gap-5">
-            <a href="#features" className="hover:text-foreground transition-colors">Funciones</a>
-            <a href="#savings" className="hover:text-foreground transition-colors">Ahorro</a>
-            <Link to="/app" className="hover:text-foreground transition-colors">Plataforma</Link>
+            <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
+            <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
+            <Link to="/app" className="hover:text-foreground transition-colors">{t("nav.platform")}</Link>
           </div>
         </div>
       </footer>
