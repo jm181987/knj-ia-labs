@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Generar", url: "/", icon: Sparkles },
-  { title: "Historial", url: "/history", icon: History },
-  { title: "Galería", url: "/gallery", icon: Image },
+  { title: "Generar", url: "/app", icon: Sparkles },
+  { title: "Historial", url: "/app/history", icon: History },
+  { title: "Galería", url: "/app/gallery", icon: Image },
 ];
 
 export function AppSidebar() {
