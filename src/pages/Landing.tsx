@@ -130,7 +130,7 @@ export default function Landing() {
             ].map((item, i) => (
               <div
                 key={i}
-                className={`relative rounded-xl overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-[2] hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
+                className={`relative rounded-xl overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-150 hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
                   i === 0 || i === 7 ? "row-span-2 col-span-2" : ""
                 }`}
               >
