@@ -1,38 +1,42 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+
+import openaiLogo from "@/assets/logos/openai.png";
+import googleLogo from "@/assets/logos/google.png";
+import klingLogo from "@/assets/logos/kling.png";
+import hailuoLogo from "@/assets/logos/hailuo.png";
+import seedanceLogo from "@/assets/logos/seedance.png";
+import higgsfieldLogo from "@/assets/logos/higgsfield.png";
+import nanoBananaLogo from "@/assets/logos/nano-banana.png";
+import ltxvLogo from "@/assets/logos/ltxv.png";
+import geminiLogo from "@/assets/logos/gemini.png";
 
 type Tool = {
   name: string;
   tag: string;
-  gradient: string; // tailwind gradient classes
-  initials: string;
+  logo: string;
 };
 
 const tools: Tool[] = [
-  { name: "Sora 2", tag: "OpenAI", initials: "S2", gradient: "from-zinc-700 to-zinc-900" },
-  { name: "Veo 3.1", tag: "Google", initials: "V3", gradient: "from-blue-500 to-indigo-600" },
-  { name: "Kling 2.5", tag: "Kuaishou", initials: "K", gradient: "from-violet-500 to-fuchsia-600" },
-  { name: "Hailuo 2", tag: "MiniMax", initials: "H2", gradient: "from-orange-500 to-rose-600" },
-  { name: "Seedance", tag: "ByteDance", initials: "Sd", gradient: "from-emerald-500 to-teal-600" },
-  { name: "Higgsfield", tag: "Higgsfield AI", initials: "Hf", gradient: "from-amber-500 to-orange-600" },
-  { name: "Nano Banana", tag: "Google", initials: "NB", gradient: "from-yellow-400 to-amber-500" },
-  { name: "LTXV 13B", tag: "Lightricks", initials: "LX", gradient: "from-pink-500 to-purple-600" },
-  { name: "Gemini", tag: "Google DeepMind", initials: "G", gradient: "from-sky-500 to-blue-600" },
+  { name: "Sora 2", tag: "OpenAI", logo: openaiLogo },
+  { name: "Veo 3.1", tag: "Google", logo: googleLogo },
+  { name: "Kling 2.5", tag: "Kuaishou", logo: klingLogo },
+  { name: "Hailuo 2", tag: "MiniMax", logo: hailuoLogo },
+  { name: "Seedance", tag: "ByteDance", logo: seedanceLogo },
+  { name: "Higgsfield", tag: "Higgsfield AI", logo: higgsfieldLogo },
+  { name: "Nano Banana", tag: "Google", logo: nanoBananaLogo },
+  { name: "LTXV 13B", tag: "Lightricks", logo: ltxvLogo },
+  { name: "Gemini", tag: "Google DeepMind", logo: geminiLogo },
 ];
 
 export function ToolsCarousel() {
   const autoplay = useRef(Autoplay({ delay: 1800, stopOnInteraction: false, stopOnMouseEnter: true }));
-  const [emblaRef, emblaApi] = useEmblaCarousel(
+  const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
     [autoplay.current],
   );
 
-  useEffect(() => {
-    if (!emblaApi) return;
-  }, [emblaApi]);
-
-  // Duplicate list for smoother loop
   const list = [...tools, ...tools];
 
   return (
@@ -51,7 +55,6 @@ export function ToolsCarousel() {
         </div>
 
         <div className="relative">
-          {/* fade edges */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10 bg-gradient-to-r from-background to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10 bg-gradient-to-l from-background to-transparent" />
 
@@ -63,10 +66,15 @@ export function ToolsCarousel() {
                   className="shrink-0 basis-[180px] sm:basis-[200px]"
                 >
                   <div className="group h-32 rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:shadow-elegant transition-all">
-                    <div
-                      className={`h-12 w-12 rounded-xl bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white font-bold text-lg shadow-md`}
-                    >
-                      {t.initials}
+                    <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center shadow-sm overflow-hidden">
+                      <img
+                        src={t.logo}
+                        alt={`${t.name} logo`}
+                        loading="lazy"
+                        width={48}
+                        height={48}
+                        className="h-10 w-10 object-contain"
+                      />
                     </div>
                     <div className="text-center">
                       <div className="text-sm font-semibold">{t.name}</div>
