@@ -14,6 +14,7 @@ import {
 import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 
 interface UserRow {
   id: string;
@@ -293,6 +294,8 @@ export default function AdminPage() {
           <p className="text-muted-foreground text-xs sm:text-sm">Gestiona usuarios, créditos, paquetes, precios y pagos.</p>
         </div>
       </div>
+
+      <WavespeedBalanceCard />
 
       <Tabs defaultValue="users">
         <div className="w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
