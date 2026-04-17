@@ -6,7 +6,8 @@ import { useCredits } from "@/hooks/useCredits";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, Check, Sparkles } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2, Coins, Check, Sparkles, ImageIcon, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
@@ -19,23 +20,37 @@ interface Pkg {
   sort_order: number;
 }
 
+interface PricingRow {
+  key: string;
+  credits: number;
+  description: string | null;
+}
+
 export default function PricingPage() {
   const { user } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [packages, setPackages] = useState<Pkg[]>([]);
+  const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any)
-        .from("credit_packages")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true });
-      setPackages((data as Pkg[]) || []);
+      const [{ data: pkgs }, { data: prices }] = await Promise.all([
+        (supabase as any)
+          .from("credit_packages")
+          .select("*")
+          .eq("active", true)
+          .order("sort_order", { ascending: true }),
+        (supabase as any)
+          .from("pricing")
+          .select("key, credits, description")
+          .order("credits", { ascending: true }),
+      ]);
+      setPackages((pkgs as Pkg[]) || []);
+      setPricing((prices as PricingRow[]) || []);
       setLoading(false);
     })();
   }, []);
@@ -157,6 +172,70 @@ export default function PricingPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Tabla de costos por generación */}
+      {!loading && pricing.length > 0 && (
+        <Card className="border-border/60 bg-card/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" /> Costo en créditos por generación
+            </CardTitle>
+            <CardDescription>
+              Cuánto consume cada modelo. Usá la última columna para ver cuántas generaciones podés hacer con cada paquete.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Modelo / configuración</TableHead>
+                    <TableHead className="text-right">Créditos</TableHead>
+                    {packages.map((pkg) => (
+                      <TableHead key={pkg.id} className="text-right whitespace-nowrap">
+                        {pkg.name} ({pkg.credits})
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pricing.map((p) => {
+                    const isVideo = p.key.startsWith("video_");
+                    return (
+                      <TableRow key={p.key}>
+                        <TableCell>
+                          {isVideo ? (
+                            <Badge variant="outline" className="gap-1">
+                              <Video className="h-3 w-3" /> Video
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="gap-1">
+                              <ImageIcon className="h-3 w-3" /> Imagen
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">{p.description || p.key}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
+                          {p.credits}
+                        </TableCell>
+                        {packages.map((pkg) => (
+                          <TableCell key={pkg.id} className="text-right font-mono text-muted-foreground">
+                            {Math.floor(pkg.credits / p.credits).toLocaleString("es-UY")}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              💡 La última columna muestra cuántas generaciones de cada tipo podés hacer comprando ese paquete (asumiendo que solo usás ese modelo).
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       <div className="text-center text-xs text-muted-foreground space-y-1 pt-4">
