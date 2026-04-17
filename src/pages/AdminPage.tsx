@@ -417,9 +417,57 @@ export default function AdminPage() {
 
         <TabsContent value="pricing">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle>Precios por generación</CardTitle>
-              <CardDescription>Costo en créditos por modelo y configuración.</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4 flex-wrap">
+              <div>
+                <CardTitle>Precios por generación</CardTitle>
+                <CardDescription>Costo en créditos por modelo y configuración.</CardDescription>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  const wavespeedPricing = [
+                    { key: "image_nano-banana-2", credits: 2, description: "Nano Banana 2 (Google)" },
+                    { key: "image_seedream-4.5", credits: 3, description: "Seedream 4.5 (ByteDance)" },
+                    { key: "image_flux-2", credits: 4, description: "FLUX 2 (Black Forest)" },
+                    { key: "image_flux-dev", credits: 2, description: "FLUX.1 Dev (Black Forest)" },
+                    { key: "video_sora-2_4_std", credits: 25, description: "Sora 2 · 4s" },
+                    { key: "video_sora-2_8_std", credits: 45, description: "Sora 2 · 8s" },
+                    { key: "video_sora-2_12_std", credits: 65, description: "Sora 2 · 12s" },
+                    { key: "video_veo-3.1_4_std", credits: 30, description: "Veo 3.1 · 4s" },
+                    { key: "video_veo-3.1_8_std", credits: 55, description: "Veo 3.1 · 8s" },
+                    { key: "video_veo-3.1-i2v_4_std", credits: 30, description: "Veo 3.1 (Image) · 4s" },
+                    { key: "video_veo-3.1-i2v_8_std", credits: 55, description: "Veo 3.1 (Image) · 8s" },
+                    { key: "video_kling-2.5_5_std", credits: 30, description: "Kling 2.5 Pro · 5s" },
+                    { key: "video_kling-2.5_10_std", credits: 55, description: "Kling 2.5 Pro · 10s" },
+                    { key: "video_kling-2.5-i2v_5_std", credits: 30, description: "Kling 2.5 (Image) · 5s" },
+                    { key: "video_kling-2.5-i2v_10_std", credits: 55, description: "Kling 2.5 (Image) · 10s" },
+                    { key: "video_seedance-v2_5_std", credits: 25, description: "Seedance 2.0 · 5s" },
+                    { key: "video_seedance-v2_10_std", credits: 45, description: "Seedance 2.0 · 10s" },
+                    { key: "video_hailuo-02_6_std", credits: 20, description: "Hailuo 02 · 6s" },
+                    { key: "video_hailuo-02_10_std", credits: 35, description: "Hailuo 02 · 10s" },
+                    { key: "video_wan-2.7_5_std", credits: 20, description: "WAN 2.7 · 5s" },
+                    { key: "video_ltxv_5_std", credits: 15, description: "LTXV · 5s" },
+                    { key: "video_higgsfield_5_std", credits: 20, description: "Higgsfield · 5s" },
+                  ];
+                  const validKeys = new Set(wavespeedPricing.map((p) => p.key));
+                  const oldKeys = pricing.map((p) => p.key).filter((k) => !validKeys.has(k));
+                  try {
+                    if (oldKeys.length > 0) {
+                      const { error: delErr } = await (supabase as any).from("pricing").delete().in("key", oldKeys);
+                      if (delErr) throw delErr;
+                    }
+                    const { error: upErr } = await (supabase as any).from("pricing").upsert(wavespeedPricing, { onConflict: "key" });
+                    if (upErr) throw upErr;
+                    toast({ title: "Precios sincronizados", description: `${wavespeedPricing.length} keys de WaveSpeed insertadas, ${oldKeys.length} viejas borradas.` });
+                    loadAll();
+                  } catch (e) {
+                    toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+                  }
+                }}
+              >
+                Sincronizar precios WaveSpeed
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
