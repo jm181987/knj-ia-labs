@@ -212,6 +212,83 @@ export default function PricingPage() {
         </div>
       )}
 
+      {/* Recarga personalizada */}
+      {!loading && packages.length > 0 && (
+        <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+            </CardTitle>
+            <CardDescription>
+              Elegí cuánto querés cargar. Mínimo ${MIN_CUSTOM} UYU, sin máximo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="custom-amount">Monto a cargar (UYU)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="custom-amount"
+                    type="number"
+                    inputMode="numeric"
+                    min={MIN_CUSTOM}
+                    step={10}
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    className="pl-7 text-lg font-semibold"
+                    placeholder={`${MIN_CUSTOM}`}
+                  />
+                </div>
+                {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
+                  <p className="text-xs text-destructive">El mínimo es ${MIN_CUSTOM} UYU</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
+                <Coins className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-2xl font-bold leading-none">
+                    {customCredits.toLocaleString("es-UY")}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    créditos · {ratio.toFixed(2)} UYU c/u
+                  </div>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleBuyCustom}
+                disabled={buying === "custom" || customAmountNum < MIN_CUSTOM}
+              >
+                {buying === "custom" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo…
+                  </>
+                ) : (
+                  "Comprar con Mercado Pago"
+                )}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <span className="text-xs text-muted-foreground self-center mr-1">Sugerencias:</span>
+              {[100, 200, 500, 1000, 2500, 5000].map((v) => (
+                <Button
+                  key={v}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setCustomAmount(String(v))}
+                >
+                  ${v.toLocaleString("es-UY")}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabla de costos por generación */}
       {!loading && pricing.length > 0 && (
         <Card className="border-border/60 bg-card/80 backdrop-blur">
