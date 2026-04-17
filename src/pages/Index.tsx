@@ -20,9 +20,8 @@ const VIDEO_MODELS = [
 const IMAGE_MODELS = [
   { value: "kling-v1", label: "Kling v1", provider: "kling" },
   { value: "kling-v1-5", label: "Kling v1.5", provider: "kling" },
-  { value: "google/gemini-2.5-flash-image", label: "Nano Banana (Gemini)", provider: "lovable" },
-  { value: "google/gemini-3.1-flash-image-preview", label: "Nano Banana 2 (Gemini)", provider: "lovable" },
-  { value: "google/gemini-3-pro-image-preview", label: "Nano Banana Pro (Gemini)", provider: "lovable" },
+  { value: "gemini-2.5-flash-image", label: "Nano Banana (tu API)", provider: "gemini" },
+  { value: "gemini-3-pro-image-preview", label: "Nano Banana Pro (tu API)", provider: "gemini" },
 ];
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -88,7 +87,7 @@ export default function GeneratePage() {
     try {
       const provider = IMAGE_MODELS.find((m) => m.value === iModel)?.provider;
       let res: { code: number; message?: string };
-      if (provider === "lovable") {
+      if (provider === "gemini") {
         res = await generateImageAI({
           prompt: iPrompt,
           model: iModel,
