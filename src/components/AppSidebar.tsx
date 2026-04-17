@@ -1,4 +1,4 @@
-import { Sparkles, History, Image, Video, Shield } from "lucide-react";
+import { Sparkles, History, Image, Video, Shield, Coins } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ const items = [
   { title: "Generar", url: "/app", icon: Sparkles },
   { title: "Historial", url: "/app/history", icon: History },
   { title: "Galería", url: "/app/gallery", icon: Image },
+  { title: "Comprar créditos", url: "/app/pricing", icon: Coins },
 ];
 
 export function AppSidebar() {
