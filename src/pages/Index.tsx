@@ -1,15 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Sparkles, Video, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Coins, Loader2, Sparkles, Video, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MODELS, submitGeneration, type WSModel } from "@/lib/wavespeed";
-import { consumeCredits, fetchCost, getPricingKey } from "@/hooks/useCredits";
+import { consumeCredits, fetchCost, getPricingKey, useCredits } from "@/hooks/useCredits";
 import { ReferenceImageInput } from "@/components/ReferenceImageInput";
 
 const VIDEO_MODELS = MODELS.filter((m) => m.type === "video");
@@ -30,8 +31,30 @@ function ModelSelect({ value, onChange, models }: { value: string; onChange: (v:
   );
 }
 
+function CostBadge({ cost, balance }: { cost: number | null; balance: number | null }) {
+  if (cost === null) {
+    return (
+      <Badge variant="secondary" className="gap-1.5">
+        <Loader2 className="h-3 w-3 animate-spin" /> Costo…
+      </Badge>
+    );
+  }
+  const insufficient = balance !== null && balance < cost;
+  return (
+    <Badge
+      variant={insufficient ? "destructive" : "secondary"}
+      className="gap-1.5 font-mono"
+      title={insufficient ? "Saldo insuficiente" : `Tu saldo: ${balance ?? "—"} créditos`}
+    >
+      {insufficient ? <AlertCircle className="h-3 w-3" /> : <Coins className="h-3 w-3" />}
+      {cost} {cost === 1 ? "crédito" : "créditos"}
+    </Badge>
+  );
+}
+
 export default function GeneratePage() {
   const { toast } = useToast();
+  const { balance } = useCredits();
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("video");
 
@@ -51,6 +74,35 @@ export default function GeneratePage() {
   const [iNegative, setINegative] = useState("");
   const [iRefImage, setIRefImage] = useState("");
   const iModel = useMemo(() => IMAGE_MODELS.find((m) => m.id === iModelId)!, [iModelId]);
+
+  // Costos dinámicos por modelo + parámetros
+  const [vCost, setVCost] = useState<number | null>(null);
+  const [iCost, setICost] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    setVCost(null);
+    fetchCost(getPricingKey({ type: "video", model: vModelId, duration: vDuration, mode: "std" }))
+      .then((c) => !cancel && setVCost(c))
+      .catch(() => !cancel && setVCost(null));
+    return () => { cancel = true; };
+  }, [vModelId, vDuration]);
+
+  useEffect(() => {
+    let cancel = false;
+    setICost(null);
+    fetchCost(getPricingKey({ type: "image", model: iModelId }))
+      .then((c) => !cancel && setICost(c))
+      .catch(() => !cancel && setICost(null));
+    return () => { cancel = true; };
+  }, [iModelId]);
+
+  // Ajusta duración si el modelo no la soporta
+  useEffect(() => {
+    const allowed = (vModel.durations || [5, 10]).map(String);
+    if (!allowed.includes(vDuration)) setVDuration(allowed[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vModelId]);
 
   const handleGenerateVideo = async () => {
     if (!vPrompt.trim()) return;
@@ -128,7 +180,10 @@ export default function GeneratePage() {
 
         <TabsContent value="video">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
-            <CardHeader><CardTitle className="text-lg">Generar Video</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-lg">Generar Video</CardTitle>
+              <CostBadge cost={vCost} balance={balance} />
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Prompt *</Label>
@@ -173,9 +228,9 @@ export default function GeneratePage() {
               {vModel.supportsImage && (
                 <ReferenceImageInput value={vRefImage} onChange={setVRefImage} />
               )}
-              <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim()} className="w-full" size="lg">
+              <Button onClick={handleGenerateVideo} disabled={loading || !vPrompt.trim() || vCost === null || (balance !== null && balance < vCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Video
+                Generar Video {vCost !== null && <span className="ml-2 opacity-80 text-xs">· {vCost} créditos</span>}
               </Button>
             </CardContent>
           </Card>
@@ -183,7 +238,10 @@ export default function GeneratePage() {
 
         <TabsContent value="image">
           <Card className="border-border/60 bg-card/80 backdrop-blur shadow-elegant">
-            <CardHeader><CardTitle className="text-lg">Generar Imagen</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+              <CardTitle className="text-lg">Generar Imagen</CardTitle>
+              <CostBadge cost={iCost} balance={balance} />
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Prompt *</Label>
@@ -213,9 +271,9 @@ export default function GeneratePage() {
               {iModel.supportsImage && (
                 <ReferenceImageInput value={iRefImage} onChange={setIRefImage} label="Imagen de referencia (opcional, image-to-image)" />
               )}
-              <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim()} className="w-full" size="lg">
+              <Button onClick={handleGenerateImage} disabled={loading || !iPrompt.trim() || iCost === null || (balance !== null && balance < iCost)} className="w-full" size="lg">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generar Imagen
+                Generar Imagen {iCost !== null && <span className="ml-2 opacity-80 text-xs">· {iCost} créditos</span>}
               </Button>
             </CardContent>
           </Card>
