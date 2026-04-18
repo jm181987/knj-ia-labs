@@ -111,7 +111,7 @@ export function useModelTranslation(model: WSCatalogModel | null) {
         const result = await promise;
         if (cancelled) return;
         if (result) {
-          memCache.set(key, result);
+          setMemCache(key, result);
           setTranslation(result);
         } else {
           setTranslation(null);
