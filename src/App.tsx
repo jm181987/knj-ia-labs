@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import AvatarsPage from "./pages/AvatarsPage";
+import CatalogPage from "./pages/CatalogPage";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
@@ -44,6 +45,7 @@ const App = () => (
                       <Route path="history" element={<HistoryPage />} />
                       <Route path="gallery" element={<GalleryPage />} />
                       <Route path="avatars" element={<AvatarsPage />} />
+                      <Route path="catalog" element={<CatalogPage />} />
                       <Route path="pricing" element={<PricingPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
