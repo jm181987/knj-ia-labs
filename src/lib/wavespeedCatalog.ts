@@ -92,7 +92,7 @@ export function getBrand(model_id: string): string {
     bytedance: "ByteDance",
     kwaivgi: "Kling",
     minimax: "MiniMax",
-    "wavespeed-ai": "WaveSpeed",
+    "wavespeed-ai": "KNJ",
     "black-forest-labs": "Black Forest",
     lightricks: "Lightricks",
     higgsfield: "Higgsfield",
