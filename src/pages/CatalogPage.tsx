@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Search, Sparkles, Wand2, Library } from "lucide-react";
-import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, type WSCatalogModel } from "@/lib/wavespeedCatalog";
+import { Loader2, Search, Sparkles, Wand2, Library, Coins } from "lucide-react";
+import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -22,6 +22,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number }>({ markup: 3, creditsPerUsd: 37 });
   const category = searchParams.get("cat") || "all";
   const setCategory = (id: string) => {
     if (id === "all") setSearchParams({});
@@ -30,6 +31,10 @@ export default function CatalogPage() {
   const [openModel, setOpenModel] = useState<WSCatalogModel | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getPricingSettings().then(setPricing).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let active = true;
