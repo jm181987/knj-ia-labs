@@ -181,7 +181,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
 
   useEffect(() => {
     if (lang === "en") {
-      setMap({});
+      setMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
     let cancelled = false;
@@ -195,7 +195,16 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
         toFetch.push(m);
       }
     }
-    setMap(next);
+    setMap((prev) => {
+      const keys = Object.keys(next);
+      if (
+        keys.length === Object.keys(prev).length &&
+        keys.every((k) => prev[k] === next[k])
+      ) {
+        return prev;
+      }
+      return next;
+    });
 
     // Fetch en paralelo limitado (de 5 en 5) para no saturar
     const run = async () => {
