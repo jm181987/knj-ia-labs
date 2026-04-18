@@ -5,6 +5,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const NOTIFY_TO = "59893867429"; // WhatsApp destino (Jorge)
+
+async function notifyWhatsApp(text: string) {
+  try {
+    const baseUrl = Deno.env.get("EVOLUTION_API_URL");
+    const instance = Deno.env.get("EVOLUTION_INSTANCE");
+    const apiKey = Deno.env.get("EVOLUTION_API_KEY");
+    if (!baseUrl || !instance || !apiKey) {
+      console.warn("Evolution API no configurada, skip WhatsApp");
+      return;
+    }
+    const url = `${baseUrl.replace(/\/$/, "")}/message/sendText/${instance}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: NOTIFY_TO, text }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("Evolution send failed", res.status, body);
+    } else {
+      console.log("WhatsApp notificado a", NOTIFY_TO);
+    }
+  } catch (err) {
+    console.error("notifyWhatsApp error:", err);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -81,6 +109,17 @@ Deno.serve(async (req) => {
       })
       .eq("id", payment.id);
 
+    // Datos del usuario para la notificación
+    let userLabel = payment.user_id;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", payment.user_id)
+        .maybeSingle();
+      if (profile) userLabel = profile.display_name || profile.email || payment.user_id;
+    } catch (_) { /* noop */ }
+
     // Acreditar créditos solo si pasa de no-approved a approved
     if (newStatus === "approved" && payment.status !== "approved") {
       const { error: creditErr } = await supabase.rpc("add_credits_system", {
@@ -90,10 +129,25 @@ Deno.serve(async (req) => {
       });
       if (creditErr) {
         console.error("Error acreditando:", creditErr);
-        // marcar como pending para reintentar manualmente
         await supabase.from("payments").update({ status: "pending" }).eq("id", payment.id);
         return new Response("credit error", { status: 500, headers: corsHeaders });
       }
+
+      await notifyWhatsApp(
+        `✅ *Venta aprobada*\n` +
+        `Usuario: ${userLabel}\n` +
+        `Monto: $${payment.amount_uyu} UYU\n` +
+        `Créditos: ${payment.credits}\n` +
+        `MP ID: ${mpPaymentId}`
+      );
+    } else if (newStatus === "rejected" && payment.status !== "rejected") {
+      await notifyWhatsApp(
+        `❌ *Pago rechazado*\n` +
+        `Usuario: ${userLabel}\n` +
+        `Monto: $${payment.amount_uyu} UYU\n` +
+        `Motivo: ${mpPayment.status_detail || "n/a"}\n` +
+        `MP ID: ${mpPaymentId}`
+      );
     }
 
     return new Response("ok", { status: 200, headers: corsHeaders });
