@@ -59,11 +59,11 @@ async function pollWaveSpeed(taskId: string, apiKey: string) {
   return data;
 }
 
-async function getPricingSettings(supabase: any): Promise<{ markup: number; creditsPerUsd: number }> {
+async function getPricingSettings(supabase: any): Promise<{ markup: number; creditsPerUsd: number; mpFeePct: number }> {
   const { data } = await supabase
     .from("app_settings")
     .select("key, value")
-    .in("key", ["pricing_markup", "pricing_credits_per_usd"]);
+    .in("key", ["pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]);
   const map: Record<string, number> = {};
   for (const r of data || []) {
     const v = typeof r.value === "string" ? Number(r.value) : Number(r.value);
@@ -72,13 +72,15 @@ async function getPricingSettings(supabase: any): Promise<{ markup: number; cred
   return {
     markup: map.pricing_markup || 3,
     creditsPerUsd: map.pricing_credits_per_usd || 37,
+    mpFeePct: map.pricing_mp_fee_pct ?? 7.99,
   };
 }
 
-function computeCost(basePrice: number, markup: number, creditsPerUsd: number): number {
+function computeCost(basePrice: number, markup: number, creditsPerUsd: number, mpFeePct: number): number {
   if (!basePrice || basePrice <= 0) return 1;
-  const usd = basePrice * markup;
-  return Math.max(1, Math.ceil(usd * creditsPerUsd));
+  const feeFactor = 1 - Math.min(Math.max(mpFeePct, 0), 99) / 100;
+  const effectiveMarkup = markup / feeFactor;
+  return Math.max(1, Math.ceil(basePrice * effectiveMarkup * creditsPerUsd));
 }
 
 Deno.serve(async (req) => {
