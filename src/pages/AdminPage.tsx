@@ -111,7 +111,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
-          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd"]),
+          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
