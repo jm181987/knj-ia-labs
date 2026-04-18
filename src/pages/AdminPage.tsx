@@ -91,6 +91,7 @@ export default function AdminPage() {
   const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
   const [pricingMarkup, setPricingMarkup] = useState<string>("3");
   const [creditsPerUsd, setCreditsPerUsd] = useState<string>("37");
+  const [mpFeePct, setMpFeePct] = useState<string>("7.99");
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
 
