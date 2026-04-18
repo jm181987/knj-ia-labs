@@ -147,7 +147,9 @@
     "subtitle": "Tus creaciones completadas",
     "videos": "Videos",
     "images": "Imágenes",
-    "empty": "No hay contenido completado aún"
+    "empty": "No hay contenido completado aún",
+    "retentionTitle": "Tus creaciones se eliminan a los 7 días",
+    "retentionDesc": "Para mantener todo ágil, borramos automáticamente las generaciones después de 7 días. Descargá las que quieras conservar."
   },
   "payment": {
     "confirming": "Confirmando tu pago…",
