@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,7 @@ function FieldRenderer({
   value: unknown;
   setValue: (v: unknown) => void;
 }) {
+  const { t } = useTranslation();
   const label = prop.description || k;
   const labelShort = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -85,7 +87,7 @@ function FieldRenderer({
         label={labelShort}
         bucket="avatar-videos"
         accept="video/mp4,video/webm,video/quicktime"
-        hint="MP4 / WebM · máx 50 MB"
+        hint={t("catalog.form.videoHint")}
         maxMB={50}
       />
     );
@@ -98,7 +100,7 @@ function FieldRenderer({
         <Label className="text-sm">{labelShort}</Label>
         <Select value={String(value ?? prop.default ?? "")} onValueChange={(v) => setValue(v)}>
           <SelectTrigger>
-            <SelectValue placeholder={`Elegí ${labelShort.toLowerCase()}`} />
+            <SelectValue placeholder={t("catalog.form.selectPlaceholder", { field: labelShort.toLowerCase() })} />
           </SelectTrigger>
           <SelectContent>
             {prop.enum.map((opt) => (
@@ -176,7 +178,7 @@ function FieldRenderer({
           rows={3}
           value={list.join("\n")}
           onChange={(e) => setValue(e.target.value.split("\n").filter(Boolean))}
-          placeholder="Una entrada por línea"
+          placeholder={t("catalog.form.oneEntryPerLine")}
         />
       </div>
     );

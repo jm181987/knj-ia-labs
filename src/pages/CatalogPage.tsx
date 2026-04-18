@@ -80,7 +80,7 @@ export default function CatalogPage() {
     const required = openModel.request_schema.required || [];
     for (const r of required) {
       if (values[r] === undefined || values[r] === "" || (Array.isArray(values[r]) && (values[r] as unknown[]).length === 0)) {
-        toast({ title: `Falta el campo "${r}"`, variant: "destructive" });
+        toast({ title: t("catalog.missingField", { field: r }), variant: "destructive" });
         return;
       }
     }
@@ -88,12 +88,12 @@ export default function CatalogPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const res = await submitDynamic({ model: openModel, values, userId: user?.id });
-      if (res.code !== 0 || !res.data) throw new Error(res.message || "Error al enviar");
-      toast({ title: "Generación en cola", description: "Te avisamos cuando esté lista" });
+      if (res.code !== 0 || !res.data) throw new Error(res.message || t("catalog.submitError"));
+      toast({ title: t("catalog.generating"), description: t("catalog.generatingDesc") });
       setOpenModel(null);
       navigate("/app/history");
     } catch (e) {
-      toast({ title: "Error", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +153,7 @@ export default function CatalogPage() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nombre, marca o descripción…"
+          placeholder={t("catalog.searchPlaceholder")}
           className="pl-9"
         />
       </div>
@@ -187,7 +187,7 @@ export default function CatalogPage() {
         </div>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">{filtered.length} modelos</p>
+          <p className="text-sm text-muted-foreground">{t("catalog.modelsCount", { count: filtered.length })}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.slice(0, 200).map((m) => (
               <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
@@ -196,7 +196,7 @@ export default function CatalogPage() {
                     <CardTitle className="text-base leading-tight">{prettyName(m.model_id)}</CardTitle>
                     <Badge variant="outline" className="shrink-0 text-[10px]">{getBrand(m.model_id)}</Badge>
                   </div>
-                  <CardDescription className="text-xs line-clamp-3">{m.description || "Sin descripción"}</CardDescription>
+                  <CardDescription className="text-xs line-clamp-3">{m.description || t("catalog.noDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 pb-2 flex-1 flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
@@ -207,7 +207,7 @@ export default function CatalogPage() {
                 </CardContent>
                 <CardFooter className="pt-2">
                   <Button size="sm" className="w-full" onClick={() => onOpen(m)}>
-                    <Wand2 className="h-3.5 w-3.5 mr-1.5" /> Usar
+                    <Wand2 className="h-3.5 w-3.5 mr-1.5" /> {t("catalog.use")}
                   </Button>
                 </CardFooter>
               </Card>
@@ -215,7 +215,7 @@ export default function CatalogPage() {
           </div>
           {filtered.length > 200 && (
             <p className="text-center text-xs text-muted-foreground py-4">
-              Mostrando los primeros 200 — refiná tu búsqueda para ver más.
+              {t("catalog.showingFirst")}
             </p>
           )}
         </>
@@ -243,13 +243,13 @@ export default function CatalogPage() {
               <DialogFooter className="items-center sm:justify-between gap-2">
                 <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
                   <Coins className="h-3 w-3" />
-                  Costo: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} créditos
+                  {t("catalog.cost")}: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
                 </Badge>
                 <div className="flex gap-2">
-                  <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>Cancelar</Button>
+                  <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
                   <Button onClick={handleGenerate} disabled={submitting}>
                     {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                    Generar
+                    {t("catalog.generate")}
                   </Button>
                 </div>
               </DialogFooter>
