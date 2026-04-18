@@ -14,6 +14,8 @@ type Props = {
   schema: WSRequestSchema;
   values: Record<string, unknown>;
   onChange: (next: Record<string, unknown>) => void;
+  fieldLabels?: Record<string, string>;
+  fieldDescriptions?: Record<string, string>;
 };
 
 function getOrderedKeys(schema: WSRequestSchema): string[] {
@@ -43,15 +45,19 @@ function FieldRenderer({
   prop,
   value,
   setValue,
+  customLabel,
+  customDescription,
 }: {
   k: string;
   prop: WSSchemaProp;
   value: unknown;
   setValue: (v: unknown) => void;
+  customLabel?: string;
+  customDescription?: string;
 }) {
   const { t } = useTranslation();
-  const label = prop.description || k;
-  const labelShort = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const labelShort = customLabel || k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const descText = customDescription || prop.description;
 
   // Prompt → textarea
   if (prop.type === "string" && (k === "prompt" || k === "negative_prompt") && !prop.enum) {
@@ -62,7 +68,7 @@ function FieldRenderer({
           rows={k === "prompt" ? 4 : 2}
           value={(value as string) || ""}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={prop.description}
+          placeholder={descText}
         />
       </div>
     );
@@ -110,7 +116,7 @@ function FieldRenderer({
             ))}
           </SelectContent>
         </Select>
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -132,7 +138,7 @@ function FieldRenderer({
           value={[num]}
           onValueChange={(arr) => setValue(prop.type === "integer" ? Math.round(arr[0]) : arr[0])}
         />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -143,7 +149,7 @@ function FieldRenderer({
       <div className="flex items-start justify-between gap-3 py-1">
         <div>
           <Label className="text-sm">{labelShort}</Label>
-          {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+          {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
         </div>
         <Switch checked={!!value} onCheckedChange={setValue} />
       </div>
@@ -163,7 +169,7 @@ function FieldRenderer({
           }
           placeholder={prop.default !== undefined ? String(prop.default) : ""}
         />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -201,7 +207,7 @@ function FieldRenderer({
           }}
           className="font-mono text-xs"
         />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -213,14 +219,14 @@ function FieldRenderer({
       <Input
         value={(value as string) ?? ""}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={prop.default !== undefined ? String(prop.default) : prop.description}
+        placeholder={prop.default !== undefined ? String(prop.default) : descText}
       />
-      {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+      {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
     </div>
   );
 }
 
-export function DynamicSchemaForm({ schema, values, onChange }: Props) {
+export function DynamicSchemaForm({ schema, values, onChange, fieldLabels, fieldDescriptions }: Props) {
   const keys = useMemo(() => getOrderedKeys(schema), [schema]);
 
   // Inicializar defaults una vez
@@ -250,6 +256,8 @@ export function DynamicSchemaForm({ schema, values, onChange }: Props) {
             prop={prop}
             value={values[k]}
             setValue={(v) => onChange({ ...values, [k]: v })}
+            customLabel={fieldLabels?.[k]}
+            customDescription={fieldDescriptions?.[k]}
           />
         );
       })}
