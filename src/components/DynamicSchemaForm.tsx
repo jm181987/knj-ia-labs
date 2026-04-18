@@ -14,6 +14,8 @@ type Props = {
   schema: WSRequestSchema;
   values: Record<string, unknown>;
   onChange: (next: Record<string, unknown>) => void;
+  fieldLabels?: Record<string, string>;
+  fieldDescriptions?: Record<string, string>;
 };
 
 function getOrderedKeys(schema: WSRequestSchema): string[] {
