@@ -161,7 +161,30 @@ export default function AdminPage() {
     }
   };
 
-  const handleRecharge = async () => {
+  const handleSavePricingSettings = async () => {
+    const m = parseFloat(pricingMarkup);
+    const c = parseFloat(creditsPerUsd);
+    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0) {
+      toast({ title: t("common.error"), description: "Valores deben ser positivos", variant: "destructive" });
+      return;
+    }
+    setSavingPricing(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("app_settings")
+        .upsert([
+          { key: "pricing_markup", value: m },
+          { key: "pricing_credits_per_usd", value: c },
+        ], { onConflict: "key" });
+      if (error) throw error;
+      toast({ title: t("common.success"), description: "Precios actualizados. El catálogo se refresca al recargar." });
+    } catch (e) {
+      toast({ title: t("common.error"), description: String(e), variant: "destructive" });
+    } finally {
+      setSavingPricing(false);
+    }
+  };
+
     if (!rechargeUser) return;
     const amount = parseInt(rechargeAmount);
     if (!amount || amount <= 0) {
