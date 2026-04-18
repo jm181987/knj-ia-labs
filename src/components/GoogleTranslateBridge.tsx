@@ -11,30 +11,36 @@ const MAP: Record<string, string> = {
   de: "de",
 };
 
-function setGoogleTransCookie(lang: string) {
-  const value = `/en/${lang}`;
-  // Cookie a nivel host y dominio raíz para que Google Translate la lea
-  document.cookie = `googtrans=${value}; path=/`;
-  const host = window.location.hostname;
-  const parts = host.split(".");
-  if (parts.length > 1) {
-    const root = "." + parts.slice(-2).join(".");
-    document.cookie = `googtrans=${value}; path=/; domain=${root}`;
-  }
-}
-
-/** Aplica el idioma actual de i18n al widget de Google Translate. */
+/**
+ * Sincroniza el idioma de i18n con el widget de Google Translate
+ * sin recargar la página. Espera a que el <select> del widget esté
+ * disponible y dispara un evento change.
+ */
 export function GoogleTranslateBridge() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    const lang = MAP[i18n.language?.split("-")[0]] || "en";
-    const current = document.cookie.split("; ").find((c) => c.startsWith("googtrans="))?.split("=")[1];
-    const desired = `/en/${lang}`;
-    if (current === desired) return;
-    setGoogleTransCookie(lang);
-    // Recargar para que Google Translate aplique el nuevo idioma de manera limpia
-    window.location.reload();
+    const target = MAP[i18n.language?.split("-")[0]] || "en";
+
+    const apply = () => {
+      const select = document.querySelector<HTMLSelectElement>("select.goog-te-combo");
+      if (!select) return false;
+      if (select.value === target) return true;
+      select.value = target;
+      select.dispatchEvent(new Event("change"));
+      return true;
+    };
+
+    if (apply()) return;
+
+    // El widget tarda un momento en montar el <select>. Reintentamos hasta 10s.
+    let tries = 0;
+    const interval = window.setInterval(() => {
+      tries++;
+      if (apply() || tries > 50) window.clearInterval(interval);
+    }, 200);
+
+    return () => window.clearInterval(interval);
   }, [i18n.language]);
 
   return null;
