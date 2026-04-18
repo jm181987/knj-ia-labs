@@ -1,4 +1,4 @@
-import { Sparkles, History, Image, Shield, Coins } from "lucide-react";
+import { Sparkles, History, Image, Shield, Coins, UserCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "@/components/NavLink";
 import knjLogo from "@/assets/knj-logo.png";
@@ -30,6 +30,7 @@ export function AppSidebar() {
 
   const items = [
     { titleKey: "nav.generate", url: "/app", icon: Sparkles },
+    { titleKey: "nav.avatars", url: "/app/avatars", icon: UserCircle2 },
     { titleKey: "nav.history", url: "/app/history", icon: History },
     { titleKey: "nav.gallery", url: "/app/gallery", icon: Image },
     { titleKey: "nav.buyCredits", url: "/app/pricing", icon: Coins },

@@ -4,9 +4,13 @@ export type WSModel = {
   id: string;              // identificador interno único
   label: string;           // nombre visible
   brand: string;           // marca / empresa
-  type: "video" | "image";
-  modelPath: string;       // ruta de WaveSpeed (ej: "bytedance/seedance-v1-pro-t2v-480p")
+  type: "video" | "image"; // tipo de salida
+  category?: "avatar";     // categoría especial (opcional)
+  modelPath: string;       // ruta de WaveSpeed
   supportsImage?: boolean; // image-to-video / image-to-image
+  requiresImage?: boolean; // imagen obligatoria (avatares)
+  requiresAudio?: boolean; // audio obligatorio (lip-sync)
+  requiresDriverVideo?: boolean; // video driver (live-portrait)
   durations?: number[];    // segundos disponibles (video)
   aspects?: string[];      // aspect ratios soportados
 };
@@ -44,6 +48,19 @@ export const MODELS: WSModel[] = [
     modelPath: "wavespeed-ai/flux-2-dev", aspects: ["1:1","16:9","9:16","3:2","2:3"] },
   { id: "flux-dev", label: "FLUX.1 Dev", brand: "Black Forest", type: "image",
     modelPath: "wavespeed-ai/flux-dev", aspects: ["1:1","16:9","9:16"] },
+
+  // ===== AVATARES =====
+  // Lip-sync: foto + audio -> video parlante
+  { id: "avatar-omnihuman", label: "OmniHuman (lip-sync)", brand: "ByteDance", type: "video", category: "avatar",
+    modelPath: "bytedance/omnihuman-1/avatar", requiresImage: true, requiresAudio: true, aspects: ["1:1","9:16","16:9"] },
+  { id: "avatar-sonic", label: "Sonic Lip-Sync", brand: "Tencent", type: "video", category: "avatar",
+    modelPath: "tencent/sonic", requiresImage: true, requiresAudio: true, aspects: ["1:1","9:16"] },
+  // Live-portrait: foto + video driver -> animación facial
+  { id: "avatar-liveportrait", label: "LivePortrait", brand: "Kling", type: "video", category: "avatar",
+    modelPath: "kwaivgi/liveportrait", requiresImage: true, requiresDriverVideo: true, aspects: ["1:1"] },
+  // Retrato desde texto (reusa nano-banana pero pensado para avatares)
+  { id: "avatar-portrait", label: "Retrato IA", brand: "Google", type: "image", category: "avatar",
+    modelPath: "google/nano-banana-2/text-to-image", aspects: ["1:1","3:4","2:3"] },
 ];
 
 export function getModel(id: string): WSModel | undefined {
@@ -58,17 +75,21 @@ export type SubmitArgs = {
   duration?: number;
   negative_prompt?: string;
   image_url?: string;
+  audio_url?: string;
+  driver_video_url?: string;
 };
 
 export async function submitGeneration(args: SubmitArgs): Promise<{ code: number; data?: { id: string; task_id: string }; message?: string }> {
   const m = getModel(args.modelId);
   if (!m) return { code: 1, message: "Modelo desconocido" };
 
-  const payload: Record<string, unknown> = { prompt: args.prompt };
+  const payload: Record<string, unknown> = { prompt: args.prompt || "" };
   if (args.aspect_ratio) payload.aspect_ratio = args.aspect_ratio;
   if (args.duration) payload.duration = args.duration;
   if (args.negative_prompt) payload.negative_prompt = args.negative_prompt;
-  if (args.image_url && m.supportsImage) payload.image = args.image_url;
+  if (args.image_url && (m.supportsImage || m.requiresImage)) payload.image = args.image_url;
+  if (args.audio_url && m.requiresAudio) payload.audio = args.audio_url;
+  if (args.driver_video_url && m.requiresDriverVideo) payload.driving_video = args.driver_video_url;
 
   const { data: { user } } = await supabase.auth.getUser();
 

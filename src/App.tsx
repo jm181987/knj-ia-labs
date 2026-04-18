@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
+import AvatarsPage from "./pages/AvatarsPage";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import AuthPage from "./pages/AuthPage";
@@ -42,6 +43,7 @@ const App = () => (
                       <Route path="/" element={<Index />} />
                       <Route path="history" element={<HistoryPage />} />
                       <Route path="gallery" element={<GalleryPage />} />
+                      <Route path="avatars" element={<AvatarsPage />} />
                       <Route path="pricing" element={<PricingPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
