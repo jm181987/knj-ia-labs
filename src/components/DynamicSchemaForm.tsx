@@ -68,7 +68,7 @@ function FieldRenderer({
           rows={k === "prompt" ? 4 : 2}
           value={(value as string) || ""}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={prop.description}
+          placeholder={descText}
         />
       </div>
     );
@@ -116,29 +116,7 @@ function FieldRenderer({
             ))}
           </SelectContent>
         </Select>
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
-      </div>
-    );
-  }
-
-  // Slider numérico
-  if ((prop.type === "integer" || prop.type === "number") && prop.minimum !== undefined && prop.maximum !== undefined) {
-    const num = (value as number) ?? (prop.default as number) ?? prop.minimum;
-    const step = prop.type === "integer" ? 1 : (prop.maximum - prop.minimum) / 100;
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm">{labelShort}</Label>
-          <span className="text-xs text-muted-foreground tabular-nums">{num}</span>
-        </div>
-        <Slider
-          min={prop.minimum}
-          max={prop.maximum}
-          step={step}
-          value={[num]}
-          onValueChange={(arr) => setValue(prop.type === "integer" ? Math.round(arr[0]) : arr[0])}
-        />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
