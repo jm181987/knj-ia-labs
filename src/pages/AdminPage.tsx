@@ -89,7 +89,10 @@ export default function AdminPage() {
   const [pkgIsNew, setPkgIsNew] = useState(false);
 
   const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
+  const [pricingMarkup, setPricingMarkup] = useState<string>("3");
+  const [creditsPerUsd, setCreditsPerUsd] = useState<string>("37");
   const [savingSettings, setSavingSettings] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
 
   const [pwUser, setPwUser] = useState<UserRow | null>(null);
   const [pwValue, setPwValue] = useState("");
@@ -107,7 +110,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
-          (supabase as any).from("app_settings").select("key, value").eq("key", "welcome_credits").maybeSingle(),
+          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd"]),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
@@ -124,9 +127,11 @@ export default function AdminPage() {
       setTxs(((tx as any[]) || []).map((t) => ({ ...t, user_email: emailMap.get(t.user_id) || t.user_id.slice(0, 8) })));
       setPayments(((pays as PaymentRow[]) || []).map((p) => ({ ...p, user_email: emailMap.get(p.user_id) || p.user_id.slice(0, 8) })));
 
-      if (settings?.value !== undefined && settings?.value !== null) {
-        setWelcomeCredits(String(settings.value));
-      }
+      const settingsArr = (settings as { key: string; value: unknown }[] | null) || [];
+      const settingsMap = new Map(settingsArr.map((s) => [s.key, s.value]));
+      if (settingsMap.has("welcome_credits")) setWelcomeCredits(String(settingsMap.get("welcome_credits")));
+      if (settingsMap.has("pricing_markup")) setPricingMarkup(String(settingsMap.get("pricing_markup")));
+      if (settingsMap.has("pricing_credits_per_usd")) setCreditsPerUsd(String(settingsMap.get("pricing_credits_per_usd")));
     } catch (e) {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
