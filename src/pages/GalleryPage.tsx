@@ -45,12 +45,10 @@ export default function GalleryPage() {
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("gallery.subtitle")}</p>
       </div>
 
-      <Alert className="border-amber-500/40 bg-amber-500/10">
-        <Clock className="h-4 w-4 text-amber-500" />
-        <AlertTitle className="text-amber-600 dark:text-amber-400">{t("gallery.retentionTitle")}</AlertTitle>
-        <AlertDescription className="text-amber-700/90 dark:text-amber-200/80">
-          {t("gallery.retentionDesc")}
-        </AlertDescription>
+      <Alert>
+        <Clock className="h-4 w-4" />
+        <AlertTitle>{t("gallery.retentionTitle")}</AlertTitle>
+        <AlertDescription>{t("gallery.retentionDesc")}</AlertDescription>
       </Alert>
 
       <Tabs value={tab} onValueChange={setTab}>
