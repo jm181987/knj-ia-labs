@@ -169,7 +169,7 @@ function FieldRenderer({
           }
           placeholder={prop.default !== undefined ? String(prop.default) : ""}
         />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -207,7 +207,7 @@ function FieldRenderer({
           }}
           className="font-mono text-xs"
         />
-        {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
       </div>
     );
   }
@@ -219,14 +219,14 @@ function FieldRenderer({
       <Input
         value={(value as string) ?? ""}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={prop.default !== undefined ? String(prop.default) : prop.description}
+        placeholder={prop.default !== undefined ? String(prop.default) : descText}
       />
-      {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+      {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
     </div>
   );
 }
 
-export function DynamicSchemaForm({ schema, values, onChange }: Props) {
+export function DynamicSchemaForm({ schema, values, onChange, fieldLabels, fieldDescriptions }: Props) {
   const keys = useMemo(() => getOrderedKeys(schema), [schema]);
 
   // Inicializar defaults una vez
@@ -256,6 +256,8 @@ export function DynamicSchemaForm({ schema, values, onChange }: Props) {
             prop={prop}
             value={values[k]}
             setValue={(v) => onChange({ ...values, [k]: v })}
+            customLabel={fieldLabels?.[k]}
+            customDescription={fieldDescriptions?.[k]}
           />
         );
       })}
