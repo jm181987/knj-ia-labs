@@ -109,6 +109,17 @@ Deno.serve(async (req) => {
       })
       .eq("id", payment.id);
 
+    // Datos del usuario para la notificación
+    let userLabel = payment.user_id;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", payment.user_id)
+        .maybeSingle();
+      if (profile) userLabel = profile.display_name || profile.email || payment.user_id;
+    } catch (_) { /* noop */ }
+
     // Acreditar créditos solo si pasa de no-approved a approved
     if (newStatus === "approved" && payment.status !== "approved") {
       const { error: creditErr } = await supabase.rpc("add_credits_system", {
@@ -118,10 +129,25 @@ Deno.serve(async (req) => {
       });
       if (creditErr) {
         console.error("Error acreditando:", creditErr);
-        // marcar como pending para reintentar manualmente
         await supabase.from("payments").update({ status: "pending" }).eq("id", payment.id);
         return new Response("credit error", { status: 500, headers: corsHeaders });
       }
+
+      await notifyWhatsApp(
+        `✅ *Venta aprobada*\n` +
+        `Usuario: ${userLabel}\n` +
+        `Monto: $${payment.amount_uyu} UYU\n` +
+        `Créditos: ${payment.credits}\n` +
+        `MP ID: ${mpPaymentId}`
+      );
+    } else if (newStatus === "rejected" && payment.status !== "rejected") {
+      await notifyWhatsApp(
+        `❌ *Pago rechazado*\n` +
+        `Usuario: ${userLabel}\n` +
+        `Monto: $${payment.amount_uyu} UYU\n` +
+        `Motivo: ${mpPayment.status_detail || "n/a"}\n` +
+        `MP ID: ${mpPaymentId}`
+      );
     }
 
     return new Response("ok", { status: 200, headers: corsHeaders });
