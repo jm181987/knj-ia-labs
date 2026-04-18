@@ -111,8 +111,8 @@ Deno.serve(async (req) => {
       if (!userId) return json({ error: "userId requerido" }, 401);
 
       // Calcular costo en créditos
-      const { markup, creditsPerUsd } = await getPricingSettings(supabase);
-      const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd);
+      const { markup, creditsPerUsd, mpFeePct } = await getPricingSettings(supabase);
+      const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
 
       // Descontar créditos ANTES de llamar WaveSpeed
       // Hacemos la operación atómica vía SQL directo (auth.uid() no aplica con service role,
