@@ -185,6 +185,7 @@ export default function AdminPage() {
     }
   };
 
+  const handleRecharge = async () => {
     if (!rechargeUser) return;
     const amount = parseInt(rechargeAmount);
     if (!amount || amount <= 0) {
