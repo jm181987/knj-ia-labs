@@ -89,7 +89,10 @@ export default function AdminPage() {
   const [pkgIsNew, setPkgIsNew] = useState(false);
 
   const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
+  const [pricingMarkup, setPricingMarkup] = useState<string>("3");
+  const [creditsPerUsd, setCreditsPerUsd] = useState<string>("37");
   const [savingSettings, setSavingSettings] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
 
   const [pwUser, setPwUser] = useState<UserRow | null>(null);
   const [pwValue, setPwValue] = useState("");
@@ -107,7 +110,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
-          (supabase as any).from("app_settings").select("key, value").eq("key", "welcome_credits").maybeSingle(),
+          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd"]),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
@@ -124,9 +127,11 @@ export default function AdminPage() {
       setTxs(((tx as any[]) || []).map((t) => ({ ...t, user_email: emailMap.get(t.user_id) || t.user_id.slice(0, 8) })));
       setPayments(((pays as PaymentRow[]) || []).map((p) => ({ ...p, user_email: emailMap.get(p.user_id) || p.user_id.slice(0, 8) })));
 
-      if (settings?.value !== undefined && settings?.value !== null) {
-        setWelcomeCredits(String(settings.value));
-      }
+      const settingsArr = (settings as { key: string; value: unknown }[] | null) || [];
+      const settingsMap = new Map(settingsArr.map((s) => [s.key, s.value]));
+      if (settingsMap.has("welcome_credits")) setWelcomeCredits(String(settingsMap.get("welcome_credits")));
+      if (settingsMap.has("pricing_markup")) setPricingMarkup(String(settingsMap.get("pricing_markup")));
+      if (settingsMap.has("pricing_credits_per_usd")) setCreditsPerUsd(String(settingsMap.get("pricing_credits_per_usd")));
     } catch (e) {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
@@ -153,6 +158,30 @@ export default function AdminPage() {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const handleSavePricingSettings = async () => {
+    const m = parseFloat(pricingMarkup);
+    const c = parseFloat(creditsPerUsd);
+    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0) {
+      toast({ title: t("common.error"), description: "Valores deben ser positivos", variant: "destructive" });
+      return;
+    }
+    setSavingPricing(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("app_settings")
+        .upsert([
+          { key: "pricing_markup", value: m },
+          { key: "pricing_credits_per_usd", value: c },
+        ], { onConflict: "key" });
+      if (error) throw error;
+      toast({ title: t("common.success"), description: "Precios actualizados. El catálogo se refresca al recargar." });
+    } catch (e) {
+      toast({ title: t("common.error"), description: String(e), variant: "destructive" });
+    } finally {
+      setSavingPricing(false);
     }
   };
 
@@ -610,7 +639,7 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="space-y-4">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
               <CardTitle>{t("admin.settingsTitle")}</CardTitle>
@@ -635,6 +664,65 @@ export default function AdminPage() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-primary" />
+                Precios del catálogo
+              </CardTitle>
+              <CardDescription>
+                Cálculo automático: <strong>costo USD WaveSpeed × markup × créditos por USD = créditos</strong>.
+                Aplica a los 700+ modelos del catálogo dinámico.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="pricing-markup">Markup (multiplicador sobre costo real)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Ej: 3 = cobrás 3× lo que te cuesta WaveSpeed (margen ~66%).
+                </p>
+                <Input
+                  id="pricing-markup"
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={pricingMarkup}
+                  onChange={(e) => setPricingMarkup(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="credits-per-usd">Créditos por USD</Label>
+                <p className="text-xs text-muted-foreground">
+                  Cuántos créditos vale 1 USD. Ej: 37 ≈ USD 0.027 / crédito.
+                </p>
+                <Input
+                  id="credits-per-usd"
+                  type="number"
+                  min="1"
+                  step="0.5"
+                  value={creditsPerUsd}
+                  onChange={(e) => setCreditsPerUsd(e.target.value)}
+                />
+              </div>
+              <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
+                <div className="font-medium text-foreground">Ejemplos con la config actual:</div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.05 → {Math.max(1, Math.ceil(0.05 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.20 → {Math.max(1, Math.ceil(0.20 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.40 (Sora 2) → {Math.max(1, Math.ceil(0.40 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+              </div>
+              <Button onClick={handleSavePricingSettings} disabled={savingPricing} className="w-full">
+                {savingPricing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Guardar precios
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

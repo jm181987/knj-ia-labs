@@ -123,7 +123,6 @@ export type SubmitDynamicArgs = {
 };
 
 export async function submitDynamic(args: SubmitDynamicArgs) {
-  // El api_path viene como "/api/v3/<modelPath>" → extraemos modelPath
   const modelPath = args.model.api_path.replace(/^\/api\/v3\//, "");
   const dbType = mapDbType(args.model.type);
   const prompt = (args.values.prompt as string) || `${prettyName(args.model.model_id)} generation`;
@@ -137,8 +136,45 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
       prompt,
       payload: args.values,
       userId: args.userId,
+      basePrice: args.model.base_price ?? 0,
     },
   });
   if (error) return { code: 1, message: error.message };
   return data;
 }
+
+// ============ Pricing helpers (cliente) ============
+let pricingSettingsCache: { at: number; markup: number; creditsPerUsd: number } | null = null;
+const SETTINGS_TTL_MS = 5 * 60 * 1000;
+
+export async function getPricingSettings(): Promise<{ markup: number; creditsPerUsd: number }> {
+  if (pricingSettingsCache && Date.now() - pricingSettingsCache.at < SETTINGS_TTL_MS) {
+    return { markup: pricingSettingsCache.markup, creditsPerUsd: pricingSettingsCache.creditsPerUsd };
+  }
+  const { data } = await supabase
+    .from("app_settings")
+    .select("key, value")
+    .in("key", ["pricing_markup", "pricing_credits_per_usd"]);
+  const map: Record<string, number> = {};
+  for (const r of data || []) {
+    const raw = (r as { value: unknown }).value;
+    const v = typeof raw === "string" ? Number(raw) : Number(raw);
+    if (!isNaN(v)) map[(r as { key: string }).key] = v;
+  }
+  const result = {
+    markup: map.pricing_markup || 3,
+    creditsPerUsd: map.pricing_credits_per_usd || 37,
+  };
+  pricingSettingsCache = { at: Date.now(), ...result };
+  return result;
+}
+
+export function invalidatePricingCache() {
+  pricingSettingsCache = null;
+}
+
+export function computeModelCost(basePrice: number | undefined, markup: number, creditsPerUsd: number): number {
+  if (!basePrice || basePrice <= 0) return 1;
+  return Math.max(1, Math.ceil(basePrice * markup * creditsPerUsd));
+}
+

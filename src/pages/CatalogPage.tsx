@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Search, Sparkles, Wand2, Library } from "lucide-react";
-import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, type WSCatalogModel } from "@/lib/wavespeedCatalog";
+import { Loader2, Search, Sparkles, Wand2, Library, Coins } from "lucide-react";
+import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -22,6 +22,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number }>({ markup: 3, creditsPerUsd: 37 });
   const category = searchParams.get("cat") || "all";
   const setCategory = (id: string) => {
     if (id === "all") setSearchParams({});
@@ -30,6 +31,10 @@ export default function CatalogPage() {
   const [openModel, setOpenModel] = useState<WSCatalogModel | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getPricingSettings().then(setPricing).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -193,8 +198,12 @@ export default function CatalogPage() {
                   </div>
                   <CardDescription className="text-xs line-clamp-3">{m.description || "Sin descripción"}</CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0 pb-2 flex-1">
+                <CardContent className="pt-0 pb-2 flex-1 flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
+                  <Badge variant="outline" className="text-[10px] gap-1 border-primary/40 text-primary">
+                    <Coins className="h-2.5 w-2.5" />
+                    {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd)} cr
+                  </Badge>
                 </CardContent>
                 <CardFooter className="pt-2">
                   <Button size="sm" className="w-full" onClick={() => onOpen(m)}>
@@ -231,12 +240,18 @@ export default function CatalogPage() {
               <ScrollArea className="flex-1 pr-3 -mr-3">
                 <DynamicSchemaForm schema={openModel.request_schema} values={values} onChange={setValues} />
               </ScrollArea>
-              <DialogFooter>
-                <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>Cancelar</Button>
-                <Button onClick={handleGenerate} disabled={submitting}>
-                  {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  Generar
-                </Button>
+              <DialogFooter className="items-center sm:justify-between gap-2">
+                <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
+                  <Coins className="h-3 w-3" />
+                  Costo: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd)} créditos
+                </Badge>
+                <div className="flex gap-2">
+                  <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>Cancelar</Button>
+                  <Button onClick={handleGenerate} disabled={submitting}>
+                    {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                    Generar
+                  </Button>
+                </div>
               </DialogFooter>
             </>
           )}
