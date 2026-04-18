@@ -202,7 +202,7 @@ export default function CatalogPage() {
                   <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
                   <Badge variant="outline" className="text-[10px] gap-1 border-primary/40 text-primary">
                     <Coins className="h-2.5 w-2.5" />
-                    {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd)} cr
+                    {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} cr
                   </Badge>
                 </CardContent>
                 <CardFooter className="pt-2">
