@@ -75,17 +75,21 @@ export type SubmitArgs = {
   duration?: number;
   negative_prompt?: string;
   image_url?: string;
+  audio_url?: string;
+  driver_video_url?: string;
 };
 
 export async function submitGeneration(args: SubmitArgs): Promise<{ code: number; data?: { id: string; task_id: string }; message?: string }> {
   const m = getModel(args.modelId);
   if (!m) return { code: 1, message: "Modelo desconocido" };
 
-  const payload: Record<string, unknown> = { prompt: args.prompt };
+  const payload: Record<string, unknown> = { prompt: args.prompt || "" };
   if (args.aspect_ratio) payload.aspect_ratio = args.aspect_ratio;
   if (args.duration) payload.duration = args.duration;
   if (args.negative_prompt) payload.negative_prompt = args.negative_prompt;
-  if (args.image_url && m.supportsImage) payload.image = args.image_url;
+  if (args.image_url && (m.supportsImage || m.requiresImage)) payload.image = args.image_url;
+  if (args.audio_url && m.requiresAudio) payload.audio = args.audio_url;
+  if (args.driver_video_url && m.requiresDriverVideo) payload.driving_video = args.driver_video_url;
 
   const { data: { user } } = await supabase.auth.getUser();
 
