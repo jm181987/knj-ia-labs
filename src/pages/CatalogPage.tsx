@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { useModelTranslation, useTranslatedDescriptions } from "@/hooks/useModelTranslation";
+import { useModelTranslation, useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
 
 export default function CatalogPage() {
   const { toast } = useToast();
