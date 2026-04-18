@@ -134,7 +134,7 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
 
 // Pre-calienta en background los top N modelos por sort_order para el idioma activo.
 // No bloquea la UI; respeta la cache existente y limita concurrencia.
-export function usePrewarmTopModels(models: WSCatalogModel[], topN = 20, concurrency = 3) {
+export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurrency = 1) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "es").slice(0, 2);
 
