@@ -711,18 +711,39 @@ export default function AdminPage() {
                   onChange={(e) => setCreditsPerUsd(e.target.value)}
                 />
               </div>
-              <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
-                <div className="font-medium text-foreground">Ejemplos con la config actual:</div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.05 → {Math.max(1, Math.ceil(0.05 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.20 → {Math.max(1, Math.ceil(0.20 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.40 (Sora 2) → {Math.max(1, Math.ceil(0.40 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="mp-fee-pct">Comisión Mercado Pago (%)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Se descuenta de cada cobro. Inflamos el markup para que tu margen neto sea el configurado. Default: 7.99%.
+                </p>
+                <Input
+                  id="mp-fee-pct"
+                  type="number"
+                  min="0"
+                  max="99"
+                  step="0.01"
+                  value={mpFeePct}
+                  onChange={(e) => setMpFeePct(e.target.value)}
+                />
               </div>
+              {(() => {
+                const m = parseFloat(pricingMarkup) || 3;
+                const c = parseFloat(creditsPerUsd) || 37;
+                const f = parseFloat(mpFeePct);
+                const fee = isNaN(f) ? 7.99 : Math.min(Math.max(f, 0), 99);
+                const eff = m / (1 - fee / 100);
+                const calc = (usd: number) => Math.max(1, Math.ceil(usd * eff * c));
+                return (
+                  <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
+                    <div className="font-medium text-foreground">
+                      Markup efectivo: <span className="text-primary">{eff.toFixed(2)}×</span> (compensa {fee}% MP)
+                    </div>
+                    <div className="text-muted-foreground">• Modelo USD 0.05 → {calc(0.05)} cr</div>
+                    <div className="text-muted-foreground">• Modelo USD 0.20 → {calc(0.20)} cr</div>
+                    <div className="text-muted-foreground">• Modelo USD 0.40 (Sora 2) → {calc(0.40)} cr</div>
+                  </div>
+                );
+              })()}
               <Button onClick={handleSavePricingSettings} disabled={savingPricing} className="w-full">
                 {savingPricing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Guardar precios
