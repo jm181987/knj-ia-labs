@@ -9,9 +9,43 @@ export type ModelTranslation = {
   field_descriptions: Record<string, string>;
 };
 
-// Cache en memoria por sesión
-const memCache = new Map<string, ModelTranslation>();
+// Cache persistente en localStorage + memoria
+const LS_FULL_KEY = "model_tr_full_v1";
+const LS_CARD_KEY = "model_tr_card_v1";
+const LS_MAX_ENTRIES = 200;
+
+function loadLS<T>(key: string): Map<string, T> {
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
+    if (!raw) return new Map();
+    const obj = JSON.parse(raw) as Record<string, T>;
+    return new Map(Object.entries(obj));
+  } catch {
+    return new Map();
+  }
+}
+
+function saveLS<T>(key: string, map: Map<string, T>) {
+  try {
+    if (typeof localStorage === "undefined") return;
+    // Limitar tamaño: conservar las últimas LS_MAX_ENTRIES
+    let entries = Array.from(map.entries());
+    if (entries.length > LS_MAX_ENTRIES) {
+      entries = entries.slice(-LS_MAX_ENTRIES);
+    }
+    localStorage.setItem(key, JSON.stringify(Object.fromEntries(entries)));
+  } catch {
+    // quota exceeded u otro: ignorar
+  }
+}
+
+const memCache = loadLS<ModelTranslation>(LS_FULL_KEY);
 const inflight = new Map<string, Promise<ModelTranslation | null>>();
+
+function setMemCache(key: string, value: ModelTranslation) {
+  memCache.set(key, value);
+  saveLS(LS_FULL_KEY, memCache);
+}
 
 export function useModelTranslation(model: WSCatalogModel | null) {
   const { i18n } = useTranslation();
