@@ -156,6 +156,7 @@ export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurre
         } catch {
           // silencioso
         }
+        await new Promise((r) => setTimeout(r, 600));
       }
     };
     // Pequeño delay para no competir con la carga inicial
