@@ -200,7 +200,7 @@ export default function CatalogPage() {
 
       {/* Modal de generación */}
       <Dialog open={!!openModel} onOpenChange={(o) => !o && setOpenModel(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
           {openModel && (
             <ModelDialogContent
               openModel={openModel}
@@ -295,7 +295,7 @@ function ModelDialogContent({
   const desc = translation?.description || openModel.description;
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="p-6 pb-3 border-b border-border/50 shrink-0">
         <DialogTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           {prettyName(openModel.model_id)}
@@ -309,7 +309,7 @@ function ModelDialogContent({
           <span className="block mt-1 font-mono text-[10px] opacity-60">{openModel.model_id}</span>
         </DialogDescription>
       </DialogHeader>
-      <ScrollArea className="flex-1 min-h-0 max-h-[60vh] pr-3 -mr-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
         <DynamicSchemaForm
           schema={openModel.request_schema}
           values={values}
@@ -317,8 +317,8 @@ function ModelDialogContent({
           fieldLabels={translation?.field_labels}
           fieldDescriptions={translation?.field_descriptions}
         />
-      </ScrollArea>
-      <DialogFooter className="items-center sm:justify-between gap-2">
+      </div>
+      <DialogFooter className="items-center sm:justify-between gap-2 p-6 pt-3 border-t border-border/50 shrink-0">
         <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
           <Coins className="h-3 w-3" />
           {t("catalog.cost")}: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
