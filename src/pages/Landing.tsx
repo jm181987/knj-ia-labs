@@ -35,7 +35,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src={knjLogo} alt="KNJ IA" className="h-9 w-9 object-contain" />
-            <span className="font-bold text-lg tracking-tight">
+            <span className="hidden sm:inline font-bold text-lg tracking-tight">
               KNJ<span className="text-gradient"> IA</span>
             </span>
           </Link>
