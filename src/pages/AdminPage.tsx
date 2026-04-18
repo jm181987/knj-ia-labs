@@ -133,6 +133,7 @@ export default function AdminPage() {
       if (settingsMap.has("welcome_credits")) setWelcomeCredits(String(settingsMap.get("welcome_credits")));
       if (settingsMap.has("pricing_markup")) setPricingMarkup(String(settingsMap.get("pricing_markup")));
       if (settingsMap.has("pricing_credits_per_usd")) setCreditsPerUsd(String(settingsMap.get("pricing_credits_per_usd")));
+      if (settingsMap.has("pricing_mp_fee_pct")) setMpFeePct(String(settingsMap.get("pricing_mp_fee_pct")));
     } catch (e) {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
