@@ -91,6 +91,7 @@ export default function AdminPage() {
   const [welcomeCredits, setWelcomeCredits] = useState<string>("10");
   const [pricingMarkup, setPricingMarkup] = useState<string>("3");
   const [creditsPerUsd, setCreditsPerUsd] = useState<string>("37");
+  const [mpFeePct, setMpFeePct] = useState<string>("7.99");
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
 
@@ -110,7 +111,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
-          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd"]),
+          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
@@ -132,6 +133,7 @@ export default function AdminPage() {
       if (settingsMap.has("welcome_credits")) setWelcomeCredits(String(settingsMap.get("welcome_credits")));
       if (settingsMap.has("pricing_markup")) setPricingMarkup(String(settingsMap.get("pricing_markup")));
       if (settingsMap.has("pricing_credits_per_usd")) setCreditsPerUsd(String(settingsMap.get("pricing_credits_per_usd")));
+      if (settingsMap.has("pricing_mp_fee_pct")) setMpFeePct(String(settingsMap.get("pricing_mp_fee_pct")));
     } catch (e) {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
@@ -164,8 +166,9 @@ export default function AdminPage() {
   const handleSavePricingSettings = async () => {
     const m = parseFloat(pricingMarkup);
     const c = parseFloat(creditsPerUsd);
-    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0) {
-      toast({ title: t("common.error"), description: "Valores deben ser positivos", variant: "destructive" });
+    const f = parseFloat(mpFeePct);
+    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0 || isNaN(f) || f < 0 || f >= 100) {
+      toast({ title: t("common.error"), description: "Valores deben ser positivos y comisión < 100%", variant: "destructive" });
       return;
     }
     setSavingPricing(true);
@@ -175,6 +178,7 @@ export default function AdminPage() {
         .upsert([
           { key: "pricing_markup", value: m },
           { key: "pricing_credits_per_usd", value: c },
+          { key: "pricing_mp_fee_pct", value: f },
         ], { onConflict: "key" });
       if (error) throw error;
       toast({ title: t("common.success"), description: "Precios actualizados. El catálogo se refresca al recargar." });
@@ -707,18 +711,39 @@ export default function AdminPage() {
                   onChange={(e) => setCreditsPerUsd(e.target.value)}
                 />
               </div>
-              <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
-                <div className="font-medium text-foreground">Ejemplos con la config actual:</div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.05 → {Math.max(1, Math.ceil(0.05 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.20 → {Math.max(1, Math.ceil(0.20 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
-                <div className="text-muted-foreground">
-                  • Modelo USD 0.40 (Sora 2) → {Math.max(1, Math.ceil(0.40 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="mp-fee-pct">Comisión Mercado Pago (%)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Se descuenta de cada cobro. Inflamos el markup para que tu margen neto sea el configurado. Default: 7.99%.
+                </p>
+                <Input
+                  id="mp-fee-pct"
+                  type="number"
+                  min="0"
+                  max="99"
+                  step="0.01"
+                  value={mpFeePct}
+                  onChange={(e) => setMpFeePct(e.target.value)}
+                />
               </div>
+              {(() => {
+                const m = parseFloat(pricingMarkup) || 3;
+                const c = parseFloat(creditsPerUsd) || 37;
+                const f = parseFloat(mpFeePct);
+                const fee = isNaN(f) ? 7.99 : Math.min(Math.max(f, 0), 99);
+                const eff = m / (1 - fee / 100);
+                const calc = (usd: number) => Math.max(1, Math.ceil(usd * eff * c));
+                return (
+                  <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
+                    <div className="font-medium text-foreground">
+                      Markup efectivo: <span className="text-primary">{eff.toFixed(2)}×</span> (compensa {fee}% MP)
+                    </div>
+                    <div className="text-muted-foreground">• Modelo USD 0.05 → {calc(0.05)} cr</div>
+                    <div className="text-muted-foreground">• Modelo USD 0.20 → {calc(0.20)} cr</div>
+                    <div className="text-muted-foreground">• Modelo USD 0.40 (Sora 2) → {calc(0.40)} cr</div>
+                  </div>
+                );
+              })()}
               <Button onClick={handleSavePricingSettings} disabled={savingPricing} className="w-full">
                 {savingPricing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Guardar precios

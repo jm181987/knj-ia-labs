@@ -144,26 +144,30 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
 }
 
 // ============ Pricing helpers (cliente) ============
-let pricingSettingsCache: { at: number; markup: number; creditsPerUsd: number } | null = null;
+export type PricingSettings = { markup: number; creditsPerUsd: number; mpFeePct: number };
+
+let pricingSettingsCache: { at: number } & PricingSettings | null = null;
 const SETTINGS_TTL_MS = 5 * 60 * 1000;
 
-export async function getPricingSettings(): Promise<{ markup: number; creditsPerUsd: number }> {
+export async function getPricingSettings(): Promise<PricingSettings> {
   if (pricingSettingsCache && Date.now() - pricingSettingsCache.at < SETTINGS_TTL_MS) {
-    return { markup: pricingSettingsCache.markup, creditsPerUsd: pricingSettingsCache.creditsPerUsd };
+    const { at, ...rest } = pricingSettingsCache;
+    return rest;
   }
   const { data } = await supabase
     .from("app_settings")
     .select("key, value")
-    .in("key", ["pricing_markup", "pricing_credits_per_usd"]);
+    .in("key", ["pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]);
   const map: Record<string, number> = {};
   for (const r of data || []) {
     const raw = (r as { value: unknown }).value;
     const v = typeof raw === "string" ? Number(raw) : Number(raw);
     if (!isNaN(v)) map[(r as { key: string }).key] = v;
   }
-  const result = {
+  const result: PricingSettings = {
     markup: map.pricing_markup || 3,
     creditsPerUsd: map.pricing_credits_per_usd || 37,
+    mpFeePct: map.pricing_mp_fee_pct ?? 7.99,
   };
   pricingSettingsCache = { at: Date.now(), ...result };
   return result;
@@ -173,8 +177,17 @@ export function invalidatePricingCache() {
   pricingSettingsCache = null;
 }
 
-export function computeModelCost(basePrice: number | undefined, markup: number, creditsPerUsd: number): number {
+// Compensa la comisión de Mercado Pago (mpFeePct%) inflando el markup,
+// para que el margen neto coincida con el markup configurado.
+export function computeModelCost(
+  basePrice: number | undefined,
+  markup: number,
+  creditsPerUsd: number,
+  mpFeePct: number = 0
+): number {
   if (!basePrice || basePrice <= 0) return 1;
-  return Math.max(1, Math.ceil(basePrice * markup * creditsPerUsd));
+  const feeFactor = 1 - Math.min(Math.max(mpFeePct, 0), 99) / 100;
+  const effectiveMarkup = markup / feeFactor;
+  return Math.max(1, Math.ceil(basePrice * effectiveMarkup * creditsPerUsd));
 }
 
