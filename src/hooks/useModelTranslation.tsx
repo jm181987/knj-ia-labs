@@ -134,7 +134,7 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
 
 // Pre-calienta en background los top N modelos por sort_order para el idioma activo.
 // No bloquea la UI; respeta la cache existente y limita concurrencia.
-export function usePrewarmTopModels(models: WSCatalogModel[], topN = 20, concurrency = 3) {
+export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurrency = 1) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "es").slice(0, 2);
 
@@ -156,6 +156,7 @@ export function usePrewarmTopModels(models: WSCatalogModel[], topN = 20, concurr
         } catch {
           // silencioso
         }
+        await new Promise((r) => setTimeout(r, 600));
       }
     };
     // Pequeño delay para no competir con la carga inicial
@@ -181,7 +182,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
 
   useEffect(() => {
     if (lang === "en") {
-      setMap({});
+      setMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
     let cancelled = false;
@@ -195,7 +196,16 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
         toFetch.push(m);
       }
     }
-    setMap(next);
+    setMap((prev) => {
+      const keys = Object.keys(next);
+      if (
+        keys.length === Object.keys(prev).length &&
+        keys.every((k) => prev[k] === next[k])
+      ) {
+        return prev;
+      }
+      return next;
+    });
 
     // Fetch en paralelo limitado (de 5 en 5) para no saturar
     const run = async () => {
