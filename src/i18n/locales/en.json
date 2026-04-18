@@ -49,9 +49,17 @@
     "noDescription": "No description",
     "use": "Use",
     "generate": "Generate",
+    "cancel": "Cancel",
+    "cost": "Cost",
     "generating": "Generation queued",
     "generatingDesc": "We'll let you know when it's ready",
     "missingField": "Missing field \"{{field}}\"",
+    "submitError": "Submit error",
+    "form": {
+      "selectPlaceholder": "Choose {{field}}",
+      "oneEntryPerLine": "One entry per line",
+      "videoHint": "MP4 / WebM · max 50 MB"
+    },
     "cat": {
       "all": "All",
       "video": "Video",
