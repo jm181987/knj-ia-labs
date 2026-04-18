@@ -1,8 +1,10 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Sparkles } from "lucide-react";
+import { useLowCreditsAlert } from "@/hooks/useLowCreditsAlert";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useLowCreditsAlert();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
