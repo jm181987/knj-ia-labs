@@ -22,7 +22,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number }>({ markup: 3, creditsPerUsd: 37 });
+  const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number; mpFeePct: number }>({ markup: 3, creditsPerUsd: 37, mpFeePct: 7.99 });
   const category = searchParams.get("cat") || "all";
   const setCategory = (id: string) => {
     if (id === "all") setSearchParams({});
