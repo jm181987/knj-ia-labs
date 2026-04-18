@@ -243,7 +243,7 @@ export default function CatalogPage() {
               <DialogFooter className="items-center sm:justify-between gap-2">
                 <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
                   <Coins className="h-3 w-3" />
-                  Costo: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd)} créditos
+                  Costo: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} créditos
                 </Badge>
                 <div className="flex gap-2">
                   <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>Cancelar</Button>
