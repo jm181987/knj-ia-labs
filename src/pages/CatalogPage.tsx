@@ -96,15 +96,29 @@ export default function CatalogPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Library className="h-7 w-7 text-primary" />
-          Catálogo completo
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Acceso a más de 800 modelos de IA: video, imagen, avatares, audio, 3D, upscale y más.
-        </p>
-      </div>
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
+        <div
+          className="absolute inset-0 -z-10 opacity-70"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 60% 60% at 50% 0%, hsl(var(--primary) / 0.28), transparent 65%)",
+          }}
+        />
+        <div className="px-6 py-12 sm:py-16 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            Powered by WaveSpeed AI · 700+ modelos
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-[1.05]">
+            Crea <span className="text-gradient">imágenes</span> y videos<br className="hidden sm:block" />
+            cinemáticos con IA
+          </h1>
+          <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+            Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y más en un solo panel.
+          </p>
+        </div>
+      </section>
 
       {/* Buscador */}
       <div className="relative">
