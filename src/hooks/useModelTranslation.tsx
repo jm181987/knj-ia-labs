@@ -206,8 +206,13 @@ export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurre
 }
 
 // Hook para traducir solo descripciones de tarjetas (sin fields) — más liviano
-const cardCache = new Map<string, string>();
+const cardCache = loadLS<string>(LS_CARD_KEY);
 const cardInflight = new Map<string, Promise<string | null>>();
+
+function setCardCache(key: string, value: string) {
+  cardCache.set(key, value);
+  saveLS(LS_CARD_KEY, cardCache);
+}
 
 export function useTranslatedDescriptions(models: WSCatalogModel[]) {
   const { i18n } = useTranslation();
