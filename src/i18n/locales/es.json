@@ -24,7 +24,8 @@
   "nav": {
     "navigation": "Navegación",
     "generate": "Generar",
-    "avatars": "Avatares",
+   "avatars": "Avatares",
+   "catalog": "Catálogo",
     "history": "Historial",
     "gallery": "Galería",
     "buyCredits": "Comprar créditos",
