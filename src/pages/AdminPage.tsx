@@ -489,40 +489,62 @@ export default function AdminPage() {
                 size="sm"
                 variant="outline"
                 onClick={async () => {
-                  const wavespeedPricing = [
-                    { key: "image_nano-banana-2", credits: 2, description: "Nano Banana 2 (Google)" },
-                    { key: "image_seedream-4.5", credits: 3, description: "Seedream 4.5 (ByteDance)" },
-                    { key: "image_flux-2", credits: 4, description: "FLUX 2 (Black Forest)" },
-                    { key: "image_flux-dev", credits: 2, description: "FLUX.1 Dev (Black Forest)" },
-                    { key: "video_sora-2_4_std", credits: 25, description: "Sora 2 · 4s" },
-                    { key: "video_sora-2_8_std", credits: 45, description: "Sora 2 · 8s" },
-                    { key: "video_sora-2_12_std", credits: 65, description: "Sora 2 · 12s" },
-                    { key: "video_veo-3.1_4_std", credits: 30, description: "Veo 3.1 · 4s" },
-                    { key: "video_veo-3.1_8_std", credits: 55, description: "Veo 3.1 · 8s" },
-                    { key: "video_veo-3.1-i2v_4_std", credits: 30, description: "Veo 3.1 (Image) · 4s" },
-                    { key: "video_veo-3.1-i2v_8_std", credits: 55, description: "Veo 3.1 (Image) · 8s" },
-                    { key: "video_kling-2.5_5_std", credits: 30, description: "Kling 2.5 Pro · 5s" },
-                    { key: "video_kling-2.5_10_std", credits: 55, description: "Kling 2.5 Pro · 10s" },
-                    { key: "video_kling-2.5-i2v_5_std", credits: 30, description: "Kling 2.5 (Image) · 5s" },
-                    { key: "video_kling-2.5-i2v_10_std", credits: 55, description: "Kling 2.5 (Image) · 10s" },
-                    { key: "video_seedance-v2_5_std", credits: 25, description: "Seedance 2.0 · 5s" },
-                    { key: "video_seedance-v2_10_std", credits: 45, description: "Seedance 2.0 · 10s" },
-                    { key: "video_hailuo-02_6_std", credits: 20, description: "Hailuo 02 · 6s" },
-                    { key: "video_hailuo-02_10_std", credits: 35, description: "Hailuo 02 · 10s" },
-                    { key: "video_wan-2.7_5_std", credits: 20, description: "WAN 2.7 · 5s" },
-                    { key: "video_ltxv_5_std", credits: 15, description: "LTXV · 5s" },
-                    { key: "video_higgsfield_5_std", credits: 20, description: "Higgsfield · 5s" },
-                  ];
-                  const validKeys = new Set(wavespeedPricing.map((p) => p.key));
-                  const oldKeys = pricing.map((p) => p.key).filter((k) => !validKeys.has(k));
                   try {
+                    const { fetchCatalog, computeModelCost, prettyName, getBrand, invalidatePricingCache } = await import("@/lib/wavespeedCatalog");
+                    invalidatePricingCache();
+                    const [catalog, settings] = await Promise.all([
+                      fetchCatalog(true),
+                      (async () => {
+                        const { data } = await (supabase as any)
+                          .from("app_settings")
+                          .select("key, value")
+                          .in("key", ["pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]);
+                        const map: Record<string, number> = {};
+                        for (const r of data || []) {
+                          const v = typeof r.value === "string" ? Number(r.value) : Number(r.value);
+                          if (!isNaN(v)) map[r.key] = v;
+                        }
+                        return {
+                          markup: map.pricing_markup || 3,
+                          creditsPerUsd: map.pricing_credits_per_usd || 37,
+                          mpFeePct: map.pricing_mp_fee_pct ?? 7.99,
+                        };
+                      })(),
+                    ]);
+
+                    const rows = catalog
+                      .filter((m) => m.base_price && m.base_price > 0)
+                      .map((m) => ({
+                        key: m.model_id,
+                        credits: computeModelCost(m.base_price, settings.markup, settings.creditsPerUsd, settings.mpFeePct),
+                        description: `${getBrand(m.model_id)} · ${prettyName(m.model_id)} (USD ${m.base_price})`,
+                      }));
+
+                    if (rows.length === 0) {
+                      toast({ title: "Sin datos", description: "El catálogo no devolvió modelos con precio.", variant: "destructive" });
+                      return;
+                    }
+
+                    // Borrar precios viejos que ya no estén en el catálogo
+                    const validKeys = new Set(rows.map((r) => r.key));
+                    const oldKeys = pricing.map((p) => p.key).filter((k) => !validKeys.has(k));
                     if (oldKeys.length > 0) {
                       const { error: delErr } = await (supabase as any).from("pricing").delete().in("key", oldKeys);
                       if (delErr) throw delErr;
                     }
-                    const { error: upErr } = await (supabase as any).from("pricing").upsert(wavespeedPricing, { onConflict: "key" });
-                    if (upErr) throw upErr;
-                    toast({ title: t("common.success") });
+
+                    // Upsert en lotes para evitar payloads gigantes
+                    const BATCH = 200;
+                    for (let i = 0; i < rows.length; i += BATCH) {
+                      const slice = rows.slice(i, i + BATCH);
+                      const { error: upErr } = await (supabase as any).from("pricing").upsert(slice, { onConflict: "key" });
+                      if (upErr) throw upErr;
+                    }
+
+                    toast({
+                      title: "Precios actualizados",
+                      description: `${rows.length} modelos · markup ${settings.markup}× · MP ${settings.mpFeePct}% · ${settings.creditsPerUsd} cr/USD`,
+                    });
                     loadAll();
                   } catch (e) {
                     toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
