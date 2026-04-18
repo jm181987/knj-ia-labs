@@ -84,7 +84,7 @@ export default function AvatarsPage() {
       let tries = 0;
       const tick = async () => {
         tries++;
-        const r = await pollGeneration(id);
+        const r: any = await pollGeneration(id);
         const status = r?.data?.status;
         if (status === "completed" || status === "failed" || tries > 60) {
           if (status === "completed") toast({ title: "¡Avatar listo!" });
