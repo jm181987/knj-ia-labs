@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { Sparkles } from "lucide-react";
 
 import openaiLogo from "@/assets/logos/openai.png";
 import googleLogo from "@/assets/logos/google.png";
@@ -15,7 +16,6 @@ import geminiLogo from "@/assets/logos/gemini.png";
 import wanLogo from "@/assets/logos/wan.png";
 import seedreamLogo from "@/assets/logos/seedream.png";
 import fluxLogo from "@/assets/logos/flux.png";
-import wavespeedLogo from "@/assets/logos/wavespeed.png";
 
 type Tool = {
   name: string;
@@ -55,7 +55,7 @@ export function ToolsCarousel() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-4">
-            <img src={wavespeedLogo} alt="WaveSpeed" className="h-3.5 w-3.5 object-contain" />
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
             {t("tools.poweredBy")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
