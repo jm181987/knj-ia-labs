@@ -1,4 +1,4 @@
-import { History, Image, Shield, Coins, UserCircle2, Library, ChevronDown } from "lucide-react";
+import { History, Image, Shield, Coins, Library, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -39,9 +39,7 @@ export function AppSidebar() {
     if (isMobile) setOpenMobile(false);
   };
 
-  const items = [
-    { titleKey: "nav.avatars", url: "/app/avatars", icon: UserCircle2 },
-  ];
+  const items: { titleKey: string; url: string; icon: typeof Library }[] = [];
 
   const tail = [
     { titleKey: "nav.history", url: "/app/history", icon: History },
