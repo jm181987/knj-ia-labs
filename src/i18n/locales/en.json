@@ -147,7 +147,9 @@
     "subtitle": "Your completed creations",
     "videos": "Videos",
     "images": "Images",
-    "empty": "No completed content yet"
+    "empty": "No completed content yet",
+    "retentionTitle": "Your creations are deleted after 7 days",
+    "retentionDesc": "To keep things fast, we automatically remove generations after 7 days. Download anything you want to keep."
   },
   "payment": {
     "confirming": "Confirming your payment…",

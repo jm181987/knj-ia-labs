@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { listGenerations, type Generation } from "@/lib/wavespeed";
-import { Loader2, Download, Video, Image } from "lucide-react";
+import { Loader2, Download, Video, Image, Clock } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
 
 export default function GalleryPage() {
@@ -43,6 +44,12 @@ export default function GalleryPage() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("gallery.title")}</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("gallery.subtitle")}</p>
       </div>
+
+      <Alert>
+        <Clock className="h-4 w-4" />
+        <AlertTitle>{t("gallery.retentionTitle")}</AlertTitle>
+        <AlertDescription>{t("gallery.retentionDesc")}</AlertDescription>
+      </Alert>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
