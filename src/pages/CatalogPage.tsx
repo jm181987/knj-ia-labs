@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { useModelTranslation, useTranslatedDescriptions } from "@/hooks/useModelTranslation";
+import { useModelTranslation, useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
 
 export default function CatalogPage() {
   const { toast } = useToast();
@@ -48,6 +48,9 @@ export default function CatalogPage() {
       active = false;
     };
   }, []);
+
+  // Pre-traduce en background los top 20 modelos para abrir el modal sin espera
+  usePrewarmTopModels(models, 20, 3);
 
   const filtered = useMemo(() => {
     const cat = CATEGORIES.find((c) => c.id === category)!;

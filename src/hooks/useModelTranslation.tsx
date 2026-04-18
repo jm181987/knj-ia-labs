@@ -96,6 +96,80 @@ export function useModelTranslation(model: WSCatalogModel | null) {
   return { translation, loading };
 }
 
+// Helper interno: traduce un modelo completo (descripción + fields) y guarda en memCache
+async function translateFullModel(model: WSCatalogModel, lang: string): Promise<ModelTranslation | null> {
+  const key = `${lang}:${model.model_id}`;
+  if (memCache.has(key)) return memCache.get(key)!;
+  let promise = inflight.get(key);
+  if (!promise) {
+    const fields: Record<string, { label?: string; description?: string }> = {};
+    const props = model.request_schema?.properties || {};
+    for (const [k, p] of Object.entries(props)) {
+      if ((p as any)["x-hidden"]) continue;
+      fields[k] = {
+        label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+        description: (p as any).description || "",
+      };
+    }
+    promise = supabase.functions
+      .invoke("translate-model", {
+        body: {
+          model_id: model.model_id,
+          lang,
+          description: model.description || "",
+          fields,
+        },
+      })
+      .then(({ data, error }) => {
+        if (error || !data || data.code !== 0) return null;
+        return data.data as ModelTranslation;
+      });
+    inflight.set(key, promise);
+    promise.finally(() => inflight.delete(key));
+  }
+  const result = await promise;
+  if (result) memCache.set(key, result);
+  return result;
+}
+
+// Pre-calienta en background los top N modelos por sort_order para el idioma activo.
+// No bloquea la UI; respeta la cache existente y limita concurrencia.
+export function usePrewarmTopModels(models: WSCatalogModel[], topN = 20, concurrency = 3) {
+  const { i18n } = useTranslation();
+  const lang = (i18n.language || "es").slice(0, 2);
+
+  useEffect(() => {
+    if (lang === "en" || !models.length) return;
+    const top = [...models]
+      .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0))
+      .slice(0, topN)
+      .filter((m) => !memCache.has(`${lang}:${m.model_id}`));
+    if (!top.length) return;
+
+    let cancelled = false;
+    let i = 0;
+    const worker = async () => {
+      while (!cancelled && i < top.length) {
+        const m = top[i++];
+        try {
+          await translateFullModel(m, lang);
+        } catch {
+          // silencioso
+        }
+      }
+    };
+    // Pequeño delay para no competir con la carga inicial
+    const t = setTimeout(() => {
+      Promise.all(Array.from({ length: concurrency }, worker));
+    }, 800);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [models, lang, topN, concurrency]);
+}
+
 // Hook para traducir solo descripciones de tarjetas (sin fields) — más liviano
 const cardCache = new Map<string, string>();
 const cardInflight = new Map<string, Promise<string | null>>();
