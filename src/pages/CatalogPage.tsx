@@ -49,6 +49,9 @@ export default function CatalogPage() {
     };
   }, []);
 
+  // Pre-traduce en background los top 20 modelos para abrir el modal sin espera
+  usePrewarmTopModels(models, 20, 3);
+
   const filtered = useMemo(() => {
     const cat = CATEGORIES.find((c) => c.id === category)!;
     const q = search.trim().toLowerCase();
