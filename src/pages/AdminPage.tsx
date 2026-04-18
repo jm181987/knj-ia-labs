@@ -639,7 +639,7 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="space-y-4">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
               <CardTitle>{t("admin.settingsTitle")}</CardTitle>
@@ -664,6 +664,65 @@ export default function AdminPage() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60 bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-primary" />
+                Precios del catálogo
+              </CardTitle>
+              <CardDescription>
+                Cálculo automático: <strong>costo USD WaveSpeed × markup × créditos por USD = créditos</strong>.
+                Aplica a los 700+ modelos del catálogo dinámico.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="pricing-markup">Markup (multiplicador sobre costo real)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Ej: 3 = cobrás 3× lo que te cuesta WaveSpeed (margen ~66%).
+                </p>
+                <Input
+                  id="pricing-markup"
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={pricingMarkup}
+                  onChange={(e) => setPricingMarkup(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="credits-per-usd">Créditos por USD</Label>
+                <p className="text-xs text-muted-foreground">
+                  Cuántos créditos vale 1 USD. Ej: 37 ≈ USD 0.027 / crédito.
+                </p>
+                <Input
+                  id="credits-per-usd"
+                  type="number"
+                  min="1"
+                  step="0.5"
+                  value={creditsPerUsd}
+                  onChange={(e) => setCreditsPerUsd(e.target.value)}
+                />
+              </div>
+              <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs space-y-1">
+                <div className="font-medium text-foreground">Ejemplos con la config actual:</div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.05 → {Math.max(1, Math.ceil(0.05 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.20 → {Math.max(1, Math.ceil(0.20 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+                <div className="text-muted-foreground">
+                  • Modelo USD 0.40 (Sora 2) → {Math.max(1, Math.ceil(0.40 * (parseFloat(pricingMarkup) || 3) * (parseFloat(creditsPerUsd) || 37)))} cr
+                </div>
+              </div>
+              <Button onClick={handleSavePricingSettings} disabled={savingPricing} className="w-full">
+                {savingPricing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Guardar precios
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
