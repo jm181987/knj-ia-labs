@@ -98,23 +98,44 @@ export default function CatalogPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
+        {/* animated grid */}
+        <div className="hero-grid" />
+        {/* animated aurora blobs */}
         <div
-          className="absolute inset-0 -z-10 opacity-70"
+          className="hero-blob"
           style={{
-            backgroundImage:
-              "radial-gradient(ellipse 60% 60% at 50% 0%, hsl(var(--primary) / 0.28), transparent 65%)",
+            top: "-20%",
+            left: "10%",
+            width: "55%",
+            height: "120%",
+            background: "radial-gradient(circle, hsl(var(--primary) / 0.55), transparent 60%)",
+            animation: "hero-blob-a 14s ease-in-out infinite",
           }}
         />
-        <div className="px-6 py-12 sm:py-16 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+        <div
+          className="hero-blob"
+          style={{
+            top: "-10%",
+            right: "-5%",
+            width: "50%",
+            height: "120%",
+            background: "radial-gradient(circle, hsl(var(--primary-glow) / 0.45), transparent 60%)",
+            animation: "hero-blob-b 16s ease-in-out infinite",
+          }}
+        />
+        {/* shine sweep */}
+        <div className="hero-shine" />
+
+        <div className="relative px-6 py-12 sm:py-16 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5 backdrop-blur-sm animate-fade-in">
+            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             Powered by WaveSpeed AI · 700+ modelos
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-[1.05]">
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-[1.05] animate-fade-in">
             Crea <span className="text-gradient">imágenes</span> y videos<br className="hidden sm:block" />
             cinemáticos con IA
           </h1>
-          <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+          <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto animate-fade-in">
             Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y más en un solo panel.
           </p>
         </div>
