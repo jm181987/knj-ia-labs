@@ -162,7 +162,7 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
     promise.finally(() => inflight.delete(key));
   }
   const result = await promise;
-  if (result) memCache.set(key, result);
+  if (result) setMemCache(key, result);
   return result;
 }
 
