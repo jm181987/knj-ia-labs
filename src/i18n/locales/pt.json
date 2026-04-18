@@ -36,6 +36,19 @@
     "faq": "FAQ",
     "platform": "Plataforma"
   },
+  "catalog": {
+    "cat": {
+      "all": "Todos",
+      "video": "Vídeo",
+      "image": "Imagem",
+      "avatars": "Avatares",
+      "upscale": "Melhorar qualidade",
+      "audio": "Áudio",
+      "3d": "3D",
+      "video-edit": "Editar vídeo",
+      "transcribe": "Transcrever"
+    }
+  },
   "userMenu": {
     "myAccount": "Minha conta",
     "profileSoon": "Perfil (em breve)",

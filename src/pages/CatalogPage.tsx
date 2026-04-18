@@ -128,7 +128,7 @@ export default function CatalogPage() {
             className="rounded-full"
           >
             <span className="mr-1.5">{c.emoji}</span>
-            {c.label}
+            {t(`catalog.cat.${c.id}`, c.label)}
             {!loading && <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{counts[c.id] ?? 0}</Badge>}
           </Button>
         ))}
