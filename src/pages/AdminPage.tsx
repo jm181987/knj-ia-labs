@@ -166,8 +166,9 @@ export default function AdminPage() {
   const handleSavePricingSettings = async () => {
     const m = parseFloat(pricingMarkup);
     const c = parseFloat(creditsPerUsd);
-    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0) {
-      toast({ title: t("common.error"), description: "Valores deben ser positivos", variant: "destructive" });
+    const f = parseFloat(mpFeePct);
+    if (isNaN(m) || m <= 0 || isNaN(c) || c <= 0 || isNaN(f) || f < 0 || f >= 100) {
+      toast({ title: t("common.error"), description: "Valores deben ser positivos y comisión < 100%", variant: "destructive" });
       return;
     }
     setSavingPricing(true);
@@ -177,6 +178,7 @@ export default function AdminPage() {
         .upsert([
           { key: "pricing_markup", value: m },
           { key: "pricing_credits_per_usd", value: c },
+          { key: "pricing_mp_fee_pct", value: f },
         ], { onConflict: "key" });
       if (error) throw error;
       toast({ title: t("common.success"), description: "Precios actualizados. El catálogo se refresca al recargar." });
