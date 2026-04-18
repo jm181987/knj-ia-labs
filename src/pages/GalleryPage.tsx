@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { listGenerations, type Generation } from "@/lib/wavespeed";
-import { Loader2, Download, Video, Image } from "lucide-react";
+import { Loader2, Download, Video, Image, Clock } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
 
 export default function GalleryPage() {
