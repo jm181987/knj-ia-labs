@@ -1,5 +1,7 @@
-import { Sparkles, History, Image, Shield, Coins, UserCircle2, Library } from "lucide-react";
+import { Sparkles, History, Image, Shield, Coins, UserCircle2, Library, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
+import { useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import knjLogo from "@/assets/knj-logo.png";
 import {
@@ -12,17 +14,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { UserMenu } from "@/components/UserMenu";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
+import { CATEGORIES } from "@/lib/wavespeedCatalog";
 
 export function AppSidebar() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { isAdmin } = useAuth();
   const { t } = useTranslation();
+  const location = useLocation();
+  const [catalogOpen, setCatalogOpen] = useState(location.pathname.startsWith("/app/catalog"));
 
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
@@ -31,7 +40,9 @@ export function AppSidebar() {
   const items = [
     { titleKey: "nav.generate", url: "/app", icon: Sparkles },
     { titleKey: "nav.avatars", url: "/app/avatars", icon: UserCircle2 },
-    { titleKey: "nav.catalog", url: "/app/catalog", icon: Library },
+  ];
+
+  const tail = [
     { titleKey: "nav.history", url: "/app/history", icon: History },
     { titleKey: "nav.gallery", url: "/app/gallery", icon: Image },
     { titleKey: "nav.buyCredits", url: "/app/pricing", icon: Coins },
@@ -68,6 +79,70 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {/* Catálogo con submenu de categorías */}
+              <Collapsible open={catalogOpen} onOpenChange={setCatalogOpen}>
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className={`hover:bg-accent/50 w-full ${
+                        location.pathname.startsWith("/app/catalog") ? "bg-accent text-accent-foreground font-medium" : ""
+                      }`}
+                    >
+                      <Library className="mr-2 h-4 w-4" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-left">{t("nav.catalog")}</span>
+                          <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform ${catalogOpen ? "rotate-180" : ""}`}
+                          />
+                        </>
+                      )}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  {!collapsed && (
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {CATEGORIES.map((c) => {
+                          const url = c.id === "all" ? "/app/catalog" : `/app/catalog?cat=${c.id}`;
+                          const active =
+                            location.pathname === "/app/catalog" &&
+                            ((c.id === "all" && !location.search) ||
+                              location.search.includes(`cat=${c.id}`));
+                          return (
+                            <SidebarMenuSubItem key={c.id}>
+                              <SidebarMenuSubButton asChild isActive={active}>
+                                <NavLink to={url} onClick={handleNavClick}>
+                                  <span className="mr-2">{c.emoji}</span>
+                                  <span>{t(`catalog.cat.${c.id}`, c.label)}</span>
+                                </NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  )}
+                </SidebarMenuItem>
+              </Collapsible>
+
+              {tail.map((item) => (
+                <SidebarMenuItem key={item.titleKey}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      onClick={handleNavClick}
+                      className="hover:bg-accent/50"
+                      activeClassName="bg-accent text-accent-foreground font-medium"
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+
               {isAdmin && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
