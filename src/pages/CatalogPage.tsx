@@ -215,3 +215,119 @@ export default function CatalogPage() {
     </div>
   );
 }
+
+// ===== Sub-componentes con traducción dinámica =====
+
+function CatalogList({
+  filtered,
+  pricing,
+  onOpen,
+  t,
+}: {
+  filtered: WSCatalogModel[];
+  pricing: { markup: number; creditsPerUsd: number; mpFeePct: number };
+  onOpen: (m: WSCatalogModel) => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}) {
+  const visible = filtered.slice(0, 200);
+  const translatedDescs = useTranslatedDescriptions(visible);
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">{t("catalog.modelsCount", { count: filtered.length })}</p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {visible.map((m) => {
+          const desc = translatedDescs[m.model_id] || m.description || t("catalog.noDescription");
+          return (
+            <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-base leading-tight">{prettyName(m.model_id)}</CardTitle>
+                  <Badge variant="outline" className="shrink-0 text-[10px]">{getBrand(m.model_id)}</Badge>
+                </div>
+                <CardDescription className="text-xs line-clamp-3">{desc}</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 pb-2 flex-1 flex items-center gap-2 flex-wrap">
+                <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
+                <Badge variant="outline" className="text-[10px] gap-1 border-primary/40 text-primary">
+                  <Coins className="h-2.5 w-2.5" />
+                  {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} cr
+                </Badge>
+              </CardContent>
+              <CardFooter className="pt-2">
+                <Button size="sm" className="w-full" onClick={() => onOpen(m)}>
+                  <Wand2 className="h-3.5 w-3.5 mr-1.5" /> {t("catalog.use")}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
+      {filtered.length > 200 && (
+        <p className="text-center text-xs text-muted-foreground py-4">{t("catalog.showingFirst")}</p>
+      )}
+    </>
+  );
+}
+
+function ModelDialogContent({
+  openModel,
+  values,
+  setValues,
+  pricing,
+  submitting,
+  setOpenModel,
+  handleGenerate,
+  t,
+}: {
+  openModel: WSCatalogModel;
+  values: Record<string, unknown>;
+  setValues: (v: Record<string, unknown>) => void;
+  pricing: { markup: number; creditsPerUsd: number; mpFeePct: number };
+  submitting: boolean;
+  setOpenModel: (m: WSCatalogModel | null) => void;
+  handleGenerate: () => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}) {
+  const { translation, loading } = useModelTranslation(openModel);
+  const desc = translation?.description || openModel.description;
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          {prettyName(openModel.model_id)}
+          <Badge variant="outline" className="ml-1 text-xs">{getBrand(openModel.model_id)}</Badge>
+        </DialogTitle>
+        <DialogDescription className="text-xs">
+          <span className="block">
+            {desc}
+            {loading && !translation && <Loader2 className="inline h-3 w-3 ml-1 animate-spin opacity-50" />}
+          </span>
+          <span className="block mt-1 font-mono text-[10px] opacity-60">{openModel.model_id}</span>
+        </DialogDescription>
+      </DialogHeader>
+      <ScrollArea className="flex-1 pr-3 -mr-3">
+        <DynamicSchemaForm
+          schema={openModel.request_schema}
+          values={values}
+          onChange={setValues}
+          fieldLabels={translation?.field_labels}
+          fieldDescriptions={translation?.field_descriptions}
+        />
+      </ScrollArea>
+      <DialogFooter className="items-center sm:justify-between gap-2">
+        <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
+          <Coins className="h-3 w-3" />
+          {t("catalog.cost")}: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
+        </Badge>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
+          <Button onClick={handleGenerate} disabled={submitting}>
+            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            {t("catalog.generate")}
+          </Button>
+        </div>
+      </DialogFooter>
+    </>
+  );
+}
