@@ -37,6 +37,21 @@
     "platform": "Platform"
   },
   "catalog": {
+    "heroBadge": "Powered by WaveSpeed AI · 700+ models",
+    "heroTitle1": "Create",
+    "heroTitleHighlight": "images",
+    "heroTitle2": "and cinematic videos with AI",
+    "heroSub": "Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 and more in a single panel.",
+    "title": "Full catalog",
+    "searchPlaceholder": "Search by name, brand or description…",
+    "modelsCount": "{{count}} models",
+    "showingFirst": "Showing the first 200 — refine your search to see more.",
+    "noDescription": "No description",
+    "use": "Use",
+    "generate": "Generate",
+    "generating": "Generation queued",
+    "generatingDesc": "We'll let you know when it's ready",
+    "missingField": "Missing field \"{{field}}\"",
     "cat": {
       "all": "All",
       "video": "Video",

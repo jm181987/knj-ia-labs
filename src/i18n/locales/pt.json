@@ -37,6 +37,21 @@
     "platform": "Plataforma"
   },
   "catalog": {
+    "heroBadge": "Powered by WaveSpeed AI · 700+ modelos",
+    "heroTitle1": "Crie",
+    "heroTitleHighlight": "imagens",
+    "heroTitle2": "e vídeos cinematográficos com IA",
+    "heroSub": "Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 e mais em um único painel.",
+    "title": "Catálogo completo",
+    "searchPlaceholder": "Buscar por nome, marca ou descrição…",
+    "modelsCount": "{{count}} modelos",
+    "showingFirst": "Mostrando os primeiros 200 — refine sua busca para ver mais.",
+    "noDescription": "Sem descrição",
+    "use": "Usar",
+    "generate": "Gerar",
+    "generating": "Geração na fila",
+    "generatingDesc": "Avisaremos quando estiver pronta",
+    "missingField": "Campo \"{{field}}\" faltando",
     "cat": {
       "all": "Todos",
       "video": "Vídeo",

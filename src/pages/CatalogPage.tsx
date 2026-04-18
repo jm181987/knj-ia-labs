@@ -129,14 +129,15 @@ export default function CatalogPage() {
         <div className="relative px-6 py-12 sm:py-16 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5 backdrop-blur-sm animate-fade-in">
             <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
-            Powered by WaveSpeed AI · 700+ modelos
+            {t("catalog.heroBadge")}
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-[1.05] animate-fade-in">
-            Crea <span className="text-gradient">imágenes</span> y videos<br className="hidden sm:block" />
-            cinemáticos con IA
+            {t("catalog.heroTitle1")}{" "}
+            <span className="text-gradient">{t("catalog.heroTitleHighlight")}</span>
+            <br className="hidden sm:block" /> {t("catalog.heroTitle2")}
           </h1>
           <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto animate-fade-in">
-            Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 y más en un solo panel.
+            {t("catalog.heroSub")}
           </p>
         </div>
       </section>
