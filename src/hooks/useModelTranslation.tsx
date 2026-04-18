@@ -9,9 +9,43 @@ export type ModelTranslation = {
   field_descriptions: Record<string, string>;
 };
 
-// Cache en memoria por sesión
-const memCache = new Map<string, ModelTranslation>();
+// Cache persistente en localStorage + memoria
+const LS_FULL_KEY = "model_tr_full_v1";
+const LS_CARD_KEY = "model_tr_card_v1";
+const LS_MAX_ENTRIES = 200;
+
+function loadLS<T>(key: string): Map<string, T> {
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
+    if (!raw) return new Map();
+    const obj = JSON.parse(raw) as Record<string, T>;
+    return new Map(Object.entries(obj));
+  } catch {
+    return new Map();
+  }
+}
+
+function saveLS<T>(key: string, map: Map<string, T>) {
+  try {
+    if (typeof localStorage === "undefined") return;
+    // Limitar tamaño: conservar las últimas LS_MAX_ENTRIES
+    let entries = Array.from(map.entries());
+    if (entries.length > LS_MAX_ENTRIES) {
+      entries = entries.slice(-LS_MAX_ENTRIES);
+    }
+    localStorage.setItem(key, JSON.stringify(Object.fromEntries(entries)));
+  } catch {
+    // quota exceeded u otro: ignorar
+  }
+}
+
+const memCache = loadLS<ModelTranslation>(LS_FULL_KEY);
 const inflight = new Map<string, Promise<ModelTranslation | null>>();
+
+function setMemCache(key: string, value: ModelTranslation) {
+  memCache.set(key, value);
+  saveLS(LS_FULL_KEY, memCache);
+}
 
 export function useModelTranslation(model: WSCatalogModel | null) {
   const { i18n } = useTranslation();
@@ -77,7 +111,7 @@ export function useModelTranslation(model: WSCatalogModel | null) {
         const result = await promise;
         if (cancelled) return;
         if (result) {
-          memCache.set(key, result);
+          setMemCache(key, result);
           setTranslation(result);
         } else {
           setTranslation(null);
@@ -128,7 +162,7 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
     promise.finally(() => inflight.delete(key));
   }
   const result = await promise;
-  if (result) memCache.set(key, result);
+  if (result) setMemCache(key, result);
   return result;
 }
 
@@ -172,8 +206,13 @@ export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurre
 }
 
 // Hook para traducir solo descripciones de tarjetas (sin fields) — más liviano
-const cardCache = new Map<string, string>();
+const cardCache = loadLS<string>(LS_CARD_KEY);
 const cardInflight = new Map<string, Promise<string | null>>();
+
+function setCardCache(key: string, value: string) {
+  cardCache.set(key, value);
+  saveLS(LS_CARD_KEY, cardCache);
+}
 
 export function useTranslatedDescriptions(models: WSCatalogModel[]) {
   const { i18n } = useTranslation();
@@ -236,7 +275,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
           const desc = await p;
           if (cancelled) return;
           if (desc) {
-            cardCache.set(key, desc);
+            setCardCache(key, desc);
             setMap((prev) => ({ ...prev, [m.model_id]: desc }));
           }
         }
