@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Index from "./pages/Index";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import AvatarsPage from "./pages/AvatarsPage";
@@ -41,7 +40,7 @@ const App = () => (
                 <ProtectedRoute>
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/" element={<CatalogPage />} />
                       <Route path="history" element={<HistoryPage />} />
                       <Route path="gallery" element={<GalleryPage />} />
                       <Route path="avatars" element={<AvatarsPage />} />
