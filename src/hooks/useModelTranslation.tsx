@@ -275,7 +275,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
           const desc = await p;
           if (cancelled) return;
           if (desc) {
-            cardCache.set(key, desc);
+            setCardCache(key, desc);
             setMap((prev) => ({ ...prev, [m.model_id]: desc }));
           }
         }
