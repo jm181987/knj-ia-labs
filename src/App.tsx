@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { GoogleTranslateBridge } from "@/components/GoogleTranslateBridge";
 import Index from "./pages/Index";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
@@ -30,7 +29,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <GoogleTranslateBridge />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<AuthPage />} />
