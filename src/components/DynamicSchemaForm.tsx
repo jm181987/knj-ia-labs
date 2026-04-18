@@ -45,15 +45,19 @@ function FieldRenderer({
   prop,
   value,
   setValue,
+  customLabel,
+  customDescription,
 }: {
   k: string;
   prop: WSSchemaProp;
   value: unknown;
   setValue: (v: unknown) => void;
+  customLabel?: string;
+  customDescription?: string;
 }) {
   const { t } = useTranslation();
-  const label = prop.description || k;
-  const labelShort = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const labelShort = customLabel || k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const descText = customDescription || prop.description;
 
   // Prompt → textarea
   if (prop.type === "string" && (k === "prompt" || k === "negative_prompt") && !prop.enum) {
