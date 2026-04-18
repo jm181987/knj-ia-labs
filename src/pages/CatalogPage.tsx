@@ -9,17 +9,24 @@ import { Loader2, Search, Sparkles, Wand2, Library } from "lucide-react";
 import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 export default function CatalogPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [models, setModels] = useState<WSCatalogModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const category = searchParams.get("cat") || "all";
+  const setCategory = (id: string) => {
+    if (id === "all") setSearchParams({});
+    else setSearchParams({ cat: id });
+  };
   const [openModel, setOpenModel] = useState<WSCatalogModel | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -121,7 +128,7 @@ export default function CatalogPage() {
             className="rounded-full"
           >
             <span className="mr-1.5">{c.emoji}</span>
-            {c.label}
+            {t(`catalog.cat.${c.id}`, c.label)}
             {!loading && <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{counts[c.id] ?? 0}</Badge>}
           </Button>
         ))}
