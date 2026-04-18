@@ -121,13 +121,35 @@ function FieldRenderer({
     );
   }
 
+  // Slider numérico
+  if ((prop.type === "integer" || prop.type === "number") && prop.minimum !== undefined && prop.maximum !== undefined) {
+    const num = (value as number) ?? (prop.default as number) ?? prop.minimum;
+    const step = prop.type === "integer" ? 1 : (prop.maximum - prop.minimum) / 100;
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm">{labelShort}</Label>
+          <span className="text-xs text-muted-foreground tabular-nums">{num}</span>
+        </div>
+        <Slider
+          min={prop.minimum}
+          max={prop.maximum}
+          step={step}
+          value={[num]}
+          onValueChange={(arr) => setValue(prop.type === "integer" ? Math.round(arr[0]) : arr[0])}
+        />
+        {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
+      </div>
+    );
+  }
+
   // Boolean → switch
   if (prop.type === "boolean") {
     return (
       <div className="flex items-start justify-between gap-3 py-1">
         <div>
           <Label className="text-sm">{labelShort}</Label>
-          {prop.description && <p className="text-xs text-muted-foreground">{prop.description}</p>}
+          {descText && <p className="text-xs text-muted-foreground">{descText}</p>}
         </div>
         <Switch checked={!!value} onCheckedChange={setValue} />
       </div>
