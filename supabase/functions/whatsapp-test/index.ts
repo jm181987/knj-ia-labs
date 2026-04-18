@@ -1,50 +1,55 @@
-// Envía un mensaje de prueba por Evolution API al número configurado.
+// Diagnóstico: prueba varias variantes de auth contra Evolution API.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
 const NOTIFY_TO = "59893867429";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const baseUrl = Deno.env.get("EVOLUTION_API_URL");
-  const instance = Deno.env.get("EVOLUTION_INSTANCE");
-  const apiKey = Deno.env.get("EVOLUTION_API_KEY");
+  const baseUrl = Deno.env.get("EVOLUTION_API_URL")!;
+  const instance = Deno.env.get("EVOLUTION_INSTANCE")!;
+  const apiKey = Deno.env.get("EVOLUTION_API_KEY")!;
+  const url = `${baseUrl.replace(/\/$/, "")}/message/sendText/${instance}`;
+  const text = `🧪 Test variante`;
 
-  if (!baseUrl || !instance || !apiKey) {
-    return new Response(
-      JSON.stringify({
-        ok: false,
-        error: "Faltan EVOLUTION_API_URL, EVOLUTION_INSTANCE o EVOLUTION_API_KEY",
-        haveUrl: !!baseUrl, haveInstance: !!instance, haveKey: !!apiKey,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+  const variants = [
+    { name: "apikey lower", headers: { "Content-Type": "application/json", apikey: apiKey } },
+    { name: "Apikey capital", headers: { "Content-Type": "application/json", Apikey: apiKey } },
+    { name: "APIKEY upper", headers: { "Content-Type": "application/json", APIKEY: apiKey } },
+    { name: "Authorization Bearer", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` } },
+    { name: "x-api-key", headers: { "Content-Type": "application/json", "x-api-key": apiKey } },
+  ];
+
+  // También probamos /instance/fetchInstances que requiere global API key
+  const fetchInstancesUrl = `${baseUrl.replace(/\/$/, "")}/instance/fetchInstances`;
+
+  const results: any[] = [];
+  for (const v of variants) {
+    try {
+      const r = await fetch(url, {
+        method: "POST",
+        headers: v.headers,
+        body: JSON.stringify({ number: NOTIFY_TO, text }),
+      });
+      const body = await r.text();
+      results.push({ test: v.name, status: r.status, body: body.slice(0, 200) });
+    } catch (e) {
+      results.push({ test: v.name, error: String(e) });
+    }
   }
 
-  let customText: string | undefined;
+  // Probar fetchInstances (requiere global key)
   try {
-    const body = await req.json();
-    if (typeof body?.text === "string") customText = body.text;
-  } catch (_) { /* sin body */ }
+    const r = await fetch(fetchInstancesUrl, { headers: { apikey: apiKey } });
+    const body = await r.text();
+    results.push({ test: "fetchInstances apikey", status: r.status, body: body.slice(0, 300) });
+  } catch (e) {
+    results.push({ test: "fetchInstances", error: String(e) });
+  }
 
-  const text =
-    customText ||
-    `🧪 *Test desde Lovable*\nSi ves este mensaje, la integración con Evolution API funciona.\n${new Date().toLocaleString("es-UY")}`;
-
-  const url = `${baseUrl.replace(/\/$/, "")}/message/sendText/${instance}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: apiKey },
-    body: JSON.stringify({ number: NOTIFY_TO, text }),
+  return new Response(JSON.stringify({ url, instance, keyLen: apiKey.length, results }, null, 2), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-  const responseText = await res.text();
-  console.log("Evolution response", res.status, responseText);
-
-  return new Response(
-    JSON.stringify({ ok: res.ok, status: res.status, response: responseText, url }),
-    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-  );
 });
