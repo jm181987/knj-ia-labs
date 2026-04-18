@@ -309,7 +309,7 @@ function ModelDialogContent({
           <span className="block mt-1 font-mono text-[10px] opacity-60">{openModel.model_id}</span>
         </DialogDescription>
       </DialogHeader>
-      <ScrollArea className="flex-1 pr-3 -mr-3">
+      <ScrollArea className="flex-1 min-h-0 max-h-[60vh] pr-3 -mr-3">
         <DynamicSchemaForm
           schema={openModel.request_schema}
           values={values}
