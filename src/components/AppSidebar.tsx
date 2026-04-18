@@ -1,4 +1,4 @@
-import { Sparkles, History, Image, Shield, Coins, UserCircle2, Library, ChevronDown } from "lucide-react";
+import { History, Image, Shield, Coins, UserCircle2, Library, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -31,14 +31,15 @@ export function AppSidebar() {
   const { isAdmin } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
-  const [catalogOpen, setCatalogOpen] = useState(location.pathname.startsWith("/app/catalog"));
+  const [catalogOpen, setCatalogOpen] = useState(
+    location.pathname === "/app" || location.pathname.startsWith("/app/catalog"),
+  );
 
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   const items = [
-    { titleKey: "nav.generate", url: "/app", icon: Sparkles },
     { titleKey: "nav.avatars", url: "/app/avatars", icon: UserCircle2 },
   ];
 
