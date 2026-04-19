@@ -202,7 +202,7 @@ export default function CatalogPage() {
 
       {/* Modal de generación */}
       <Dialog open={!!openModel} onOpenChange={(o) => !o && setOpenModel(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
           {openModel && (
             <ModelDialogContent
               openModel={openModel}
@@ -354,14 +354,14 @@ function ModelDialogContent({
           fieldDescriptions={translation?.field_descriptions}
         />
       </div>
-      <DialogFooter className="items-center sm:justify-between gap-2 p-6 pt-3 border-t border-border/50 shrink-0">
-        <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-xs">
+      <DialogFooter className="flex-row items-center justify-between gap-2 p-4 sm:p-6 pt-3 border-t border-border/50 shrink-0 sm:space-x-0">
+        <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-[10px] sm:text-xs shrink-0">
           <Coins className="h-3 w-3" />
-          {t("catalog.cost")}: {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
+          {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
         </Badge>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
-          <Button onClick={handleGenerate} disabled={submitting}>
+          <Button size="sm" variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
+          <Button size="sm" onClick={handleGenerate} disabled={submitting}>
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
             {t("catalog.generate")}
           </Button>
