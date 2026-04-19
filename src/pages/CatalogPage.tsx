@@ -201,8 +201,12 @@ export default function CatalogPage() {
       )}
 
       {/* Modal de generación */}
-      <Dialog open={!!openModel} onOpenChange={(o) => !o && setOpenModel(null)}>
-        <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <Dialog open={!!openModel} onOpenChange={(o) => !o && setOpenModel(null)} modal={false}>
+        <DialogContent
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          className="w-[calc(100vw-1rem)] max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden"
+        >
           {openModel && (
             <ModelDialogContent
               openModel={openModel}
