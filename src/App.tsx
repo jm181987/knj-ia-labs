@@ -12,6 +12,7 @@ import AvatarsPage from "./pages/AvatarsPage";
 import CatalogPage from "./pages/CatalogPage";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
+import TermsPage from "./pages/TermsPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import PricingPage from "./pages/PricingPage";
@@ -30,6 +31,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/payment/success" element={<PaymentSuccessPage />} />
             <Route path="/payment/failure" element={<PaymentFailurePage />} />

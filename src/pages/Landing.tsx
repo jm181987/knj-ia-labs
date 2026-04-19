@@ -299,10 +299,11 @@ export default function Landing() {
             <img src={knjLogo} alt="KNJ PRO" className="h-9 w-9 object-contain" />
             <span>© {new Date().getFullYear()} KNJ PRO</span>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 flex-wrap justify-center">
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
             <Link to="/app" className="hover:text-foreground transition-colors">{t("nav.platform")}</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Términos y Condiciones</Link>
           </div>
         </div>
       </footer>
