@@ -40,11 +40,12 @@ Deno.serve(async (req) => {
     }
 
     const list = Array.isArray(raw?.data) ? raw.data : [];
-    if (list[0]) {
-      console.log("WS model top keys:", Object.keys(list[0]));
-      console.log("WS api_schema keys:", list[0]?.api_schema ? Object.keys(list[0].api_schema) : null);
-      console.log("WS first model JSON sample:", JSON.stringify(list[0]).slice(0, 3000));
+
+    // DEBUG temporal: si ?debug=1, devuelve solo el primer modelo crudo
+    if (url.searchParams.get("debug") === "1") {
+      return json({ code: 0, sample: list[0] || null, total: list.length });
     }
+
 
     // Compactamos a lo esencial para reducir tamaño de respuesta
     const compact = list.map((m: any) => {
