@@ -172,9 +172,6 @@ export default function Landing() {
               {t("landing.ctaExamples")}
             </Button>
           </a>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-primary/30 bg-primary/5 font-mono-tech text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {t("landing.mpBadge")}
-          </span>
           <div className="sm:ml-auto flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono-tech text-muted-foreground">
             <div className="flex items-center gap-1">
               {[0, 1, 2, 3, 4].map((i) => (
