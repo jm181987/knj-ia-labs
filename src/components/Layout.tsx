@@ -37,6 +37,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Política de Privacidad
             </a>
             <span className="mx-2">•</span>
+            <a href="/upload-policy" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
+              Política de Contenido
+            </a>
+            <span className="mx-2">•</span>
             <span>© {new Date().getFullYear()} KNJ PRO</span>
           </footer>
         </div>
