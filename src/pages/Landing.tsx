@@ -173,24 +173,109 @@ export default function Landing() {
         {/* Showcase mosaic */}
         <div id="showcase" className="max-w-6xl mx-auto px-6 pb-24">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {/* Hero — editorial asymmetric */}
+      <section className="relative overflow-hidden border-b border-border/60">
+        <div className="absolute inset-0 -z-10 opacity-50"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 50% 40% at 20% 0%, hsl(var(--primary) / 0.18), transparent 60%)",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-6 pt-20 pb-16 grid grid-cols-12 gap-8 items-end">
+          <div className="col-span-12 lg:col-span-8">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm border border-primary/30 bg-primary/5 mb-8 font-mono-tech">
+              <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                {t("landing.heroBadge")}
+              </span>
+            </div>
+            <h1 className="font-display text-5xl sm:text-7xl lg:text-[8rem] font-extrabold leading-[0.88] text-balance">
+              {t("landing.heroTitle1")}{" "}
+              <span className="text-gradient">{t("landing.heroTitleHighlight")}</span>
+              <br />
+              <span className="text-foreground/85">{t("landing.heroTitle2")}</span>
+            </h1>
+          </div>
+          <div className="col-span-12 lg:col-span-4 lg:pb-4">
+            <div className="border-t border-border/80 pt-5 font-mono-tech text-[11px] leading-relaxed">
+              <p className="text-muted-foreground/70 mb-4">[ KNJ // PRO · v4.0 ]</p>
+              <p className="text-muted-foreground mb-6">{t("landing.heroSub")}</p>
+              <div className="space-y-1.5">
+                <div className="flex justify-between border-b border-border/60 pb-1">
+                  <span className="text-muted-foreground/60 uppercase tracking-wider">Models</span>
+                  <span className="tabular-nums">700+</span>
+                </div>
+                <div className="flex justify-between border-b border-border/60 pb-1">
+                  <span className="text-muted-foreground/60 uppercase tracking-wider">Latency</span>
+                  <span className="tabular-nums text-success">~22ms</span>
+                </div>
+                <div className="flex justify-between border-b border-border/60 pb-1">
+                  <span className="text-muted-foreground/60 uppercase tracking-wider">Status</span>
+                  <span className="text-primary uppercase">Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 pb-16 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border-t border-border/40 pt-8">
+          <Link to="/app">
+            <Button size="lg" className="gap-2 shadow-elegant rounded-sm font-mono-tech text-xs uppercase tracking-wider">
+              <Wand2 className="h-4 w-4" />
+              {t("landing.ctaCreate")}
+            </Button>
+          </Link>
+          <a href="#showcase">
+            <Button size="lg" variant="outline" className="rounded-sm font-mono-tech text-xs uppercase tracking-wider">
+              {t("landing.ctaExamples")}
+            </Button>
+          </a>
+          <div className="sm:ml-auto flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono-tech text-muted-foreground">
+            <div className="flex items-center gap-1">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} className="h-3 w-3 fill-warning text-warning" />
+              ))}
+              <span className="ml-2 uppercase tracking-wider">{t("landing.recommended")}</span>
+            </div>
+            <span className="hidden sm:flex items-center gap-1.5 uppercase tracking-wider">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" /> {t("landing.securePay")}
+            </span>
+            <span className="hidden sm:flex items-center gap-1.5 uppercase tracking-wider">
+              <Zap className="h-3.5 w-3.5 text-warning" /> {t("landing.instant")}
+            </span>
+          </div>
+        </div>
+
+        {/* Showcase mosaic — asymmetric with technical labels */}
+        <div id="showcase" className="max-w-7xl mx-auto px-6 pb-24">
+          <div className="flex items-end justify-between mb-6">
+            <span className="font-mono-tech text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+              [ Output_Archive · Realtime ]
+            </span>
+            <div className="hidden sm:block flex-1 mx-6 h-px bg-border/50" />
+            <span className="font-mono-tech text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+              N=12
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {[
-              { type: "video", src: "/showcase/ai-video-1.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600" },
-              { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600" },
-              { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600" },
-              { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600" },
-              { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600" },
+              { type: "video", src: "/showcase/ai-video-1.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600", code: "VID_001" },
+              { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
+              { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
+              { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600", code: "VID_004" },
+              { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600", code: "IMG_005" },
+              { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600", code: "IMG_006" },
+              { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600", code: "VID_007" },
+              { type: "image", src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600", code: "IMG_008" },
+              { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600", code: "IMG_009" },
+              { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
+              { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
+              { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600", code: "IMG_012" },
             ].map((item, i) => (
               <div
                 key={i}
-                className={`relative rounded-xl overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-150 hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
-                  i === 0 || i === 7 ? "row-span-2 col-span-2" : ""
+                className={`relative rounded-sm overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-[1.4] hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
+                  i === 0 ? "row-span-2 col-span-2" : i === 7 ? "row-span-2 col-span-2" : ""
                 }`}
               >
                 {item.type === "video" ? (
@@ -203,11 +288,10 @@ export default function Landing() {
                       loop
                       playsInline
                       preload="metadata"
-                      className="w-full h-full object-cover aspect-square"
+                      className="w-full h-full object-cover aspect-square grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                     />
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-medium text-white flex items-center gap-1 transition-opacity group-hover:opacity-0">
-                      <Video className="h-2.5 w-2.5" />
-                      VIDEO
+                    <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10">
+                      ● REC
                     </div>
                   </>
                 ) : (
@@ -215,9 +299,12 @@ export default function Landing() {
                     src={item.src}
                     alt=""
                     loading="lazy"
-                    className="w-full h-full object-cover aspect-square"
+                    className="w-full h-full object-cover aspect-square grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                   />
                 )}
+                <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white/80 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {item.code}
+                </div>
               </div>
             ))}
           </div>
