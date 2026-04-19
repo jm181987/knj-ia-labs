@@ -21,7 +21,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <header className="h-14 flex items-center border-b border-border/60 px-4 backdrop-blur-md bg-background/60 sticky top-0 z-10">
             <SidebarTrigger />
             <div className="ml-auto text-xs text-muted-foreground">
-              Powered by <span className="text-gradient font-semibold">KNJ Pro</span>
+              Powered by <span className="text-gradient font-semibold">KNJ PRO</span>
             </div>
           </header>
           <main className="flex-1 p-3 sm:p-6 lg:p-10 overflow-auto">{children}</main>
