@@ -235,7 +235,9 @@ function CatalogList({
   onOpen: (m: WSCatalogModel) => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
-  const visible = filtered.slice(0, 200);
+  const isMobile = useIsMobile();
+  const visibleLimit = isMobile ? 48 : 120;
+  const visible = filtered.slice(0, visibleLimit);
   const translatedDescs = useTranslatedDescriptions(visible);
   return (
     <>
@@ -268,7 +270,7 @@ function CatalogList({
           );
         })}
       </div>
-      {filtered.length > 200 && (
+      {filtered.length > visibleLimit && (
         <p className="text-center text-xs text-muted-foreground py-4">{t("catalog.showingFirst")}</p>
       )}
     </>
