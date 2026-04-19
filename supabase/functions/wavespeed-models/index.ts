@@ -25,7 +25,9 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("WAVESPEED_API_KEY");
     if (!apiKey) return json({ code: 1, message: "WAVESPEED_API_KEY no configurada" }, 200);
 
-    if (CACHE && Date.now() - CACHE.at < TTL_MS) {
+    const url = new URL(req.url);
+    const force = url.searchParams.get("force") === "1";
+    if (!force && CACHE && Date.now() - CACHE.at < TTL_MS) {
       return json({ code: 0, data: CACHE.data, cached: true });
     }
 
