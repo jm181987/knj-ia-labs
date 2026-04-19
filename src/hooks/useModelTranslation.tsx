@@ -150,6 +150,7 @@ export function useModelTranslation(model: WSCatalogModel | null) {
 async function translateFullModel(model: WSCatalogModel, lang: string): Promise<ModelTranslation | null> {
   const key = `${lang}:${model.model_id}`;
   if (memCache.has(key)) return memCache.get(key)!;
+  if (isRateLimited()) return null;
   let promise = inflight.get(key);
   if (!promise) {
     const fields: Record<string, { label?: string; description?: string }> = {};
@@ -171,7 +172,10 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
         },
       })
       .then(({ data, error }) => {
-        if (error || !data || data.code !== 0) return null;
+        if (error || !data || data.code !== 0) {
+          if (data?.message === "rate_limited") markRateLimited();
+          return null;
+        }
         return data.data as ModelTranslation;
       });
     inflight.set(key, promise);
