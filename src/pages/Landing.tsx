@@ -133,7 +133,7 @@ export default function Landing() {
                 {t("landing.heroBadge")}
               </span>
             </div>
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-[8rem] font-extrabold leading-[0.88] text-balance">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[0.95] text-balance">
               {t("landing.heroTitle1")}{" "}
               <span className="text-gradient">{t("landing.heroTitleHighlight")}</span>
               <br />
