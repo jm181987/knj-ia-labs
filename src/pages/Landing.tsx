@@ -16,6 +16,7 @@ import {
 import knjLogo from "@/assets/knj-logo.png";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -201,6 +202,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Savings comparison */}
       <section id="savings" className="border-t border-border/60 py-24">
