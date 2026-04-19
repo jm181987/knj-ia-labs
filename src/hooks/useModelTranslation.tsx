@@ -42,6 +42,15 @@ function saveLS<T>(key: string, map: Map<string, T>) {
 const memCache = loadLS<ModelTranslation>(LS_FULL_KEY);
 const inflight = new Map<string, Promise<ModelTranslation | null>>();
 
+// Backoff global: cuando recibimos rate_limited, pausamos nuevas llamadas hasta este timestamp
+let rateLimitedUntil = 0;
+function isRateLimited() {
+  return Date.now() < rateLimitedUntil;
+}
+function markRateLimited(ms = 30000) {
+  rateLimitedUntil = Math.max(rateLimitedUntil, Date.now() + ms);
+}
+
 function setMemCache(key: string, value: ModelTranslation) {
   memCache.set(key, value);
   saveLS(LS_FULL_KEY, memCache);
@@ -81,6 +90,10 @@ export function useModelTranslation(model: WSCatalogModel | null) {
 
     const run = async () => {
       try {
+        if (isRateLimited()) {
+          setTranslation(null);
+          return;
+        }
         let promise = inflight.get(key);
         if (!promise) {
           const fields: Record<string, { label?: string; description?: string }> = {};
@@ -102,7 +115,10 @@ export function useModelTranslation(model: WSCatalogModel | null) {
               },
             })
             .then(({ data, error }) => {
-              if (error || !data || data.code !== 0) return null;
+              if (error || !data || data.code !== 0) {
+                if (data?.message === "rate_limited") markRateLimited();
+                return null;
+              }
               return data.data as ModelTranslation;
             });
           inflight.set(key, promise);
@@ -134,6 +150,7 @@ export function useModelTranslation(model: WSCatalogModel | null) {
 async function translateFullModel(model: WSCatalogModel, lang: string): Promise<ModelTranslation | null> {
   const key = `${lang}:${model.model_id}`;
   if (memCache.has(key)) return memCache.get(key)!;
+  if (isRateLimited()) return null;
   let promise = inflight.get(key);
   if (!promise) {
     const fields: Record<string, { label?: string; description?: string }> = {};
@@ -155,7 +172,10 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
         },
       })
       .then(({ data, error }) => {
-        if (error || !data || data.code !== 0) return null;
+        if (error || !data || data.code !== 0) {
+          if (data?.message === "rate_limited") markRateLimited();
+          return null;
+        }
         return data.data as ModelTranslation;
       });
     inflight.set(key, promise);
@@ -246,12 +266,16 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
       return next;
     });
 
-    // Fetch en paralelo limitado (de 5 en 5) para no saturar
+    // Fetch en paralelo limitado para no saturar y respetando rate-limit global
     const run = async () => {
-      const concurrency = 5;
+      const concurrency = 2;
       let i = 0;
       const worker = async () => {
         while (i < toFetch.length) {
+          if (isRateLimited()) {
+            await new Promise((r) => setTimeout(r, 5000));
+            continue;
+          }
           const m = toFetch[i++];
           const key = `${lang}:${m.model_id}`;
           let p = cardInflight.get(key);
@@ -266,7 +290,10 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
                 },
               })
               .then(({ data, error }) => {
-                if (error || !data || data.code !== 0) return null;
+                if (error || !data || data.code !== 0) {
+                  if (data?.message === "rate_limited") markRateLimited();
+                  return null;
+                }
                 return (data.data as ModelTranslation).description || null;
               });
             cardInflight.set(key, p);
@@ -278,6 +305,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
             setCardCache(key, desc);
             setMap((prev) => ({ ...prev, [m.model_id]: desc }));
           }
+          await new Promise((r) => setTimeout(r, 200));
         }
       };
       await Promise.all(Array.from({ length: concurrency }, worker));
