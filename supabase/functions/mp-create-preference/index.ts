@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       amountUYU = Math.round(amt);
       itemId = "custom";
       itemTitle = "Recarga personalizada";
-      itemDescription = `${credits} créditos para KNJ IA`;
+      itemDescription = `${credits} créditos para KNJ Pro`;
     } else {
       if (!package_id) return jsonResponse({ error: "Falta package_id o custom_amount" }, 400);
       const { data: pkg, error: pkgErr } = await supabase
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       credits = pkg.credits;
       itemId = pkg.id;
       itemTitle = pkg.name;
-      itemDescription = `${pkg.credits} créditos para KNJ IA`;
+      itemDescription = `${pkg.credits} créditos para KNJ Pro`;
     }
 
     // Crear fila pending
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         },
         auto_return: "approved",
         notification_url: `${supabaseUrl}/functions/v1/mp-webhook`,
-        statement_descriptor: "KNJ IA",
+        statement_descriptor: "KNJ Pro",
         metadata: { payment_id: payment.id, user_id: user.id, credits },
       }),
     });
