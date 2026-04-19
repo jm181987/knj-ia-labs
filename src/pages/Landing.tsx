@@ -17,6 +17,63 @@ import knjLogo from "@/assets/knj-logo.png";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const faqItems = [
+  {
+    q: "¿Necesito entender de tecnología o saber usar IA?",
+    a: "No. KNJ PRO fue creada para quienes quieren resultados, no complejidad. Describes lo que querés, elegís el modelo y la plataforma se encarga del resto. Sin códigos, sin configuraciones técnicas y sin prompts complicados.",
+  },
+  {
+    q: "¿Necesito escribir prompts de una manera específica?",
+    a: "No. Podés escribir normalmente en lenguaje simple. La plataforma entiende tu intención y genera los mejores resultados para imágenes, videos y audio.",
+  },
+  {
+    q: "¿Esto reemplaza herramientas como Midjourney, Kling, Sora o ChatGPT?",
+    a: "Sí. KNJ PRO integra los mismos modelos de punta — Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2, Flux y muchos más — en un único panel. Accedés a las mismas tecnologías, siempre actualizadas, sin necesidad de suscribirte ni gestionar múltiples plataformas.",
+  },
+  {
+    q: "¿Puedo usar las creaciones comercialmente?",
+    a: "Sí. Las imágenes, videos y audios generados podés usarlos para redes sociales, anuncios, productos, e-commerce, clientes o proyectos personales, sin marca de agua.",
+  },
+  {
+    q: "¿Cómo funciona el sistema de créditos?",
+    a: "KNJ PRO funciona con créditos prepagos: comprás un paquete una sola vez y los usás cuando querés, en cualquier herramienta de la plataforma. No hay suscripciones mensuales ni cobros automáticos.",
+  },
+  {
+    q: "¿Los créditos vencen?",
+    a: "No. Tus créditos no tienen fecha de vencimiento. Los usás a tu ritmo, sin presión.",
+  },
+  {
+    q: "¿Puedo comprar más créditos cuando se me terminen?",
+    a: "Sí. Podés comprar paquetes adicionales cuando quieras, directamente desde tu panel. Hay distintos tamaños para que elijas el que mejor se adapte a tu uso.",
+  },
+  {
+    q: "¿Los modelos se actualizan o quedan desactualizados?",
+    a: "Se actualizan constantemente. Cada vez que sale un nuevo modelo de IA o se mejora uno existente, lo integramos a la plataforma sin costo adicional.",
+  },
+  {
+    q: "¿En qué moneda se paga?",
+    a: "Los pagos son en pesos uruguayos (UYU) a través de Mercado Pago, con factura automática. Podés pagar con tarjeta de crédito, débito o saldo de Mercado Pago.",
+  },
+  {
+    q: "¿Hay soporte disponible?",
+    a: "Sí. Contás con soporte dedicado por WhatsApp y tutoriales para aprender a usar todas las herramientas con facilidad.",
+  },
+  {
+    q: "¿Para quién es ideal KNJ PRO?",
+    a: "Creadores de contenido, diseñadores, social media, gestores de tráfico, agencias, pequeñas empresas y cualquier persona que quiera crear imágenes, videos y contenidos profesionales con rapidez y bajo costo.",
+  },
+  {
+    q: "¿Para quién no es?",
+    a: "Si te gusta configurar servidores, usar herramientas separadas y gestionar múltiples suscripciones, probablemente no es para vos. KNJ PRO es para quienes valoran la simplicidad, la velocidad y los resultados.",
+  },
+];
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -271,6 +328,36 @@ export default function Landing() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="border-t border-border/60 py-24">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              Preguntas frecuentes
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Todo lo que necesitás saber antes de empezar.
+            </p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqItems.map((item, i) => (
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="border-border/60"
+              >
+                <AccordionTrigger className="text-left text-base font-medium hover:no-underline hover:text-primary">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
