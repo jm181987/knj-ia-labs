@@ -13,6 +13,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useModelTranslation, useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
+import { useModelDemo } from "@/hooks/useModelDemo";
+import { ImageOff } from "lucide-react";
 
 export default function CatalogPage() {
   const { toast } = useToast();
@@ -292,9 +294,48 @@ function ModelDialogContent({
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
   const { translation, loading } = useModelTranslation(openModel);
+  const { demo, loading: demoLoading } = useModelDemo(openModel.model_id, openModel.type);
   const desc = translation?.description || openModel.description;
   return (
     <>
+      {/* Hero demo */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-t-lg bg-muted/40 border-b border-border/50 shrink-0">
+        {demoLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : demo ? (
+          demo.kind === "video" ? (
+            <video
+              src={demo.url}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <img
+              src={demo.url}
+              alt={`${prettyName(openModel.model_id)} demo`}
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+            <ImageOff className="h-8 w-8 opacity-50" />
+            <span className="text-xs">{t("catalog.noDemo")}</span>
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/90 to-transparent pointer-events-none" />
+        {demo && (
+          <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] backdrop-blur bg-background/70">
+            {t("catalog.demoLabel")}
+          </Badge>
+        )}
+      </div>
+
       <DialogHeader className="p-6 pb-3 border-b border-border/50 shrink-0">
         <DialogTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />

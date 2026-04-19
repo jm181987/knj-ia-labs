@@ -41,22 +41,9 @@ Deno.serve(async (req) => {
 
     const list = Array.isArray(raw?.data) ? raw.data : [];
 
-    // DEBUG temporal: si ?debug=1, devuelve solo el primer modelo crudo
-    if (url.searchParams.get("debug") === "1") {
-      return json({ code: 0, sample: list[0] || null, total: list.length });
-    }
-
-
     // Compactamos a lo esencial para reducir tamaño de respuesta
     const compact = list.map((m: any) => {
       const sch = m?.api_schema?.api_schemas?.find((s: any) => s.type === "model_run") || m?.api_schema?.api_schemas?.[0];
-      // Buscamos URL de demo/cover en varios campos posibles
-      const demo_url =
-        m.cover_url || m.cover || m.thumbnail_url || m.thumbnail || m.preview_url || m.preview ||
-        m.example_url || m.example || m.demo_url || m.demo || m.image_url || m.video_url ||
-        sch?.cover_url || sch?.preview_url || sch?.example_url ||
-        (Array.isArray(m.examples) && (m.examples[0]?.url || m.examples[0]?.output_url || m.examples[0]?.image || m.examples[0]?.video)) ||
-        null;
       return {
         model_id: m.model_id,
         name: m.name,
@@ -66,7 +53,6 @@ Deno.serve(async (req) => {
         sort_order: m.sort_order,
         request_schema: sch?.request_schema || null,
         api_path: sch?.api_path || null,
-        demo_url,
       };
     }).filter((m: any) => m.request_schema && m.api_path);
 

@@ -47,6 +47,8 @@
     "modelsCount": "{{count}} modelos",
     "showingFirst": "Mostrando los primeros 200 — refiná tu búsqueda para ver más.",
     "noDescription": "Sin descripción",
+    "noDemo": "Sin demo aún — sé el primero en generar",
+    "demoLabel": "Ejemplo real",
     "use": "Usar",
     "generate": "Generar",
     "cancel": "Cancelar",
