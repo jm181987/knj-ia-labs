@@ -139,7 +139,7 @@ export default function CatalogPage() {
         <div className="hero-shine" />
 
         <div className="relative px-6 py-12 sm:py-16 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5 backdrop-blur-sm animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5 animate-fade-in">
             <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             {t("catalog.heroBadge")}
           </div>
@@ -235,7 +235,9 @@ function CatalogList({
   onOpen: (m: WSCatalogModel) => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
-  const visible = filtered.slice(0, 200);
+  const isMobile = useIsMobile();
+  const visibleLimit = isMobile ? 48 : 120;
+  const visible = filtered.slice(0, visibleLimit);
   const translatedDescs = useTranslatedDescriptions(visible);
   return (
     <>
@@ -268,7 +270,7 @@ function CatalogList({
           );
         })}
       </div>
-      {filtered.length > 200 && (
+      {filtered.length > visibleLimit && (
         <p className="text-center text-xs text-muted-foreground py-4">{t("catalog.showingFirst")}</p>
       )}
     </>
@@ -339,7 +341,7 @@ function ModelDialogContent({
           )}
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/90 to-transparent pointer-events-none" />
           {demo && (
-            <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] backdrop-blur bg-background/70">
+            <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] bg-background/90">
               {t("catalog.demoLabel")}
             </Badge>
           )}
