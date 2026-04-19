@@ -236,9 +236,8 @@
 .hero-blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(60px);
-  opacity: 0.55;
-  will-change: transform;
+  filter: blur(28px);
+  opacity: 0.35;
   pointer-events: none;
 }
 .hero-shine {
@@ -253,7 +252,7 @@
   top: 0; bottom: 0;
   width: 35%;
   background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.08), transparent);
-  animation: hero-shine 6s ease-in-out infinite;
+  animation: none;
 }
 .hero-grid {
   position: absolute;
@@ -264,7 +263,6 @@
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000 40%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000 40%, transparent 75%);
-  animation: hero-grid-pan 18s linear infinite;
   pointer-events: none;
 }
 

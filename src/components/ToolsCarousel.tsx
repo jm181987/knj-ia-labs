@@ -1,7 +1,5 @@
-import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 import { Sparkles } from "lucide-react";
 
 import openaiLogo from "@/assets/logos/openai.png";
@@ -42,11 +40,7 @@ const tools: Tool[] = [
 
 export function ToolsCarousel() {
   const { t } = useTranslation();
-  const autoplay = useRef(Autoplay({ delay: 1800, stopOnInteraction: false, stopOnMouseEnter: true }));
-  const [emblaRef] = useEmblaCarousel(
-    { loop: true, align: "start", dragFree: true },
-    [autoplay.current],
-  );
+  const [emblaRef] = useEmblaCarousel({ loop: false, align: "start", dragFree: true });
 
   const list = [...tools, ...tools];
 
@@ -78,7 +72,7 @@ export function ToolsCarousel() {
                   className="shrink-0 basis-[180px] sm:basis-[200px]"
                 >
                   <div
-                    className="group relative h-36 rounded-2xl border border-border/60 bg-card/40 backdrop-blur p-4 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105"
+                    className="group relative h-36 rounded-2xl border border-border/60 bg-card/80 p-4 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105"
                     style={{
                       boxShadow: `0 0 0 1px rgba(${t.glow},0.15), 0 8px 32px -8px rgba(${t.glow},0.35)`,
                     }}

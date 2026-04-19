@@ -46,7 +46,7 @@ export function TestimonialsSection() {
           {items.map((t) => (
             <article
               key={t.id}
-              className="relative rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-6 hover:border-primary/40 transition-colors"
+              className="relative rounded-2xl border border-border/60 bg-card/80 p-6 hover:border-primary/40 transition-colors"
             >
               <Quote className="absolute top-4 right-4 h-6 w-6 text-primary/20" />
               <div className="flex items-center gap-3 mb-4">
