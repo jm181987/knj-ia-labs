@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -77,10 +77,10 @@ export default function CatalogPage() {
     return map;
   }, [models]);
 
-  const onOpen = (m: WSCatalogModel) => {
+  const onOpen = useCallback((m: WSCatalogModel) => {
     setOpenModel(m);
     setValues({});
-  };
+  }, []);
 
   const handleGenerate = async () => {
     if (!openModel) return;
@@ -224,7 +224,7 @@ export default function CatalogPage() {
 
 // ===== Sub-componentes con traducción dinámica =====
 
-function CatalogList({
+const CatalogList = memo(function CatalogList({
   filtered,
   pricing,
   onOpen,
@@ -275,7 +275,7 @@ function CatalogList({
       )}
     </>
   );
-}
+});
 
 function ModelDialogContent({
   openModel,
