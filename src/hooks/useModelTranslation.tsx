@@ -42,6 +42,15 @@ function saveLS<T>(key: string, map: Map<string, T>) {
 const memCache = loadLS<ModelTranslation>(LS_FULL_KEY);
 const inflight = new Map<string, Promise<ModelTranslation | null>>();
 
+// Backoff global: cuando recibimos rate_limited, pausamos nuevas llamadas hasta este timestamp
+let rateLimitedUntil = 0;
+function isRateLimited() {
+  return Date.now() < rateLimitedUntil;
+}
+function markRateLimited(ms = 30000) {
+  rateLimitedUntil = Math.max(rateLimitedUntil, Date.now() + ms);
+}
+
 function setMemCache(key: string, value: ModelTranslation) {
   memCache.set(key, value);
   saveLS(LS_FULL_KEY, memCache);
