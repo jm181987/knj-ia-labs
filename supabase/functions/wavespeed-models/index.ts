@@ -38,6 +38,11 @@ Deno.serve(async (req) => {
     }
 
     const list = Array.isArray(raw?.data) ? raw.data : [];
+    if (list[0]) {
+      console.log("WS model top keys:", Object.keys(list[0]));
+      console.log("WS api_schema keys:", list[0]?.api_schema ? Object.keys(list[0].api_schema) : null);
+      console.log("WS first model JSON sample:", JSON.stringify(list[0]).slice(0, 3000));
+    }
 
     // Compactamos a lo esencial para reducir tamaño de respuesta
     const compact = list.map((m: any) => {
