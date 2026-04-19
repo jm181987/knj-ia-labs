@@ -266,12 +266,16 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
       return next;
     });
 
-    // Fetch en paralelo limitado (de 5 en 5) para no saturar
+    // Fetch en paralelo limitado para no saturar y respetando rate-limit global
     const run = async () => {
-      const concurrency = 5;
+      const concurrency = 2;
       let i = 0;
       const worker = async () => {
         while (i < toFetch.length) {
+          if (isRateLimited()) {
+            await new Promise((r) => setTimeout(r, 5000));
+            continue;
+          }
           const m = toFetch[i++];
           const key = `${lang}:${m.model_id}`;
           let p = cardInflight.get(key);
@@ -286,7 +290,10 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
                 },
               })
               .then(({ data, error }) => {
-                if (error || !data || data.code !== 0) return null;
+                if (error || !data || data.code !== 0) {
+                  if (data?.message === "rate_limited") markRateLimited();
+                  return null;
+                }
                 return (data.data as ModelTranslation).description || null;
               });
             cardInflight.set(key, p);
@@ -298,6 +305,7 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
             setCardCache(key, desc);
             setMap((prev) => ({ ...prev, [m.model_id]: desc }));
           }
+          await new Promise((r) => setTimeout(r, 200));
         }
       };
       await Promise.all(Array.from({ length: concurrency }, worker));
