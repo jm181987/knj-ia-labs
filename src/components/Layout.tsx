@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Sparkles } from "lucide-react";
 import { useLowCreditsAlert } from "@/hooks/useLowCreditsAlert";
+import { HealthBanner } from "@/components/HealthBanner";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useLowCreditsAlert();
@@ -10,6 +11,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
+          <HealthBanner />
           {/* Promo banner */}
           <div
             className="text-center text-xs sm:text-sm font-medium py-2 px-4 text-white"
