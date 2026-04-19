@@ -304,6 +304,7 @@ export default function Landing() {
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
             <Link to="/app" className="hover:text-foreground transition-colors">{t("nav.platform")}</Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">Términos y Condiciones</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
           </div>
         </div>
       </footer>
