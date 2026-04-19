@@ -114,53 +114,49 @@ Deno.serve(async (req) => {
       const { markup, creditsPerUsd, mpFeePct } = await getPricingSettings(supabase);
       const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
 
-      // Descontar créditos ANTES de llamar WaveSpeed
-      // Hacemos la operación atómica vía SQL directo (auth.uid() no aplica con service role,
-      // así que decrementamos manualmente y validamos saldo)
-      const { data: bal, error: balErr } = await supabase
-        .from("user_credits")
-        .select("balance")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (balErr) throw new Error(`DB credits: ${balErr.message}`);
-      const current = bal?.balance ?? 0;
-      if (current < cost) {
-        return json({ code: 2, message: `Saldo insuficiente. Necesitás ${cost} créditos y tenés ${current}.` });
+      // Débito ATÓMICO de créditos via función Postgres (evita race conditions)
+      const { error: debitErr } = await supabase.rpc("debit_credits_for_user", {
+        _user_id: userId,
+        _amount: cost,
+        _reason: `Generación: ${modelLabel || modelPath}`,
+      });
+      if (debitErr) {
+        if (debitErr.message?.includes("insufficient_credits")) {
+          return json({ code: 2, message: `Saldo insuficiente. Necesitás ${cost} créditos.` });
+        }
+        throw new Error(`DB debit: ${debitErr.message}`);
       }
 
-      const { error: updErr } = await supabase
-        .from("user_credits")
-        .update({ balance: current - cost, updated_at: new Date().toISOString() })
-        .eq("user_id", userId);
-      if (updErr) throw new Error(`DB debit: ${updErr.message}`);
+      const refund = async (reason: string) => {
+        await supabase.rpc("refund_credits_for_user", {
+          _user_id: userId,
+          _amount: cost,
+          _reason: reason,
+          _generation_id: null,
+        });
+      };
 
       // Llamar WaveSpeed
       let ws: any;
       try {
         ws = await callWaveSpeed(modelPath, payload || { prompt }, apiKey);
       } catch (e) {
-        // Reembolso si falla
-        await supabase
-          .from("user_credits")
-          .update({ balance: current, updated_at: new Date().toISOString() })
-          .eq("user_id", userId);
+        await refund(`Reembolso (error WaveSpeed): ${modelLabel || modelPath}`);
         throw e;
       }
       const taskId = ws?.data?.id || ws?.id;
       if (!taskId) {
-        await supabase
-          .from("user_credits")
-          .update({ balance: current, updated_at: new Date().toISOString() })
-          .eq("user_id", userId);
+        await refund(`Reembolso (sin task_id): ${modelLabel || modelPath}`);
         throw new Error("WaveSpeed no devolvió task ID");
       }
 
-      // Guardar generación
+      // Guardar generación con user_id en columna dedicada
       const { data: gen, error } = await supabase
         .from("generations")
         .insert({
           type,
           prompt,
+          user_id: userId,
           model: modelLabel || modelPath,
           aspect_ratio: payload?.aspect_ratio || payload?.size || null,
           duration: payload?.duration ? String(payload.duration) : null,
@@ -173,16 +169,20 @@ Deno.serve(async (req) => {
         .select()
         .single();
 
-      if (error) throw new Error(`DB: ${error.message}`);
+      if (error) {
+        await refund(`Reembolso (error DB): ${modelLabel || modelPath}`);
+        throw new Error(`DB: ${error.message}`);
+      }
 
-      // Registrar transacción de débito
-      await supabase.from("credit_transactions").insert({
-        user_id: userId,
-        amount: cost,
-        reason: `Generación: ${modelLabel || modelPath}`,
-        type: "debit",
-        generation_id: gen.id,
-      });
+      // Vincular el generation_id a la última transacción de débito
+      await supabase
+        .from("credit_transactions")
+        .update({ generation_id: gen.id })
+        .eq("user_id", userId)
+        .is("generation_id", null)
+        .eq("type", "debit")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
       return json({ code: 0, data: { id: gen.id, task_id: taskId, cost } });
     }
