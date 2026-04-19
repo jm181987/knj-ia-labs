@@ -132,12 +132,9 @@ export type Generation = {
 };
 
 export async function listGenerations(filters?: { type?: string; status?: string }): Promise<Generation[]> {
-  // Retención: borrar generaciones de más de 7 días (best-effort, no bloqueante)
+  // Retención: ahora corre como cron job en el backend (cleanup_old_generations cada día 3 AM UTC).
+  // RLS filtra automáticamente por user_id (auth.uid()).
   const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  supabase.from("generations").delete().lt("created_at", cutoff).then(
-    ({ error }) => { if (error) console.warn("retention cleanup failed:", error.message); }
-  );
-
   let q = supabase.from("generations").select("*").gte("created_at", cutoff).order("created_at", { ascending: false }).limit(100);
   if (filters?.type) q = q.eq("type", filters.type as "video" | "image");
   if (filters?.status) q = q.eq("status", filters.status as "pending" | "processing" | "completed" | "failed");
