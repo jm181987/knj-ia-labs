@@ -15,6 +15,7 @@ import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
+import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
 import { useTranslation } from "react-i18next";
 
 interface UserRow {
@@ -339,6 +340,7 @@ export default function AdminPage() {
             <TabsTrigger value="pricing">{t("admin.tabPricing")}</TabsTrigger>
             <TabsTrigger value="payments">{t("admin.tabPayments")}</TabsTrigger>
             <TabsTrigger value="transactions">{t("admin.tabTransactions")}</TabsTrigger>
+            <TabsTrigger value="testimonials">Recomendaciones</TabsTrigger>
             <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
           </TabsList>
         </div>
@@ -663,6 +665,10 @@ export default function AdminPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="testimonials">
+          <TestimonialsAdmin />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
