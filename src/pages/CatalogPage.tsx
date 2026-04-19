@@ -325,13 +325,13 @@ function ModelDialogContent({
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
             <ImageOff className="h-8 w-8 opacity-50" />
-            <span className="text-xs">{t("catalog.noDemo", "Sin demo aún — sé el primero en generar")}</span>
+            <span className="text-xs">{t("catalog.noDemo")}</span>
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/90 to-transparent pointer-events-none" />
         {demo && (
           <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] backdrop-blur bg-background/70">
-            {t("catalog.demoLabel", "Ejemplo real")}
+            {t("catalog.demoLabel")}
           </Badge>
         )}
       </div>
