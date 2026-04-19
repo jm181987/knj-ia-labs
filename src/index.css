@@ -4,58 +4,58 @@
 
 @layer base {
   :root {
-    /* AivanaLabs-inspired: deep navy night + vibrant violet */
-    --background: 235 45% 7%;
-    --foreground: 220 20% 98%;
+    /* KNJ PRO: obsidian black + deep violet accent */
+    --background: 240 10% 4%;
+    --foreground: 220 15% 96%;
 
-    --card: 235 40% 10%;
-    --card-foreground: 220 20% 98%;
+    --card: 240 8% 7%;
+    --card-foreground: 220 15% 96%;
 
-    --popover: 235 40% 10%;
-    --popover-foreground: 220 20% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 220 15% 96%;
 
-    --primary: 270 91% 65%;
+    --primary: 265 85% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 280 95% 72%;
+    --primary-glow: 275 90% 68%;
 
-    --secondary: 235 30% 15%;
-    --secondary-foreground: 220 20% 98%;
+    --secondary: 240 6% 11%;
+    --secondary-foreground: 220 15% 96%;
 
-    --muted: 235 25% 14%;
-    --muted-foreground: 230 15% 65%;
+    --muted: 240 6% 10%;
+    --muted-foreground: 230 10% 60%;
 
-    --accent: 270 60% 22%;
-    --accent-foreground: 280 95% 85%;
+    --accent: 265 50% 16%;
+    --accent-foreground: 275 90% 85%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 235 25% 18%;
-    --input: 235 25% 16%;
-    --ring: 270 91% 65%;
+    --border: 240 6% 14%;
+    --input: 240 6% 12%;
+    --ring: 265 85% 60%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 235 50% 5%;
-    --sidebar-foreground: 230 15% 70%;
-    --sidebar-primary: 270 91% 65%;
+    --sidebar-background: 240 12% 3%;
+    --sidebar-foreground: 230 10% 65%;
+    --sidebar-primary: 265 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 50% 18%;
-    --sidebar-accent-foreground: 280 95% 85%;
-    --sidebar-border: 235 30% 12%;
-    --sidebar-ring: 270 91% 65%;
+    --sidebar-accent: 265 40% 14%;
+    --sidebar-accent-foreground: 275 90% 85%;
+    --sidebar-border: 240 8% 9%;
+    --sidebar-ring: 265 85% 60%;
 
-    --success: 142 76% 45%;
+    --success: 142 70% 42%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 55%;
     --warning-foreground: 0 0% 100%;
 
     /* Signature gradients & glows */
-    --gradient-primary: linear-gradient(135deg, hsl(270 91% 65%), hsl(290 90% 60%));
-    --gradient-hero: radial-gradient(ellipse at top, hsl(270 70% 25% / 0.6), transparent 60%), linear-gradient(180deg, hsl(235 50% 8%), hsl(235 45% 5%));
-    --gradient-banner: linear-gradient(90deg, hsl(280 70% 25%), hsl(260 75% 30%), hsl(280 70% 25%));
-    --shadow-glow: 0 0 40px hsl(270 91% 65% / 0.35);
-    --shadow-elegant: 0 20px 50px -20px hsl(270 91% 50% / 0.45);
+    --gradient-primary: linear-gradient(135deg, hsl(265 85% 60%), hsl(285 80% 55%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(265 60% 18% / 0.5), transparent 60%), linear-gradient(180deg, hsl(240 12% 5%), hsl(240 12% 3%));
+    --gradient-banner: linear-gradient(90deg, hsl(265 60% 18%), hsl(280 65% 22%), hsl(265 60% 18%));
+    --shadow-glow: 0 0 40px hsl(265 85% 60% / 0.3);
+    --shadow-elegant: 0 20px 50px -20px hsl(265 85% 45% / 0.4);
   }
 
   .dark {
