@@ -26,24 +26,12 @@ import {
 
 const faqItems = [
   {
-    q: "¿Necesito entender de tecnología o saber usar IA?",
-    a: "No. KNJ PRO fue creada para quienes quieren resultados, no complejidad. Describes lo que querés, elegís el modelo y la plataforma se encarga del resto. Sin códigos, sin configuraciones técnicas y sin prompts complicados.",
-  },
-  {
-    q: "¿Necesito escribir prompts de una manera específica?",
-    a: "No. Podés escribir normalmente en lenguaje simple. La plataforma entiende tu intención y genera los mejores resultados para imágenes, videos y audio.",
-  },
-  {
-    q: "¿Esto reemplaza herramientas como Midjourney, Kling, Sora o ChatGPT?",
-    a: "Sí. KNJ PRO integra los mismos modelos de punta — Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2, Flux y muchos más — en un único panel. Accedés a las mismas tecnologías, siempre actualizadas, sin necesidad de suscribirte ni gestionar múltiples plataformas.",
-  },
-  {
-    q: "¿Puedo usar las creaciones comercialmente?",
-    a: "Sí. Las imágenes, videos y audios generados podés usarlos para redes sociales, anuncios, productos, e-commerce, clientes o proyectos personales, sin marca de agua.",
-  },
-  {
     q: "¿Cómo funciona el sistema de créditos?",
     a: "KNJ PRO funciona con créditos prepagos: comprás un paquete una sola vez y los usás cuando querés, en cualquier herramienta de la plataforma. No hay suscripciones mensuales ni cobros automáticos.",
+  },
+  {
+    q: "¿En qué moneda se paga?",
+    a: "Los pagos son en pesos uruguayos (UYU) a través de Mercado Pago, con factura automática. Podés pagar con tarjeta de crédito, débito o saldo de Mercado Pago.",
   },
   {
     q: "¿Los créditos vencen?",
@@ -54,12 +42,24 @@ const faqItems = [
     a: "Sí. Podés comprar paquetes adicionales cuando quieras, directamente desde tu panel. Hay distintos tamaños para que elijas el que mejor se adapte a tu uso.",
   },
   {
-    q: "¿Los modelos se actualizan o quedan desactualizados?",
-    a: "Se actualizan constantemente. Cada vez que sale un nuevo modelo de IA o se mejora uno existente, lo integramos a la plataforma sin costo adicional.",
+    q: "¿Puedo usar las creaciones comercialmente?",
+    a: "Sí. Las imágenes, videos y audios generados podés usarlos para redes sociales, anuncios, productos, e-commerce, clientes o proyectos personales, sin marca de agua.",
   },
   {
-    q: "¿En qué moneda se paga?",
-    a: "Los pagos son en pesos uruguayos (UYU) a través de Mercado Pago, con factura automática. Podés pagar con tarjeta de crédito, débito o saldo de Mercado Pago.",
+    q: "¿Esto reemplaza herramientas como Midjourney, Kling, Sora o ChatGPT?",
+    a: "Sí. KNJ PRO integra los mismos modelos de punta — Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2, Flux y muchos más — en un único panel. Accedés a las mismas tecnologías, siempre actualizadas, sin necesidad de suscribirte ni gestionar múltiples plataformas.",
+  },
+  {
+    q: "¿Necesito entender de tecnología o saber usar IA?",
+    a: "No. KNJ PRO fue creada para quienes quieren resultados, no complejidad. Describes lo que querés, elegís el modelo y la plataforma se encarga del resto. Sin códigos, sin configuraciones técnicas y sin prompts complicados.",
+  },
+  {
+    q: "¿Necesito escribir prompts de una manera específica?",
+    a: "No. Podés escribir normalmente en lenguaje simple. La plataforma entiende tu intención y genera los mejores resultados para imágenes, videos y audio.",
+  },
+  {
+    q: "¿Los modelos se actualizan o quedan desactualizados?",
+    a: "Se actualizan constantemente. Cada vez que sale un nuevo modelo de IA o se mejora uno existente, lo integramos a la plataforma sin costo adicional.",
   },
   {
     q: "¿Hay soporte disponible?",
