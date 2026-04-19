@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useModelTranslation, useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
 import { useModelDemo } from "@/hooks/useModelDemo";
 import { ImageOff } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function CatalogPage() {
   const { toast } = useToast();
@@ -293,8 +294,22 @@ function ModelDialogContent({
   handleGenerate: () => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
-  const { translation, loading } = useModelTranslation(openModel);
-  const { demo, loading: demoLoading } = useModelDemo(openModel.model_id, openModel.type);
+  const isMobile = useIsMobile();
+  const [deferHeavyContent, setDeferHeavyContent] = useState(isMobile);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setDeferHeavyContent(false);
+      return;
+    }
+
+    setDeferHeavyContent(true);
+    const timer = window.setTimeout(() => setDeferHeavyContent(false), 250);
+    return () => window.clearTimeout(timer);
+  }, [isMobile, openModel.model_id]);
+
+  const { translation, loading } = useModelTranslation(openModel, !deferHeavyContent);
+  const { demo, loading: demoLoading } = useModelDemo(openModel.model_id, openModel.type, !deferHeavyContent);
   const desc = translation?.description || openModel.description;
   return (
     <>
