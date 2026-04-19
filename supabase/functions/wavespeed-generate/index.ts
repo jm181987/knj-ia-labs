@@ -222,24 +222,16 @@ Deno.serve(async (req) => {
           .from("generations")
           .update({ status: "failed", error_message: errorTxt || "WaveSpeed failed" })
           .eq("id", generation_id);
-        // Reembolso por fallo
-        const userId = gen.parameters?.user_id;
+        // Reembolso atómico por fallo
+        const userId = gen.user_id || gen.parameters?.user_id;
         const cost = gen.parameters?.costCredits;
         if (userId && cost) {
-          const { data: ub } = await supabase.from("user_credits").select("balance").eq("user_id", userId).maybeSingle();
-          if (ub) {
-            await supabase
-              .from("user_credits")
-              .update({ balance: (ub.balance || 0) + cost, updated_at: new Date().toISOString() })
-              .eq("user_id", userId);
-            await supabase.from("credit_transactions").insert({
-              user_id: userId,
-              amount: cost,
-              reason: `Reembolso por fallo: ${gen.model}`,
-              type: "credit",
-              generation_id: gen.id,
-            });
-          }
+          await supabase.rpc("refund_credits_for_user", {
+            _user_id: userId,
+            _amount: cost,
+            _reason: `Reembolso por fallo: ${gen.model}`,
+            _generation_id: gen.id,
+          });
         }
         return json({ code: 0, data: { status: "failed", error: errorTxt } });
       }
