@@ -294,20 +294,25 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-border/60 py-8">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <img src={knjLogo} alt="KNJ PRO" className="h-9 w-9 object-contain" />
-            <span>© {new Date().getFullYear()} KNJ PRO</span>
+        <div className="max-w-6xl mx-auto px-6 flex flex-col gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <img src={knjLogo} alt="KNJ PRO" className="h-9 w-9 object-contain" />
+              <span>© {new Date().getFullYear()} KNJ PRO</span>
+            </div>
+            <div className="flex items-center gap-5 flex-wrap justify-center">
+              <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
+              <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
+              <Link to="/app" className="hover:text-foreground transition-colors">{t("nav.platform")}</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Términos y Condiciones</Link>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
+              <Link to="/upload-policy" className="hover:text-foreground transition-colors">Política de Contenido</Link>
+              <Link to="/credits-policy" className="hover:text-foreground transition-colors">Política de Créditos</Link>
+            </div>
           </div>
-          <div className="flex items-center gap-5 flex-wrap justify-center">
-            <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
-            <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
-            <Link to="/app" className="hover:text-foreground transition-colors">{t("nav.platform")}</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">Términos y Condiciones</Link>
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
-            <Link to="/upload-policy" className="hover:text-foreground transition-colors">Política de Contenido</Link>
-            <Link to="/credits-policy" className="hover:text-foreground transition-colors">Política de Créditos</Link>
-          </div>
+          <p className="text-xs text-muted-foreground/80 text-center max-w-4xl mx-auto leading-relaxed border-t border-border/40 pt-5">
+            KNJ PRO es una plataforma independiente que integra modelos de IA vía API. Las marcas mencionadas (OpenAI, Google, Kling, ByteDance, Wavespeed, entre otras) pertenecen a sus respectivos propietarios y no tienen afiliación directa con KNJ PRO. Los valores comparativos son estimaciones basadas en precios públicos de suscripciones individuales.
+          </p>
         </div>
       </footer>
     </div>
