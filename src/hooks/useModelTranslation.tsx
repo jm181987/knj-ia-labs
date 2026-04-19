@@ -90,6 +90,10 @@ export function useModelTranslation(model: WSCatalogModel | null) {
 
     const run = async () => {
       try {
+        if (isRateLimited()) {
+          setTranslation(null);
+          return;
+        }
         let promise = inflight.get(key);
         if (!promise) {
           const fields: Record<string, { label?: string; description?: string }> = {};
@@ -111,7 +115,10 @@ export function useModelTranslation(model: WSCatalogModel | null) {
               },
             })
             .then(({ data, error }) => {
-              if (error || !data || data.code !== 0) return null;
+              if (error || !data || data.code !== 0) {
+                if (data?.message === "rate_limited") markRateLimited();
+                return null;
+              }
               return data.data as ModelTranslation;
             });
           inflight.set(key, promise);
