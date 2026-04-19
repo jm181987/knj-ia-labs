@@ -125,7 +125,7 @@ export default function Landing() {
               "radial-gradient(ellipse 50% 40% at 20% 0%, hsl(var(--primary) / 0.18), transparent 60%)",
           }}
         />
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-16 grid grid-cols-12 gap-8 items-end">
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-8 grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 lg:col-span-8">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm border border-primary/30 bg-primary/5 mb-8 font-mono-tech">
               <span className="size-1.5 rounded-full bg-primary animate-pulse" />
@@ -162,7 +162,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pb-16 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border-t border-border/40 pt-8">
+        <div className="max-w-7xl mx-auto px-6 pb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border-t border-border/40 pt-5">
           <Link to="/app">
             <Button size="lg" className="gap-2 shadow-elegant rounded-sm font-mono-tech text-xs uppercase tracking-wider">
               <Wand2 className="h-4 w-4" />
