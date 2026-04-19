@@ -28,6 +28,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
           <main className="flex-1 p-3 sm:p-6 lg:p-10 overflow-auto">{children}</main>
+          <footer className="border-t border-border/60 py-4 px-6 text-center text-xs text-muted-foreground">
+            <a href="/terms" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
+              Términos y Condiciones
+            </a>
+            <span className="mx-2">•</span>
+            <span>© {new Date().getFullYear()} KNJ PRO</span>
+          </footer>
         </div>
         <WhatsAppFloat />
       </div>
