@@ -117,6 +117,7 @@ export type Database = {
           task_id: string | null
           type: Database["public"]["Enums"]["generation_type"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           aspect_ratio?: string | null
@@ -136,6 +137,7 @@ export type Database = {
           task_id?: string | null
           type: Database["public"]["Enums"]["generation_type"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           aspect_ratio?: string | null
@@ -155,6 +157,7 @@ export type Database = {
           task_id?: string | null
           type?: Database["public"]["Enums"]["generation_type"]
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -307,8 +310,13 @@ export type Database = {
         Args: { _amount: number; _reason: string; _user_id: string }
         Returns: number
       }
+      cleanup_old_generations: { Args: never; Returns: number }
       consume_credits: {
         Args: { _amount: number; _generation_id?: string; _reason: string }
+        Returns: number
+      }
+      debit_credits_for_user: {
+        Args: { _amount: number; _reason: string; _user_id: string }
         Returns: number
       }
       has_role: {
@@ -317,6 +325,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      refund_credits_for_user: {
+        Args: {
+          _amount: number
+          _generation_id?: string
+          _reason: string
+          _user_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
