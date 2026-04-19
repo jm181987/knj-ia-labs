@@ -93,13 +93,19 @@ Rules:
       fields: fieldList,
     });
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    // Timeout duro para no colgar la edge function (límite 150s)
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    let aiResp: Response;
+    try {
+      aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: {
+          Authorization: `Bearer ${LOVABLE_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: sysPrompt },
