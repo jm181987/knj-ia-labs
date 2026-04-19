@@ -61,11 +61,16 @@ async function loadDemo(model_id: string, wsType: string): Promise<ModelDemo> {
   }
 }
 
-export function useModelDemo(model_id: string | undefined, wsType: string | undefined) {
+export function useModelDemo(model_id: string | undefined, wsType: string | undefined, enabled = true) {
   const [demo, setDemo] = useState<ModelDemo>(model_id ? demoCache.get(model_id) ?? null : null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     if (!model_id || !wsType) return;
     if (demoCache.has(model_id)) {
       setDemo(demoCache.get(model_id)!);
@@ -79,7 +84,7 @@ export function useModelDemo(model_id: string | undefined, wsType: string | unde
     return () => {
       active = false;
     };
-  }, [model_id, wsType]);
+  }, [model_id, wsType, enabled]);
 
   return { demo, loading };
 }
