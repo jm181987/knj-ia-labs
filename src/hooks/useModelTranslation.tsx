@@ -119,13 +119,19 @@ async function translateFullModel(model: WSCatalogModel, lang: string): Promise<
   return result;
 }
 
-export function useModelTranslation(model: WSCatalogModel | null) {
+export function useModelTranslation(model: WSCatalogModel | null, enabled = true) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "es").slice(0, 2);
   const [translation, setTranslation] = useState<ModelTranslation | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      setTranslation(null);
+      setLoading(false);
+      return;
+    }
+
     if (!model) {
       setTranslation(null);
       return;
@@ -161,7 +167,7 @@ export function useModelTranslation(model: WSCatalogModel | null) {
     return () => {
       cancelled = true;
     };
-  }, [model, lang]);
+  }, [model, lang, enabled]);
 
   return { translation, loading };
 }
