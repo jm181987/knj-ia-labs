@@ -143,7 +143,14 @@ Rules:
         ],
         tool_choice: { type: "function", function: { name: "return_translations" } },
       }),
-    });
+      });
+    } catch (err) {
+      clearTimeout(timer);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("AI fetch aborted/failed:", msg);
+      return json({ code: 1, message: "ai_timeout" }, 200);
+    }
+    clearTimeout(timer);
 
     if (!aiResp.ok) {
       const txt = await aiResp.text();
