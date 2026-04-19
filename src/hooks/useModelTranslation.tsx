@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
 import type { WSCatalogModel } from "@/lib/wavespeedCatalog";
 
 export type ModelTranslation = {
@@ -9,17 +8,21 @@ export type ModelTranslation = {
   field_descriptions: Record<string, string>;
 };
 
-// Cache persistente en localStorage + memoria
-const LS_FULL_KEY = "model_tr_full_v1";
-const LS_CARD_KEY = "model_tr_card_v1";
-const LS_MAX_ENTRIES = 200;
+// ============================================================
+// Traducción usando la API nativa del navegador (Translator API).
+// Disponible en Chrome 138+ con flag o en builds estables recientes.
+// Si no está disponible, devolvemos el texto original (fallback).
+// ============================================================
+
+const LS_FULL_KEY = "model_tr_full_v2";
+const LS_CARD_KEY = "model_tr_card_v2";
+const LS_MAX_ENTRIES = 300;
 
 function loadLS<T>(key: string): Map<string, T> {
   try {
     const raw = typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
     if (!raw) return new Map();
-    const obj = JSON.parse(raw) as Record<string, T>;
-    return new Map(Object.entries(obj));
+    return new Map(Object.entries(JSON.parse(raw) as Record<string, T>));
   } catch {
     return new Map();
   }
@@ -28,32 +31,92 @@ function loadLS<T>(key: string): Map<string, T> {
 function saveLS<T>(key: string, map: Map<string, T>) {
   try {
     if (typeof localStorage === "undefined") return;
-    // Limitar tamaño: conservar las últimas LS_MAX_ENTRIES
     let entries = Array.from(map.entries());
-    if (entries.length > LS_MAX_ENTRIES) {
-      entries = entries.slice(-LS_MAX_ENTRIES);
-    }
+    if (entries.length > LS_MAX_ENTRIES) entries = entries.slice(-LS_MAX_ENTRIES);
     localStorage.setItem(key, JSON.stringify(Object.fromEntries(entries)));
   } catch {
-    // quota exceeded u otro: ignorar
+    // ignore quota
   }
 }
 
-const memCache = loadLS<ModelTranslation>(LS_FULL_KEY);
-const inflight = new Map<string, Promise<ModelTranslation | null>>();
+const fullCache = loadLS<ModelTranslation>(LS_FULL_KEY);
+const cardCache = loadLS<string>(LS_CARD_KEY);
 
-// Backoff global: cuando recibimos rate_limited, pausamos nuevas llamadas hasta este timestamp
-let rateLimitedUntil = 0;
-function isRateLimited() {
-  return Date.now() < rateLimitedUntil;
-}
-function markRateLimited(ms = 30000) {
-  rateLimitedUntil = Math.max(rateLimitedUntil, Date.now() + ms);
+// Translator instances cached per language pair
+const translatorCache = new Map<string, Promise<any | null>>();
+
+function getTranslator(targetLang: string): Promise<any | null> {
+  const key = `en:${targetLang}`;
+  if (translatorCache.has(key)) return translatorCache.get(key)!;
+  const w: any = typeof window !== "undefined" ? window : {};
+  const TranslatorCtor = w.Translator;
+  if (!TranslatorCtor || typeof TranslatorCtor.create !== "function") {
+    const p = Promise.resolve(null);
+    translatorCache.set(key, p);
+    return p;
+  }
+  const p = (async () => {
+    try {
+      const availability =
+        typeof TranslatorCtor.availability === "function"
+          ? await TranslatorCtor.availability({ sourceLanguage: "en", targetLanguage: targetLang })
+          : "available";
+      if (availability === "unavailable") return null;
+      const t = await TranslatorCtor.create({ sourceLanguage: "en", targetLanguage: targetLang });
+      return t;
+    } catch {
+      return null;
+    }
+  })();
+  translatorCache.set(key, p);
+  return p;
 }
 
-function setMemCache(key: string, value: ModelTranslation) {
-  memCache.set(key, value);
-  saveLS(LS_FULL_KEY, memCache);
+async function translateText(text: string, targetLang: string): Promise<string> {
+  if (!text) return text;
+  const t = await getTranslator(targetLang);
+  if (!t) return text;
+  try {
+    return await t.translate(text);
+  } catch {
+    return text;
+  }
+}
+
+function buildFieldsFromModel(model: WSCatalogModel) {
+  const labels: Record<string, string> = {};
+  const descriptions: Record<string, string> = {};
+  const props = model.request_schema?.properties || {};
+  for (const [k, p] of Object.entries(props)) {
+    if ((p as any)["x-hidden"]) continue;
+    labels[k] = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    descriptions[k] = (p as any).description || "";
+  }
+  return { labels, descriptions };
+}
+
+async function translateFullModel(model: WSCatalogModel, lang: string): Promise<ModelTranslation> {
+  const key = `${lang}:${model.model_id}`;
+  if (fullCache.has(key)) return fullCache.get(key)!;
+
+  const { labels, descriptions } = buildFieldsFromModel(model);
+  const description = await translateText(model.description || "", lang);
+
+  const field_labels: Record<string, string> = {};
+  const field_descriptions: Record<string, string> = {};
+  for (const k of Object.keys(labels)) {
+    field_labels[k] = await translateText(labels[k], lang);
+    if (descriptions[k]) {
+      field_descriptions[k] = await translateText(descriptions[k], lang);
+    } else {
+      field_descriptions[k] = "";
+    }
+  }
+
+  const result: ModelTranslation = { description, field_labels, field_descriptions };
+  fullCache.set(key, result);
+  saveLS(LS_FULL_KEY, fullCache);
+  return result;
 }
 
 export function useModelTranslation(model: WSCatalogModel | null) {
@@ -67,76 +130,33 @@ export function useModelTranslation(model: WSCatalogModel | null) {
       setTranslation(null);
       return;
     }
-    const key = `${lang}:${model.model_id}`;
-    if (memCache.has(key)) {
-      setTranslation(memCache.get(key)!);
+
+    // Pasarela para EN: no traducir
+    if (lang === "en") {
+      const { labels, descriptions } = buildFieldsFromModel(model);
+      setTranslation({
+        description: model.description || "",
+        field_labels: labels,
+        field_descriptions: descriptions,
+      });
       return;
     }
 
-    // Si idioma EN, no hace falta llamar
-    if (lang === "en") {
-      const passthrough: ModelTranslation = {
-        description: model.description || "",
-        field_labels: {},
-        field_descriptions: {},
-      };
-      memCache.set(key, passthrough);
-      setTranslation(passthrough);
+    const key = `${lang}:${model.model_id}`;
+    if (fullCache.has(key)) {
+      setTranslation(fullCache.get(key)!);
       return;
     }
 
     let cancelled = false;
     setLoading(true);
-
-    const run = async () => {
-      try {
-        if (isRateLimited()) {
-          setTranslation(null);
-          return;
-        }
-        let promise = inflight.get(key);
-        if (!promise) {
-          const fields: Record<string, { label?: string; description?: string }> = {};
-          const props = model.request_schema?.properties || {};
-          for (const [k, p] of Object.entries(props)) {
-            if (p["x-hidden"]) continue;
-            fields[k] = {
-              label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-              description: p.description || "",
-            };
-          }
-          promise = supabase.functions
-            .invoke("translate-model", {
-              body: {
-                model_id: model.model_id,
-                lang,
-                description: model.description || "",
-                fields,
-              },
-            })
-            .then(({ data, error }) => {
-              if (error || !data || data.code !== 0) {
-                if (data?.message === "rate_limited") markRateLimited();
-                return null;
-              }
-              return data.data as ModelTranslation;
-            });
-          inflight.set(key, promise);
-          promise.finally(() => inflight.delete(key));
-        }
-        const result = await promise;
-        if (cancelled) return;
-        if (result) {
-          setMemCache(key, result);
-          setTranslation(result);
-        } else {
-          setTranslation(null);
-        }
-      } finally {
+    translateFullModel(model, lang)
+      .then((r) => {
+        if (!cancelled) setTranslation(r);
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    };
-    run();
+      });
 
     return () => {
       cancelled = true;
@@ -146,94 +166,15 @@ export function useModelTranslation(model: WSCatalogModel | null) {
   return { translation, loading };
 }
 
-// Helper interno: traduce un modelo completo (descripción + fields) y guarda en memCache
-async function translateFullModel(model: WSCatalogModel, lang: string): Promise<ModelTranslation | null> {
-  const key = `${lang}:${model.model_id}`;
-  if (memCache.has(key)) return memCache.get(key)!;
-  if (isRateLimited()) return null;
-  let promise = inflight.get(key);
-  if (!promise) {
-    const fields: Record<string, { label?: string; description?: string }> = {};
-    const props = model.request_schema?.properties || {};
-    for (const [k, p] of Object.entries(props)) {
-      if ((p as any)["x-hidden"]) continue;
-      fields[k] = {
-        label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        description: (p as any).description || "",
-      };
-    }
-    promise = supabase.functions
-      .invoke("translate-model", {
-        body: {
-          model_id: model.model_id,
-          lang,
-          description: model.description || "",
-          fields,
-        },
-      })
-      .then(({ data, error }) => {
-        if (error || !data || data.code !== 0) {
-          if (data?.message === "rate_limited") markRateLimited();
-          return null;
-        }
-        return data.data as ModelTranslation;
-      });
-    inflight.set(key, promise);
-    promise.finally(() => inflight.delete(key));
-  }
-  const result = await promise;
-  if (result) setMemCache(key, result);
-  return result;
-}
-
-// Pre-calienta en background los top N modelos por sort_order para el idioma activo.
-// No bloquea la UI; respeta la cache existente y limita concurrencia.
-export function usePrewarmTopModels(models: WSCatalogModel[], topN = 8, concurrency = 1) {
-  const { i18n } = useTranslation();
-  const lang = (i18n.language || "es").slice(0, 2);
-
+// Pre-warm: ya no es necesario porque la API nativa es local y rápida.
+// Lo dejamos como no-op para no romper imports existentes.
+export function usePrewarmTopModels(_models: WSCatalogModel[], _topN = 8, _concurrency = 1) {
   useEffect(() => {
-    if (lang === "en" || !models.length) return;
-    const top = [...models]
-      .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0))
-      .slice(0, topN)
-      .filter((m) => !memCache.has(`${lang}:${m.model_id}`));
-    if (!top.length) return;
-
-    let cancelled = false;
-    let i = 0;
-    const worker = async () => {
-      while (!cancelled && i < top.length) {
-        const m = top[i++];
-        try {
-          await translateFullModel(m, lang);
-        } catch {
-          // silencioso
-        }
-        await new Promise((r) => setTimeout(r, 600));
-      }
-    };
-    // Pequeño delay para no competir con la carga inicial
-    const t = setTimeout(() => {
-      Promise.all(Array.from({ length: concurrency }, worker));
-    }, 800);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [models, lang, topN, concurrency]);
+    // no-op
+  }, []);
 }
 
-// Hook para traducir solo descripciones de tarjetas (sin fields) — más liviano
-const cardCache = loadLS<string>(LS_CARD_KEY);
-const cardInflight = new Map<string, Promise<string | null>>();
-
-function setCardCache(key: string, value: string) {
-  cardCache.set(key, value);
-  saveLS(LS_CARD_KEY, cardCache);
-}
-
+// Hook ligero para traducir solo descripciones de tarjetas
 export function useTranslatedDescriptions(models: WSCatalogModel[]) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "es").slice(0, 2);
@@ -244,71 +185,32 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
       setMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
+
     let cancelled = false;
-    const next: Record<string, string> = {};
+    const initial: Record<string, string> = {};
     const toFetch: WSCatalogModel[] = [];
     for (const m of models) {
       const key = `${lang}:${m.model_id}`;
       if (cardCache.has(key)) {
-        next[m.model_id] = cardCache.get(key)!;
+        initial[m.model_id] = cardCache.get(key)!;
       } else if (m.description) {
         toFetch.push(m);
       }
     }
-    setMap((prev) => {
-      const keys = Object.keys(next);
-      if (
-        keys.length === Object.keys(prev).length &&
-        keys.every((k) => prev[k] === next[k])
-      ) {
-        return prev;
-      }
-      return next;
-    });
+    setMap(initial);
 
-    // Fetch en paralelo limitado para no saturar y respetando rate-limit global
     const run = async () => {
-      const concurrency = 2;
-      let i = 0;
-      const worker = async () => {
-        while (i < toFetch.length) {
-          if (isRateLimited()) {
-            await new Promise((r) => setTimeout(r, 5000));
-            continue;
-          }
-          const m = toFetch[i++];
-          const key = `${lang}:${m.model_id}`;
-          let p = cardInflight.get(key);
-          if (!p) {
-            p = supabase.functions
-              .invoke("translate-model", {
-                body: {
-                  model_id: m.model_id,
-                  lang,
-                  description: m.description || "",
-                  fields: {},
-                },
-              })
-              .then(({ data, error }) => {
-                if (error || !data || data.code !== 0) {
-                  if (data?.message === "rate_limited") markRateLimited();
-                  return null;
-                }
-                return (data.data as ModelTranslation).description || null;
-              });
-            cardInflight.set(key, p);
-            p.finally(() => cardInflight.delete(key));
-          }
-          const desc = await p;
-          if (cancelled) return;
-          if (desc) {
-            setCardCache(key, desc);
-            setMap((prev) => ({ ...prev, [m.model_id]: desc }));
-          }
-          await new Promise((r) => setTimeout(r, 200));
+      for (const m of toFetch) {
+        if (cancelled) return;
+        const key = `${lang}:${m.model_id}`;
+        const translated = await translateText(m.description || "", lang);
+        if (cancelled) return;
+        if (translated && translated !== m.description) {
+          cardCache.set(key, translated);
+          saveLS(LS_CARD_KEY, cardCache);
         }
-      };
-      await Promise.all(Array.from({ length: concurrency }, worker));
+        setMap((prev) => ({ ...prev, [m.model_id]: translated || m.description || "" }));
+      }
     };
     run();
 
