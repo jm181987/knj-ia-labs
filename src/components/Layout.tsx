@@ -41,6 +41,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Política de Contenido
             </a>
             <span className="mx-2">•</span>
+            <a href="/credits-policy" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
+              Política de Créditos
+            </a>
+            <span className="mx-2">•</span>
             <span>© {new Date().getFullYear()} KNJ PRO</span>
           </footer>
         </div>

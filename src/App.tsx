@@ -15,6 +15,7 @@ import Landing from "./pages/Landing";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import UploadPolicyPage from "./pages/UploadPolicyPage";
+import CreditsPolicyPage from "./pages/CreditsPolicyPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import PricingPage from "./pages/PricingPage";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/upload-policy" element={<UploadPolicyPage />} />
+            <Route path="/credits-policy" element={<CreditsPolicyPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/payment/success" element={<PaymentSuccessPage />} />
             <Route path="/payment/failure" element={<PaymentFailurePage />} />

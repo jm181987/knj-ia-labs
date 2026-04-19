@@ -306,6 +306,7 @@ export default function Landing() {
             <Link to="/terms" className="hover:text-foreground transition-colors">Términos y Condiciones</Link>
             <Link to="/privacy" className="hover:text-foreground transition-colors">Política de Privacidad</Link>
             <Link to="/upload-policy" className="hover:text-foreground transition-colors">Política de Contenido</Link>
+            <Link to="/credits-policy" className="hover:text-foreground transition-colors">Política de Créditos</Link>
           </div>
         </div>
       </footer>
