@@ -6,6 +6,8 @@ const corsHeaders = {
 };
 
 const WAVESPEED_BASE = "https://api.wavespeed.ai/api/v3";
+const RATE_LIMIT_PER_MINUTE = 10;
+const GENERIC_PROVIDER_ERROR = "El sistema no responde, intentá en unos minutos.";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -25,20 +27,32 @@ function errMsg(e: unknown): string {
   try { return JSON.stringify(e); } catch { return String(e); }
 }
 
+// Logger estructurado (JSON por línea, fácil de filtrar)
+function log(level: "info" | "warn" | "error", event: string, ctx: Record<string, unknown> = {}) {
+  const entry = { ts: new Date().toISOString(), level, event, ...ctx };
+  const line = JSON.stringify(entry);
+  if (level === "error") console.error(line);
+  else if (level === "warn") console.warn(line);
+  else console.log(line);
+}
+
 async function callWaveSpeed(modelPath: string, payload: Record<string, unknown>, apiKey: string) {
   const url = `${WAVESPEED_BASE}/${modelPath.replace(/^\/+/, "")}`;
+  const t0 = Date.now();
   const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
+  log("info", "provider_call", { modelPath, status: res.status, latency_ms: Date.now() - t0 });
   if (!res.ok) {
-    const msg = data?.message || data?.error || `WaveSpeed error ${res.status}`;
-    throw new Error(msg);
+    // Error técnico real (para logs)
+    const technical = data?.message || data?.error || `provider HTTP ${res.status}`;
+    const err: any = new Error(technical);
+    err.providerStatus = res.status;
+    err.userMessage = GENERIC_PROVIDER_ERROR;
+    throw err;
   }
   return data;
 }
@@ -83,6 +97,13 @@ function computeCost(basePrice: number, markup: number, creditsPerUsd: number, m
   return Math.max(1, Math.ceil(basePrice * effectiveMarkup * creditsPerUsd));
 }
 
+async function updateProviderHealth(supabase: any, healthy: boolean, latencyMs: number | null, error?: string) {
+  await supabase.from("app_settings").upsert({
+    key: "provider_health",
+    value: { healthy, checked_at: new Date().toISOString(), latency_ms: latencyMs, error: error || null },
+  }, { onConflict: "key" });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -95,26 +116,51 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action as string;
 
+    // ========= HEALTH CHECK =========
+    if (action === "health") {
+      const t0 = Date.now();
+      try {
+        const res = await fetch(`${WAVESPEED_BASE}/predictions/__healthcheck__/result`, {
+          headers: { "Authorization": `Bearer ${apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        // Cualquier respuesta HTTP (incluso 404) significa que el proveedor está vivo
+        const latency = Date.now() - t0;
+        const healthy = res.status < 500;
+        await updateProviderHealth(supabase, healthy, latency);
+        log("info", "health_check", { healthy, latency_ms: latency, status: res.status });
+        return json({ code: 0, data: { healthy, latency_ms: latency } });
+      } catch (e) {
+        const latency = Date.now() - t0;
+        await updateProviderHealth(supabase, false, latency, errMsg(e));
+        log("warn", "health_check_failed", { latency_ms: latency, error: errMsg(e) });
+        return json({ code: 0, data: { healthy: false, latency_ms: latency } });
+      }
+    }
+
     // ========= SUBMIT =========
     if (action === "submit") {
-      const {
-        type,
-        modelPath,
-        modelLabel,
-        prompt,
-        payload,
-        userId,
-        basePrice, // USD del catálogo
-      } = body;
+      const { type, modelPath, modelLabel, prompt, payload, userId, basePrice } = body;
 
       if (!modelPath || !prompt) return json({ error: "modelPath y prompt requeridos" }, 400);
       if (!userId) return json({ error: "userId requerido" }, 401);
 
-      // Calcular costo en créditos
+      // Rate limiting por usuario
+      const { data: allowed, error: rlErr } = await supabase.rpc("check_and_increment_rate_limit", {
+        _user_id: userId,
+        _max_per_minute: RATE_LIMIT_PER_MINUTE,
+      });
+      if (rlErr) {
+        log("error", "rate_limit_check_failed", { userId, error: rlErr.message });
+      } else if (allowed === false) {
+        log("warn", "rate_limit_blocked", { userId, limit: RATE_LIMIT_PER_MINUTE });
+        return json({ code: 3, message: `Demasiadas generaciones. Esperá un minuto antes de intentar de nuevo.` });
+      }
+
       const { markup, creditsPerUsd, mpFeePct } = await getPricingSettings(supabase);
       const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
 
-      // Débito ATÓMICO de créditos via función Postgres (evita race conditions)
+      // Débito atómico
       const { error: debitErr } = await supabase.rpc("debit_credits_for_user", {
         _user_id: userId,
         _amount: cost,
@@ -122,35 +168,45 @@ Deno.serve(async (req) => {
       });
       if (debitErr) {
         if (debitErr.message?.includes("insufficient_credits")) {
+          log("info", "debit_insufficient", { userId, cost });
           return json({ code: 2, message: `Saldo insuficiente. Necesitás ${cost} créditos.` });
         }
+        log("error", "debit_failed", { userId, cost, error: debitErr.message });
         throw new Error(`DB debit: ${debitErr.message}`);
       }
+      log("info", "debit_ok", { userId, cost, modelPath });
 
       const refund = async (reason: string) => {
-        await supabase.rpc("refund_credits_for_user", {
-          _user_id: userId,
-          _amount: cost,
-          _reason: reason,
-          _generation_id: null,
+        const { error: rErr } = await supabase.rpc("refund_credits_for_user", {
+          _user_id: userId, _amount: cost, _reason: reason, _generation_id: null,
         });
+        if (rErr) log("error", "refund_failed", { userId, cost, error: rErr.message });
+        else log("info", "refund_ok", { userId, cost, reason });
       };
 
-      // Llamar WaveSpeed
+      // Llamar proveedor
       let ws: any;
       try {
         ws = await callWaveSpeed(modelPath, payload || { prompt }, apiKey);
-      } catch (e) {
-        await refund(`Reembolso (error WaveSpeed): ${modelLabel || modelPath}`);
-        throw e;
+        // Marcar healthy en éxito
+        updateProviderHealth(supabase, true, null).catch(() => {});
+      } catch (e: any) {
+        await refund(`Reembolso (error proveedor): ${modelLabel || modelPath}`);
+        // Marcar unhealthy si fue 5xx o timeout
+        if (!e.providerStatus || e.providerStatus >= 500) {
+          updateProviderHealth(supabase, false, null, errMsg(e)).catch(() => {});
+        }
+        log("error", "provider_submit_failed", { userId, modelPath, error: errMsg(e), status: e.providerStatus });
+        return json({ code: 1, message: e.userMessage || GENERIC_PROVIDER_ERROR });
       }
+
       const taskId = ws?.data?.id || ws?.id;
       if (!taskId) {
         await refund(`Reembolso (sin task_id): ${modelLabel || modelPath}`);
-        throw new Error("WaveSpeed no devolvió task ID");
+        log("error", "provider_no_taskid", { userId, modelPath, response: ws });
+        return json({ code: 1, message: GENERIC_PROVIDER_ERROR });
       }
 
-      // Guardar generación con user_id en columna dedicada
       const { data: gen, error } = await supabase
         .from("generations")
         .insert({
@@ -171,10 +227,11 @@ Deno.serve(async (req) => {
 
       if (error) {
         await refund(`Reembolso (error DB): ${modelLabel || modelPath}`);
+        log("error", "db_insert_failed", { userId, error: error.message });
         throw new Error(`DB: ${error.message}`);
       }
 
-      // Vincular el generation_id a la última transacción de débito
+      // Vincular generation_id a la última transacción de débito
       await supabase
         .from("credit_transactions")
         .update({ generation_id: gen.id })
@@ -184,6 +241,7 @@ Deno.serve(async (req) => {
         .order("created_at", { ascending: false })
         .limit(1);
 
+      log("info", "generation_submitted", { userId, generationId: gen.id, taskId, cost, modelPath });
       return json({ code: 0, data: { id: gen.id, task_id: taskId, cost } });
     }
 
@@ -193,10 +251,7 @@ Deno.serve(async (req) => {
       if (!generation_id) return json({ error: "generation_id requerido" }, 400);
 
       const { data: gen, error: ge } = await supabase
-        .from("generations")
-        .select("*")
-        .eq("id", generation_id)
-        .single();
+        .from("generations").select("*").eq("id", generation_id).single();
       if (ge || !gen) throw new Error("Generación no encontrada");
 
       if (gen.status === "completed" || gen.status === "failed") {
@@ -211,36 +266,35 @@ Deno.serve(async (req) => {
       const errorTxt: string | undefined = d?.error;
 
       if (status === "completed") {
-        await supabase
-          .from("generations")
-          .update({ status: "completed", result_urls: outputs })
-          .eq("id", generation_id);
+        await supabase.from("generations").update({ status: "completed", result_urls: outputs }).eq("id", generation_id);
+        log("info", "generation_completed", { generationId: generation_id });
         return json({ code: 0, data: { status: "completed", urls: outputs } });
       }
       if (status === "failed") {
-        await supabase
-          .from("generations")
-          .update({ status: "failed", error_message: errorTxt || "WaveSpeed failed" })
+        await supabase.from("generations")
+          .update({ status: "failed", error_message: errorTxt || "provider failed" })
           .eq("id", generation_id);
-        // Reembolso atómico por fallo
+
         const userId = gen.user_id || gen.parameters?.user_id;
         const cost = gen.parameters?.costCredits;
         if (userId && cost) {
           await supabase.rpc("refund_credits_for_user", {
-            _user_id: userId,
-            _amount: cost,
+            _user_id: userId, _amount: cost,
             _reason: `Reembolso por fallo: ${gen.model}`,
             _generation_id: gen.id,
           });
+          log("info", "refund_on_fail", { userId, cost, generationId: gen.id });
         }
-        return json({ code: 0, data: { status: "failed", error: errorTxt } });
+        log("warn", "generation_failed", { generationId: generation_id, error: errorTxt });
+        // Mensaje neutro al usuario
+        return json({ code: 0, data: { status: "failed", error: GENERIC_PROVIDER_ERROR } });
       }
       return json({ code: 0, data: { status: "processing" } });
     }
 
     return json({ error: "action inválida" }, 400);
   } catch (e) {
-    console.error("wavespeed-generate error:", e);
-    return json({ code: 1, message: errMsg(e) }, 200);
+    log("error", "wavespeed_generate_unhandled", { error: errMsg(e) });
+    return json({ code: 1, message: GENERIC_PROVIDER_ERROR }, 200);
   }
 });
