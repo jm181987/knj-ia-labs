@@ -202,7 +202,7 @@ export default function CatalogPage() {
 
       {/* Modal de generación */}
       <Dialog open={!!openModel} onOpenChange={(o) => !o && setOpenModel(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
           {openModel && (
             <ModelDialogContent
               openModel={openModel}
