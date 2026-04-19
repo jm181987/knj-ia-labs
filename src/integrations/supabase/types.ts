@@ -262,6 +262,24 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           balance: number
@@ -309,6 +327,10 @@ export type Database = {
       add_credits_system: {
         Args: { _amount: number; _reason: string; _user_id: string }
         Returns: number
+      }
+      check_and_increment_rate_limit: {
+        Args: { _max_per_minute?: number; _user_id: string }
+        Returns: boolean
       }
       cleanup_old_generations: { Args: never; Returns: number }
       consume_credits: {
