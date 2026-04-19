@@ -51,10 +51,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 flex items-center gap-2">
-          <img src={knjLogo} alt="KNJ IA" className="h-8 w-8 shrink-0 object-contain" />
+          <img src={knjLogo} alt="KNJ Pro" className="h-11 w-11 shrink-0 object-contain" />
           {!collapsed && !isMobile && (
             <span className="font-bold text-lg tracking-tight">
-              KNJ<span className="text-primary"> IA</span>
+              KNJ<span className="text-primary"> Pro</span>
             </span>
           )}
         </div>
