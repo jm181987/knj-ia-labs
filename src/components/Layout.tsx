@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Sparkles } from "lucide-react";
 import { useLowCreditsAlert } from "@/hooks/useLowCreditsAlert";
 import { HealthBanner } from "@/components/HealthBanner";
+import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useLowCreditsAlert();
@@ -28,6 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
           <main className="flex-1 p-3 sm:p-6 lg:p-10 overflow-auto">{children}</main>
         </div>
+        <WhatsAppFloat />
       </div>
     </SidebarProvider>
   );
