@@ -12,8 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { useModelTranslation, useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
-import { useModelDemo } from "@/hooks/useModelDemo";
+import { useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
 import { ImageOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -296,58 +295,9 @@ function ModelDialogContent({
   handleGenerate: () => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
-  const isMobile = useIsMobile();
-  const [deferHeavyContent, setDeferHeavyContent] = useState(isMobile);
-
-  useEffect(() => {
-    if (!isMobile) {
-      setDeferHeavyContent(false);
-      return;
-    }
-
-    setDeferHeavyContent(true);
-    const timer = window.setTimeout(() => setDeferHeavyContent(false), 250);
-    return () => window.clearTimeout(timer);
-  }, [isMobile, openModel.model_id]);
-
-  const { translation, loading } = useModelTranslation(openModel, !deferHeavyContent);
-  const { demo, loading: demoLoading } = useModelDemo(openModel.model_id, openModel.type, !deferHeavyContent);
-  const desc = translation?.description || openModel.description;
+  const desc = openModel.description;
   return (
     <>
-      {/* Hero demo: solo si hay demo o está cargando */}
-      {(demoLoading || demo) && (
-        <div className="relative aspect-video w-full overflow-hidden rounded-t-lg bg-muted/40 border-b border-border/50 shrink-0">
-          {demoLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : demo!.kind === "video" ? (
-            <video
-              src={demo!.url}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <img
-              src={demo!.url}
-              alt={`${prettyName(openModel.model_id)} demo`}
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/90 to-transparent pointer-events-none" />
-          {demo && (
-            <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] bg-background/90">
-              {t("catalog.demoLabel")}
-            </Badge>
-          )}
-        </div>
-      )}
-
       <DialogHeader className="p-6 pb-3 border-b border-border/50 shrink-0">
         <DialogTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -357,7 +307,6 @@ function ModelDialogContent({
         <DialogDescription className="text-xs">
           <span className="block">
             {desc}
-            {loading && !translation && <Loader2 className="inline h-3 w-3 ml-1 animate-spin opacity-50" />}
           </span>
           <span className="block mt-1 font-mono text-[10px] opacity-60">{openModel.model_id}</span>
         </DialogDescription>
@@ -367,8 +316,6 @@ function ModelDialogContent({
           schema={openModel.request_schema}
           values={values}
           onChange={setValues}
-          fieldLabels={translation?.field_labels}
-          fieldDescriptions={translation?.field_descriptions}
         />
       </div>
       <DialogFooter className="flex-row items-center justify-between gap-2 p-4 sm:p-6 pt-3 border-t border-border/50 shrink-0 sm:space-x-0">
