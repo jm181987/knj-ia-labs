@@ -206,17 +206,26 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
     setMap(initial);
 
     const run = async () => {
-      for (const m of toFetch) {
-        if (cancelled) return;
-        const key = `${lang}:${m.model_id}`;
-        const translated = await translateText(m.description || "", lang);
-        if (cancelled) return;
-        if (translated && translated !== m.description) {
+      const translatedEntries = await Promise.all(
+        toFetch.map(async (m) => {
+          const key = `${lang}:${m.model_id}`;
+          const translated = await translateText(m.description || "", lang);
+          return [m.model_id, key, translated || m.description || ""] as const;
+        }),
+      );
+
+      if (cancelled) return;
+
+      const nextMap = { ...initial };
+      for (const [modelId, key, translated] of translatedEntries) {
+        nextMap[modelId] = translated;
+        if (translated) {
           cardCache.set(key, translated);
-          saveLS(LS_CARD_KEY, cardCache);
         }
-        setMap((prev) => ({ ...prev, [m.model_id]: translated || m.description || "" }));
       }
+
+      saveLS(LS_CARD_KEY, cardCache);
+      setMap(nextMap);
     };
     run();
 
