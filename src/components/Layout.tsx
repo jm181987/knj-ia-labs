@@ -1,12 +1,38 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Monitor } from "lucide-react";
 import { useLowCreditsAlert } from "@/hooks/useLowCreditsAlert";
 import { HealthBanner } from "@/components/HealthBanner";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   useLowCreditsAlert();
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 text-center bg-background">
+        <div className="max-w-md mx-auto space-y-5">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+            <Monitor className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Usá <span className="text-gradient">KNJ PRO</span> en tu PC
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Por ahora, las herramientas de generación no están optimizadas para mobile.
+            Para una mejor experiencia, abrí KNJ PRO desde una computadora o notebook.
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Estamos trabajando en una versión móvil completa muy pronto.
+          </p>
+        </div>
+        <WhatsAppFloat />
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
