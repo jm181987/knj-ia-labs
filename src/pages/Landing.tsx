@@ -117,62 +117,6 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 opacity-60"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse 60% 50% at 50% 0%, hsl(var(--primary) / 0.25), transparent 60%)",
-          }}
-        />
-        <div className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-6">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            {t("landing.heroBadge")}
-          </div>
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02]">
-            {t("landing.heroTitle1")} <span className="text-gradient">{t("landing.heroTitleHighlight")}</span><br className="hidden sm:block" />
-            {t("landing.heroTitle2")}
-          </h1>
-          <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("landing.heroSub")}
-          </p>
-
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 items-center justify-center">
-            <Link to="/app">
-              <Button size="lg" className="gap-2 shadow-elegant">
-                <Wand2 className="h-4 w-4" />
-                {t("landing.ctaCreate")}
-              </Button>
-            </Link>
-            <a href="#showcase">
-              <Button size="lg" variant="outline">
-                {t("landing.ctaExamples")}
-              </Button>
-            </a>
-          </div>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} className="h-4 w-4 fill-warning text-warning" />
-              ))}
-              <span className="ml-2">{t("landing.recommended")}</span>
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-success" /> {t("landing.securePay")}
-            </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-warning" /> {t("landing.instant")}
-            </span>
-          </div>
-        </div>
-
-        {/* Showcase mosaic */}
-        <div id="showcase" className="max-w-6xl mx-auto px-6 pb-24">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
       {/* Hero — editorial asymmetric */}
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 -z-10 opacity-50"
