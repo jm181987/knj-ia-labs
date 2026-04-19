@@ -1,6 +1,6 @@
 import { History, Image, Shield, Coins, Library, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import knjLogo from "@/assets/knj-logo.png";
@@ -50,14 +50,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="p-4 flex items-center gap-2">
+        <Link to="/" className="p-4 flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img src={knjLogo} alt="KNJ PRO" className="h-11 w-11 shrink-0 object-contain" />
           {!collapsed && !isMobile && (
             <span className="font-bold text-lg tracking-tight">
               KNJ<span className="text-primary"> PRO</span>
             </span>
           )}
-        </div>
+        </Link>
         <SidebarGroup>
           <SidebarGroupLabel>{t("nav.navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
