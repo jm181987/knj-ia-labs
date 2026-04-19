@@ -34,9 +34,9 @@ export default function Landing() {
       <header className="sticky top-0 z-20 backdrop-blur-md bg-background/60 border-b border-border/60">
         <div className="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={knjLogo} alt="KNJ IA" className="h-9 w-9 object-contain" />
+            <img src={knjLogo} alt="KNJ Pro" className="h-12 w-12 object-contain" />
             <span className="hidden sm:inline font-bold text-lg tracking-tight">
-              KNJ<span className="text-gradient"> IA</span>
+              KNJ<span className="text-gradient"> Pro</span>
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
@@ -245,7 +245,7 @@ export default function Landing() {
             <div className="rounded-2xl border border-primary/40 bg-primary/5 p-6 shadow-elegant relative overflow-hidden">
               <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
               <div className="text-xs uppercase tracking-wider text-primary font-semibold">
-                KNJ IA
+                KNJ Pro
               </div>
               <h3 className="text-xl font-semibold mt-1">{t("landing.allInOne")}</h3>
               <ul className="mt-5 space-y-3 text-sm">
@@ -292,8 +292,8 @@ export default function Landing() {
       <footer className="border-t border-border/60 py-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <img src={knjLogo} alt="KNJ IA" className="h-7 w-7 object-contain" />
-            <span>© {new Date().getFullYear()} KNJ IA</span>
+            <img src={knjLogo} alt="KNJ Pro" className="h-9 w-9 object-contain" />
+            <span>© {new Date().getFullYear()} KNJ Pro</span>
           </div>
           <div className="flex items-center gap-5">
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
