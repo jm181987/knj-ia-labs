@@ -114,6 +114,7 @@ export default function AdminPage() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
+  const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -353,7 +354,23 @@ export default function AdminPage() {
     }
   };
 
-  const statusColor = (s: string) => {
+  const handleDeletePayment = async (p: PaymentRow) => {
+    if (!confirm(`¿Eliminar el pago de ${p.user_email} por $${Number(p.amount_uyu).toLocaleString("es-UY")}?\n\nEsta acción es definitiva y no afecta al pago en Mercado Pago, solo lo elimina del registro local.`)) return;
+    setDeletingPaymentId(p.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-payment", {
+        body: { payment_id: p.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Pago eliminado", description: p.user_email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setDeletingPaymentId(null);
+    }
+  };
     if (s === "approved") return "default";
     if (s === "rejected") return "destructive";
     if (s === "refunded") return "outline";
@@ -645,6 +662,7 @@ export default function AdminPage() {
                       <TableHead className="text-right">{t("admin.credits")}</TableHead>
                       <TableHead>{t("admin.status")}</TableHead>
                       <TableHead className="font-mono text-xs">{t("admin.mpId")}</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -658,10 +676,22 @@ export default function AdminPage() {
                           <Badge variant={statusColor(p.status) as any}>{p.status}</Badge>
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">{p.mp_payment_id || "—"}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeletePayment(p)}
+                            disabled={deletingPaymentId === p.id}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Eliminar pago"
+                          >
+                            {deletingPaymentId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                     {payments.length === 0 && (
-                      <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{t("admin.noPayments")}</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">{t("admin.noPayments")}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
