@@ -32,6 +32,7 @@ export default function CatalogPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number; mpFeePct: number }>({ markup: 3, creditsPerUsd: 37, mpFeePct: 7.99 });
+  const { isAdmin } = useAuth();
   const category = searchParams.get("cat") || "all";
   const setCategory = (id: string) => {
     if (id === "all") setSearchParams({});
@@ -201,6 +202,7 @@ export default function CatalogPage() {
         <CatalogList
           filtered={filtered}
           pricing={pricing}
+          isAdmin={isAdmin}
           onOpen={onOpen}
           t={t}
         />
@@ -219,6 +221,7 @@ export default function CatalogPage() {
               values={values}
               setValues={setValues}
               pricing={pricing}
+              isAdmin={isAdmin}
               submitting={submitting}
               setOpenModel={setOpenModel}
               handleGenerate={handleGenerate}
@@ -236,11 +239,13 @@ export default function CatalogPage() {
 const CatalogList = memo(function CatalogList({
   filtered,
   pricing,
+  isAdmin,
   onOpen,
   t,
 }: {
   filtered: WSCatalogModel[];
   pricing: { markup: number; creditsPerUsd: number; mpFeePct: number };
+  isAdmin: boolean;
   onOpen: (m: WSCatalogModel) => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
@@ -269,6 +274,16 @@ const CatalogList = memo(function CatalogList({
                   <Coins className="h-2.5 w-2.5" />
                   {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} cr
                 </Badge>
+                {isAdmin && (
+                  <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400" title="Costo real (admin)">
+                    <Coins className="h-2.5 w-2.5" />
+                    {adminCost(m.base_price, pricing.creditsPerUsd)} cr admin
+                  </Badge>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
               </CardContent>
               <CardFooter className="pt-2">
                 <Button size="sm" className="w-full" onClick={() => onOpen(m)}>
@@ -291,6 +306,7 @@ function ModelDialogContent({
   values,
   setValues,
   pricing,
+  isAdmin,
   submitting,
   setOpenModel,
   handleGenerate,
@@ -300,6 +316,7 @@ function ModelDialogContent({
   values: Record<string, unknown>;
   setValues: (v: Record<string, unknown>) => void;
   pricing: { markup: number; creditsPerUsd: number; mpFeePct: number };
+  isAdmin: boolean;
   submitting: boolean;
   setOpenModel: (m: WSCatalogModel | null) => void;
   handleGenerate: () => void;
@@ -333,6 +350,12 @@ function ModelDialogContent({
           <Coins className="h-3 w-3" />
           {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
         </Badge>
+        {isAdmin && (
+          <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo real (admin)">
+            <Coins className="h-3 w-3" />
+            {adminCost(openModel.base_price, pricing.creditsPerUsd)} admin
+          </Badge>
+        )}
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
           <Button size="sm" onClick={handleGenerate} disabled={submitting}>
