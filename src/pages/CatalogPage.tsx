@@ -15,6 +15,12 @@ import { useTranslation } from "react-i18next";
 import { useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
 import { ImageOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+
+function adminCost(basePrice: number | undefined, creditsPerUsd: number): number {
+  if (!basePrice || basePrice <= 0) return 1;
+  return Math.max(1, Math.ceil(basePrice * creditsPerUsd));
+}
 
 export default function CatalogPage() {
   const { toast } = useToast();
