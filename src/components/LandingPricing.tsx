@@ -273,8 +273,8 @@ export function LandingPricing() {
           </CardHeader>
           <CardContent className="space-y-4">
             {!user && (
-              <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/5 text-xs sm:text-sm">
-                <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 p-3 rounded-lg border border-warning/40 bg-warning/5 text-xs sm:text-sm">
+                <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                 <span>
                   Necesitás tener una cuenta para usar la recarga personalizada. Al hacer click en "Comprar" te llevamos a registrarte.
                 </span>
