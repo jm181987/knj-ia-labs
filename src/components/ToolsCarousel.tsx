@@ -41,7 +41,10 @@ const tools: Tool[] = [
 
 export function ToolsCarousel() {
   const { t } = useTranslation();
-  const [emblaRef] = useEmblaCarousel({ loop: false, align: "start", dragFree: true });
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, align: "start", dragFree: true },
+    [AutoScroll({ speed: 1, stopOnInteraction: false, stopOnMouseEnter: true })]
+  );
 
   const list = [...tools, ...tools];
 
