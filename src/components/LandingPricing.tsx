@@ -261,8 +261,91 @@ export function LandingPricing() {
           </>
         ) : null}
 
+        {/* Recarga personalizada */}
+        <Card className="mt-8 border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+            </CardTitle>
+            <CardDescription>
+              Elegí el monto que quieras (mínimo ${MIN_CUSTOM} UYU) y se acreditan al instante.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!user && (
+              <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/5 text-xs sm:text-sm">
+                <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  Necesitás tener una cuenta para usar la recarga personalizada. Al hacer click en "Comprar" te llevamos a registrarte.
+                </span>
+              </div>
+            )}
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="landing-custom-amount">Monto en UYU</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="landing-custom-amount"
+                    type="number"
+                    inputMode="numeric"
+                    min={MIN_CUSTOM}
+                    step={10}
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    className="pl-7 text-lg font-semibold"
+                    placeholder={`${MIN_CUSTOM}`}
+                  />
+                </div>
+                {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
+                  <p className="text-xs text-destructive">El monto mínimo es ${MIN_CUSTOM} UYU</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
+                <Coins className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-2xl font-bold leading-none">
+                    {customCredits.toLocaleString("es-UY")}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    créditos · ${RATIO.toFixed(2)} c/u
+                  </div>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleBuyCustom}
+                disabled={busy === "custom" || customAmountNum < MIN_CUSTOM}
+              >
+                {busy === "custom" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                  </>
+                ) : (
+                  "Comprar"
+                )}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs text-muted-foreground self-center mr-1">Sugeridos:</span>
+              {[100, 200, 500, 1000, 2500, 5000].map((v) => (
+                <Button
+                  key={v}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setCustomAmount(String(v))}
+                >
+                  ${v.toLocaleString("es-UY")}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {!user && (
-          <p className="text-center text-xs text-muted-foreground mt-8">
+          <p className="text-center text-xs text-muted-foreground mt-6">
             Si no tenés cuenta, te pediremos que te registres antes de continuar con el pago.
           </p>
         )}
