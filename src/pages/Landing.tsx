@@ -17,6 +17,7 @@ import knjLogo from "@/assets/knj-logo.png";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { LandingPricing } from "@/components/LandingPricing";
 import {
   Accordion,
   AccordionContent,
@@ -100,6 +101,7 @@ export default function Landing() {
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
+            <a href="#pricing" className="hover:text-foreground transition-colors">Precios</a>
             <a href="#showcase" className="hover:text-foreground transition-colors">{t("nav.showcase")}</a>
             <a href="#faq" className="hover:text-foreground transition-colors">{t("nav.faq")}</a>
           </nav>
@@ -359,6 +361,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Pricing */}
+      <LandingPricing />
 
       {/* FAQ */}
       <section id="faq" className="border-t border-border/60 py-24">
