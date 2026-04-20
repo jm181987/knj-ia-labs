@@ -180,31 +180,29 @@ export default function PricingPage() {
       {!loading && (
         <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-primary/5 to-card/80 backdrop-blur shadow-lg shadow-primary/10 relative overflow-hidden">
           <Badge className="absolute top-4 right-4 gap-1">
-            <Repeat className="h-3 w-3" /> Mensual
+            <Repeat className="h-3 w-3" /> {t("pricing.subTag")}
           </Badge>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-              <CalendarClock className="h-5 w-5 text-primary" /> Plan mensual
+              <CalendarClock className="h-5 w-5 text-primary" /> {t("pricing.subTitle")}
             </CardTitle>
-            <CardDescription>
-              Suscripción que se renueva automáticamente cada mes vía Mercado Pago.
-            </CardDescription>
+            <CardDescription>{t("pricing.subDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {activeSub?.status === "authorized" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">Tu suscripción está activa</span>
+                  <span className="font-semibold">{t("pricing.subActiveTitle")}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Recibís {SUB_CREDITS.toLocaleString("es-UY")} créditos cada mes automáticamente.
+                  {t("pricing.subActiveDesc", { credits: SUB_CREDITS.toLocaleString("es-UY") })}
                   {activeSub.next_payment_date && (
-                    <> Próximo cobro: <span className="font-medium text-foreground">{new Date(activeSub.next_payment_date).toLocaleDateString("es-UY")}</span></>
+                    <> {t("pricing.subNextPayment")} <span className="font-medium text-foreground">{new Date(activeSub.next_payment_date).toLocaleDateString("es-UY")}</span></>
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Para cancelar, ingresá a tu cuenta de Mercado Pago → Suscripciones.
+                  {t("pricing.subCancelHint")}
                 </p>
               </div>
             ) : (
@@ -212,30 +210,30 @@ export default function PricingPage() {
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-4xl font-bold">${SUB_PRICE.toLocaleString("es-UY")}</span>
-                    <span className="text-muted-foreground">UYU / mes</span>
+                    <span className="text-muted-foreground">{t("pricing.subPerMonth")}</span>
                   </div>
                   <div className="flex items-center gap-2 py-2 border-y border-border">
                     <Coins className="h-5 w-5 text-primary" />
                     <span className="text-2xl font-bold">{SUB_CREDITS.toLocaleString("es-UY")}</span>
-                    <span className="text-muted-foreground">créditos cada mes</span>
+                    <span className="text-muted-foreground">{t("pricing.subCreditsLabel")}</span>
                   </div>
                   <ul className="space-y-1.5 text-sm">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <span>Recarga automática mensual</span>
+                      <span>{t("pricing.subFeat1")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <span>Cancelás cuando quieras desde Mercado Pago</span>
+                      <span>{t("pricing.subFeat2")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <span>Sin preocuparte por quedarte sin créditos</span>
+                      <span>{t("pricing.subFeat3")}</span>
                     </li>
                   </ul>
                   {activeSub?.status === "pending" && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
-                      Tenés una suscripción pendiente de confirmación. Si ya pagaste, esperá unos minutos.
+                    <p className="text-xs text-warning">
+                      {t("pricing.subPending")}
                     </p>
                   )}
                 </div>
@@ -247,11 +245,11 @@ export default function PricingPage() {
                 >
                   {subscribing ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                     </>
                   ) : (
                     <>
-                      <Repeat className="h-4 w-4 mr-2" /> Suscribirme
+                      <Repeat className="h-4 w-4 mr-2" /> {t("pricing.subscribe")}
                     </>
                   )}
                 </Button>
