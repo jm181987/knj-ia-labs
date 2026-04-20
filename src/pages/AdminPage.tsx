@@ -678,6 +678,7 @@ export default function AdminPage() {
                         <TableHead className="whitespace-nowrap">Próximo cobro</TableHead>
                         <TableHead className="whitespace-nowrap">Alta</TableHead>
                         <TableHead className="text-xs">Preapproval</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
