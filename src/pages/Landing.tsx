@@ -365,8 +365,16 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <LandingPricing />
+      {/* Pricing modal */}
+      <Dialog open={pricingOpen} onOpenChange={setPricingOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="sr-only">Precios</DialogTitle>
+          </DialogHeader>
+          <LandingPricing />
+        </DialogContent>
+      </Dialog>
+
 
       {/* FAQ */}
       <section id="faq" className="border-t border-border/60 py-24">
