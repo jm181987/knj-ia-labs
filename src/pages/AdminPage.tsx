@@ -371,6 +371,8 @@ export default function AdminPage() {
       setDeletingPaymentId(null);
     }
   };
+
+  const statusColor = (s: string) => {
     if (s === "approved") return "default";
     if (s === "rejected") return "destructive";
     if (s === "refunded") return "outline";
