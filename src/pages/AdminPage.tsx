@@ -713,6 +713,24 @@ export default function AdminPage() {
                             <TableCell className="text-xs font-mono text-muted-foreground">
                               {s.mp_preapproval_id ? s.mp_preapproval_id.slice(0, 12) + "…" : "—"}
                             </TableCell>
+                            <TableCell className="text-right whitespace-nowrap">
+                              {s.status === "authorized" || s.status === "paused" ? (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  disabled={cancellingSubId === s.id}
+                                  onClick={() => handleCancelSubscription(s)}
+                                >
+                                  {cancellingSubId === s.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <>Cancelar</>
+                                  )}
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
