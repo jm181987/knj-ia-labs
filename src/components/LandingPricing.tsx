@@ -9,6 +9,7 @@ import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles, Wand2, Lock } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Pkg {
   id: string;
@@ -26,6 +27,7 @@ const MIN_CUSTOM = 80;
 const RATIO = 1.99;
 
 export function LandingPricing() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
