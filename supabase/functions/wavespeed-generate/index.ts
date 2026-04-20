@@ -158,7 +158,20 @@ Deno.serve(async (req) => {
       }
 
       const { markup, creditsPerUsd, mpFeePct } = await getPricingSettings(supabase);
-      const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
+
+      // Check si el usuario es admin → precio "al costo" (sin markup, sin fee MP)
+      const { data: isAdminUser } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+
+      const cost = isAdminUser
+        ? Math.max(1, Math.ceil((Number(basePrice) || 0) * creditsPerUsd))
+        : computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
+
+      if (isAdminUser) {
+        log("info", "admin_cost_applied", { userId, basePrice, cost });
+      }
 
       // Débito atómico
       const { error: debitErr } = await supabase.rpc("debit_credits_for_user", {
