@@ -281,10 +281,6 @@ const CatalogList = memo(function CatalogList({
                   </Badge>
                 )}
               </CardContent>
-            </Card>
-          );
-        })}
-              </CardContent>
               <CardFooter className="pt-2">
                 <Button size="sm" className="w-full" onClick={() => onOpen(m)}>
                   <Wand2 className="h-3.5 w-3.5 mr-1.5" /> {t("catalog.use")}
