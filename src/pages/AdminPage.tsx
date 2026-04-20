@@ -650,6 +650,79 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="subscriptions">
+          <Card className="border-border/60 bg-card/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Repeat className="h-5 w-5 text-primary" /> Suscripciones</CardTitle>
+              <CardDescription>
+                {subscriptions.length} suscripciones · {subscriptions.filter(s => s.status === "authorized").length} activas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : subscriptions.length === 0 ? (
+                <div className="py-10 text-center text-sm text-muted-foreground">
+                  Todavía no hay usuarios suscriptos.
+                </div>
+              ) : (
+                <div className="overflow-x-auto -mx-6 px-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Usuario</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Monto</TableHead>
+                        <TableHead className="text-right">Créditos/mes</TableHead>
+                        <TableHead className="whitespace-nowrap">Próximo cobro</TableHead>
+                        <TableHead className="whitespace-nowrap">Alta</TableHead>
+                        <TableHead className="text-xs">Preapproval</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {subscriptions.map((s) => {
+                        const variant =
+                          s.status === "authorized" ? "default" :
+                          s.status === "cancelled" ? "destructive" :
+                          s.status === "paused" ? "outline" : "secondary";
+                        const label =
+                          s.status === "authorized" ? "Activa" :
+                          s.status === "cancelled" ? "Cancelada" :
+                          s.status === "paused" ? "Pausada" : "Pendiente";
+                        return (
+                          <TableRow key={s.id}>
+                            <TableCell className="font-medium whitespace-nowrap">{s.user_name || "—"}</TableCell>
+                            <TableCell className="text-muted-foreground whitespace-nowrap text-sm">{s.user_email}</TableCell>
+                            <TableCell>
+                              <Badge variant={variant}>{label}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono whitespace-nowrap">${Number(s.amount_uyu).toLocaleString("es-UY")}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              <span className="inline-flex items-center gap-1">
+                                <Coins className="h-3 w-3 text-primary" /> {s.monthly_credits}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-sm whitespace-nowrap">
+                              {s.next_payment_date ? new Date(s.next_payment_date).toLocaleDateString("es-UY") : "—"}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(s.created_at).toLocaleDateString("es-UY")}
+                            </TableCell>
+                            <TableCell className="text-xs font-mono text-muted-foreground">
+                              {s.mp_preapproval_id ? s.mp_preapproval_id.slice(0, 12) + "…" : "—"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="transactions">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
             <CardHeader>
