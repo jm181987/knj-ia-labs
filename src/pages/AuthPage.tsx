@@ -25,7 +25,9 @@ export default function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || "/app";
+  const searchParams = new URLSearchParams(location.search);
+  const redirectParam = searchParams.get("redirect");
+  const from = redirectParam || (location.state as { from?: { pathname: string } } | null)?.from?.pathname || "/app";
 
   useEffect(() => {
     if (!authLoading && user) navigate(from, { replace: true });
