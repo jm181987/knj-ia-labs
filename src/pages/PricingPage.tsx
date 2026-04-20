@@ -98,7 +98,7 @@ export default function PricingPage() {
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error al crear la suscripción",
+        title: t("pricing.subErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
