@@ -113,6 +113,8 @@ export default function AdminPage() {
   const [pwValue, setPwValue] = useState("");
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
+  const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
+
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -330,6 +332,24 @@ export default function AdminPage() {
       await loadAll();
     } catch (e) {
       toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    }
+  };
+
+  const handleCancelSubscription = async (s: SubscriptionRow) => {
+    if (!confirm(`¿Cancelar la suscripción de ${s.user_email}?\n\nEsta acción es definitiva: el cobro recurrente se detiene en Mercado Pago.`)) return;
+    setCancellingSubId(s.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-cancel-subscription", {
+        body: { subscription_id: s.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Suscripción cancelada", description: s.user_email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setCancellingSubId(null);
     }
   };
 
@@ -678,6 +698,7 @@ export default function AdminPage() {
                         <TableHead className="whitespace-nowrap">Próximo cobro</TableHead>
                         <TableHead className="whitespace-nowrap">Alta</TableHead>
                         <TableHead className="text-xs">Preapproval</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -711,6 +732,24 @@ export default function AdminPage() {
                             </TableCell>
                             <TableCell className="text-xs font-mono text-muted-foreground">
                               {s.mp_preapproval_id ? s.mp_preapproval_id.slice(0, 12) + "…" : "—"}
+                            </TableCell>
+                            <TableCell className="text-right whitespace-nowrap">
+                              {s.status === "authorized" || s.status === "paused" ? (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  disabled={cancellingSubId === s.id}
+                                  onClick={() => handleCancelSubscription(s)}
+                                >
+                                  {cancellingSubId === s.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <>Cancelar</>
+                                  )}
+                                </Button>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
                             </TableCell>
                           </TableRow>
                         );
