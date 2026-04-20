@@ -362,6 +362,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <LandingPricing />
+
       {/* FAQ */}
       <section id="faq" className="border-t border-border/60 py-24">
         <div className="max-w-3xl mx-auto px-6">
