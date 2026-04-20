@@ -5,7 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles } from "lucide-react";
+import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles, Wand2, Lock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
@@ -20,6 +22,8 @@ interface Pkg {
 
 const SUB_PRICE = 900;
 const SUB_CREDITS = 500;
+const MIN_CUSTOM = 80;
+const RATIO = 1.99;
 
 export function LandingPricing() {
   const { user } = useAuth();
@@ -28,6 +32,9 @@ export function LandingPricing() {
   const [packages, setPackages] = useState<Pkg[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("200");
+  const customAmountNum = Number(customAmount) || 0;
+  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
 
   useEffect(() => {
     (async () => {
@@ -74,6 +81,31 @@ export function LandingPricing() {
     try {
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
         body: { package_id: pkg.id, return_origin: window.location.origin },
+      });
+      if (error) throw error;
+      const url = (data as any)?.init_point;
+      if (!url) throw new Error("No se pudo iniciar el pago");
+      window.location.href = url;
+    } catch (e) {
+      toast({
+        title: "Error al iniciar el pago",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+      setBusy(null);
+    }
+  };
+
+  const handleBuyCustom = async () => {
+    if (!requireAuth()) return;
+    if (customAmountNum < MIN_CUSTOM) {
+      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      return;
+    }
+    setBusy("custom");
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-create-preference", {
+        body: { custom_amount: customAmountNum, return_origin: window.location.origin },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
@@ -229,8 +261,91 @@ export function LandingPricing() {
           </>
         ) : null}
 
+        {/* Recarga personalizada */}
+        <Card className="mt-8 border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+            </CardTitle>
+            <CardDescription>
+              Elegí el monto que quieras (mínimo ${MIN_CUSTOM} UYU) y se acreditan al instante.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!user && (
+              <div className="flex items-start gap-2 p-3 rounded-lg border border-warning/40 bg-warning/5 text-xs sm:text-sm">
+                <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                <span>
+                  Necesitás tener una cuenta para usar la recarga personalizada. Al hacer click en "Comprar" te llevamos a registrarte.
+                </span>
+              </div>
+            )}
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+              <div className="space-y-2">
+                <Label htmlFor="landing-custom-amount">Monto en UYU</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="landing-custom-amount"
+                    type="number"
+                    inputMode="numeric"
+                    min={MIN_CUSTOM}
+                    step={10}
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(e.target.value)}
+                    className="pl-7 text-lg font-semibold"
+                    placeholder={`${MIN_CUSTOM}`}
+                  />
+                </div>
+                {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
+                  <p className="text-xs text-destructive">El monto mínimo es ${MIN_CUSTOM} UYU</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
+                <Coins className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="text-2xl font-bold leading-none">
+                    {customCredits.toLocaleString("es-UY")}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    créditos · ${RATIO.toFixed(2)} c/u
+                  </div>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleBuyCustom}
+                disabled={busy === "custom" || customAmountNum < MIN_CUSTOM}
+              >
+                {busy === "custom" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                  </>
+                ) : (
+                  "Comprar"
+                )}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs text-muted-foreground self-center mr-1">Sugeridos:</span>
+              {[100, 200, 500, 1000, 2500, 5000].map((v) => (
+                <Button
+                  key={v}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setCustomAmount(String(v))}
+                >
+                  ${v.toLocaleString("es-UY")}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {!user && (
-          <p className="text-center text-xs text-muted-foreground mt-8">
+          <p className="text-center text-xs text-muted-foreground mt-6">
             Si no tenés cuenta, te pediremos que te registres antes de continuar con el pago.
           </p>
         )}
