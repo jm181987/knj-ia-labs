@@ -5,7 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles } from "lucide-react";
+import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles, Wand2, Lock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pkg {
