@@ -359,6 +359,7 @@ export default function AdminPage() {
             <TabsTrigger value="packages">{t("admin.tabPackages")}</TabsTrigger>
             <TabsTrigger value="pricing">{t("admin.tabPricing")}</TabsTrigger>
             <TabsTrigger value="payments">{t("admin.tabPayments")}</TabsTrigger>
+            <TabsTrigger value="subscriptions"><Repeat className="h-3 w-3 mr-1" /> Suscripciones</TabsTrigger>
             <TabsTrigger value="transactions">{t("admin.tabTransactions")}</TabsTrigger>
             <TabsTrigger value="testimonials">Recomendaciones</TabsTrigger>
             <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
