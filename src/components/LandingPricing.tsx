@@ -32,6 +32,9 @@ export function LandingPricing() {
   const [packages, setPackages] = useState<Pkg[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("200");
+  const customAmountNum = Number(customAmount) || 0;
+  const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
 
   useEffect(() => {
     (async () => {
