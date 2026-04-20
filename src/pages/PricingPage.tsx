@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2 } from "lucide-react";
+import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2, Repeat, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
@@ -40,7 +40,11 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [customAmount, setCustomAmount] = useState<string>("200");
+  const [activeSub, setActiveSub] = useState<any>(null);
+  const [subscribing, setSubscribing] = useState(false);
 
+  const SUB_PRICE = 900;
+  const SUB_CREDITS = 500;
   const MIN_CUSTOM = 80;
   const RATIO = 1.99;
   const customAmountNum = Number(customAmount) || 0;
@@ -61,9 +65,46 @@ export default function PricingPage() {
       ]);
       setPackages((pkgs as Pkg[]) || []);
       setPricing((prices as PricingRow[]) || []);
+
+      if (user) {
+        const { data: sub } = await (supabase as any)
+          .from("subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .in("status", ["authorized", "pending"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setActiveSub(sub || null);
+      }
+
       setLoading(false);
     })();
-  }, []);
+  }, [user]);
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setSubscribing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-create-subscription", {
+        body: {},
+      });
+      if (error) throw error;
+      const url = (data as any)?.init_point;
+      if (!url) throw new Error((data as any)?.error || "No se pudo crear la suscripción");
+      window.location.href = url;
+    } catch (e) {
+      toast({
+        title: "Error al crear la suscripción",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+      setSubscribing(false);
+    }
+  };
 
   const handleBuy = async (pkg: Pkg) => {
     if (!user) {
