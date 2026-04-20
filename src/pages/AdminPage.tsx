@@ -113,6 +113,8 @@ export default function AdminPage() {
   const [pwValue, setPwValue] = useState("");
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
+  const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
+
   const loadAll = async () => {
     setLoading(true);
     try {
