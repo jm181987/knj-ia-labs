@@ -96,6 +96,31 @@ export function LandingPricing() {
     }
   };
 
+  const handleBuyCustom = async () => {
+    if (!requireAuth()) return;
+    if (customAmountNum < MIN_CUSTOM) {
+      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      return;
+    }
+    setBusy("custom");
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-create-preference", {
+        body: { custom_amount: customAmountNum, return_origin: window.location.origin },
+      });
+      if (error) throw error;
+      const url = (data as any)?.init_point;
+      if (!url) throw new Error("No se pudo iniciar el pago");
+      window.location.href = url;
+    } catch (e) {
+      toast({
+        title: "Error al iniciar el pago",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+      setBusy(null);
+    }
+  };
+
   return (
     <section id="pricing" className="py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
