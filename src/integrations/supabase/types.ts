@@ -280,6 +280,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount_uyu: number
+          created_at: string
+          id: string
+          init_point: string | null
+          last_credited_payment_id: string | null
+          monthly_credits: number
+          mp_preapproval_id: string | null
+          mp_response: Json | null
+          next_payment_date: string | null
+          preapproval_plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_uyu?: number
+          created_at?: string
+          id?: string
+          init_point?: string | null
+          last_credited_payment_id?: string | null
+          monthly_credits?: number
+          mp_preapproval_id?: string | null
+          mp_response?: Json | null
+          next_payment_date?: string | null
+          preapproval_plan_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_uyu?: number
+          created_at?: string
+          id?: string
+          init_point?: string | null
+          last_credited_payment_id?: string | null
+          monthly_credits?: number
+          mp_preapproval_id?: string | null
+          mp_response?: Json | null
+          next_payment_date?: string | null
+          preapproval_plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           active: boolean
