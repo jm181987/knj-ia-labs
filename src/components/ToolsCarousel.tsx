@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import useEmblaCarousel from "embla-carousel-react";
+import AutoScroll from "embla-carousel-auto-scroll";
 import { Sparkles } from "lucide-react";
 
 import openaiLogo from "@/assets/logos/openai.png";
