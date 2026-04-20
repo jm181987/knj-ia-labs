@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import useEmblaCarousel from "embla-carousel-react";
+import AutoScroll from "embla-carousel-auto-scroll";
 import { Sparkles } from "lucide-react";
 
 import openaiLogo from "@/assets/logos/openai.png";
@@ -40,7 +41,10 @@ const tools: Tool[] = [
 
 export function ToolsCarousel() {
   const { t } = useTranslation();
-  const [emblaRef] = useEmblaCarousel({ loop: false, align: "start", dragFree: true });
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, align: "start", dragFree: true },
+    [AutoScroll({ speed: 1, stopOnInteraction: false, stopOnMouseEnter: true })]
+  );
 
   const list = [...tools, ...tools];
 
