@@ -177,6 +177,90 @@ export default function PricingPage() {
         )}
       </div>
 
+      {!loading && (
+        <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-primary/5 to-card/80 backdrop-blur shadow-lg shadow-primary/10 relative overflow-hidden">
+          <Badge className="absolute top-4 right-4 gap-1">
+            <Repeat className="h-3 w-3" /> Mensual
+          </Badge>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <CalendarClock className="h-5 w-5 text-primary" /> Plan mensual
+            </CardTitle>
+            <CardDescription>
+              Suscripción que se renueva automáticamente cada mes vía Mercado Pago.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {activeSub?.status === "authorized" ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary" />
+                  <span className="font-semibold">Tu suscripción está activa</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Recibís {SUB_CREDITS.toLocaleString("es-UY")} créditos cada mes automáticamente.
+                  {activeSub.next_payment_date && (
+                    <> Próximo cobro: <span className="font-medium text-foreground">{new Date(activeSub.next_payment_date).toLocaleDateString("es-UY")}</span></>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Para cancelar, ingresá a tu cuenta de Mercado Pago → Suscripciones.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="space-y-3">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-4xl font-bold">${SUB_PRICE.toLocaleString("es-UY")}</span>
+                    <span className="text-muted-foreground">UYU / mes</span>
+                  </div>
+                  <div className="flex items-center gap-2 py-2 border-y border-border">
+                    <Coins className="h-5 w-5 text-primary" />
+                    <span className="text-2xl font-bold">{SUB_CREDITS.toLocaleString("es-UY")}</span>
+                    <span className="text-muted-foreground">créditos cada mes</span>
+                  </div>
+                  <ul className="space-y-1.5 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Recarga automática mensual</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Cancelás cuando quieras desde Mercado Pago</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Sin preocuparte por quedarte sin créditos</span>
+                    </li>
+                  </ul>
+                  {activeSub?.status === "pending" && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      Tenés una suscripción pendiente de confirmación. Si ya pagaste, esperá unos minutos.
+                    </p>
+                  )}
+                </div>
+                <Button
+                  size="lg"
+                  className="sm:self-end"
+                  onClick={handleSubscribe}
+                  disabled={subscribing}
+                >
+                  {subscribing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Repeat className="h-4 w-4 mr-2" /> Suscribirme
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
