@@ -22,6 +22,8 @@ interface Pkg {
 
 const SUB_PRICE = 900;
 const SUB_CREDITS = 500;
+const MIN_CUSTOM = 80;
+const RATIO = 1.99;
 
 export function LandingPricing() {
   const { user } = useAuth();
