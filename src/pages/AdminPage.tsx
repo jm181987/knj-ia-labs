@@ -335,6 +335,24 @@ export default function AdminPage() {
     }
   };
 
+  const handleCancelSubscription = async (s: SubscriptionRow) => {
+    if (!confirm(`¿Cancelar la suscripción de ${s.user_email}?\n\nEsta acción es definitiva: el cobro recurrente se detiene en Mercado Pago.`)) return;
+    setCancellingSubId(s.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-cancel-subscription", {
+        body: { subscription_id: s.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Suscripción cancelada", description: s.user_email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setCancellingSubId(null);
+    }
+  };
+
   const statusColor = (s: string) => {
     if (s === "approved") return "default";
     if (s === "rejected") return "destructive";
