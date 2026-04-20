@@ -140,8 +140,14 @@ export default function AdminPage() {
       setPackages((pkgs as PackageRow[]) || []);
 
       const emailMap = new Map<string, string>(((profiles as any[]) || []).map((p) => [p.id, p.email]));
+      const nameMap = new Map<string, string>(((profiles as any[]) || []).map((p) => [p.id, p.display_name || ""]));
       setTxs(((tx as any[]) || []).map((t) => ({ ...t, user_email: emailMap.get(t.user_id) || t.user_id.slice(0, 8) })));
       setPayments(((pays as PaymentRow[]) || []).map((p) => ({ ...p, user_email: emailMap.get(p.user_id) || p.user_id.slice(0, 8) })));
+      setSubscriptions(((subs as SubscriptionRow[]) || []).map((s) => ({
+        ...s,
+        user_email: emailMap.get(s.user_id) || s.user_id.slice(0, 8),
+        user_name: nameMap.get(s.user_id) || "",
+      })));
 
       const settingsArr = (settings as { key: string; value: unknown }[] | null) || [];
       const settingsMap = new Map(settingsArr.map((s) => [s.key, s.value]));
