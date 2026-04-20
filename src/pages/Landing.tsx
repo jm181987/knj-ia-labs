@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { LandingPricing } from "@/components/LandingPricing";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Accordion,
   AccordionContent,
@@ -78,6 +80,7 @@ const faqItems = [
 
 export default function Landing() {
   const { t } = useTranslation();
+  const [pricingOpen, setPricingOpen] = useState(false);
   return (
     <div className="min-h-screen flex flex-col">
       {/* Promo banner */}
@@ -101,7 +104,7 @@ export default function Landing() {
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Precios</a>
+            <button type="button" onClick={() => setPricingOpen(true)} className="hover:text-foreground transition-colors">Precios</button>
             <a href="#showcase" className="hover:text-foreground transition-colors">{t("nav.showcase")}</a>
             <a href="#faq" className="hover:text-foreground transition-colors">{t("nav.faq")}</a>
           </nav>
@@ -362,8 +365,16 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <LandingPricing />
+      {/* Pricing modal */}
+      <Dialog open={pricingOpen} onOpenChange={setPricingOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="sr-only">Precios</DialogTitle>
+          </DialogHeader>
+          <LandingPricing />
+        </DialogContent>
+      </Dialog>
+
 
       {/* FAQ */}
       <section id="faq" className="border-t border-border/60 py-24">

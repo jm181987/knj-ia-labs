@@ -90,8 +90,8 @@ export function LandingPricing() {
   };
 
   return (
-    <section id="pricing" className="border-t border-border/60 py-24">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="pricing" className="py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm mb-4">
             <Sparkles className="h-4 w-4" /> Planes y precios
