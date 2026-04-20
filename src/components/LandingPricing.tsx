@@ -9,6 +9,7 @@ import { Loader2, Coins, Check, Repeat, CalendarClock, Sparkles, Wand2, Lock } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Pkg {
   id: string;
@@ -26,6 +27,7 @@ const MIN_CUSTOM = 80;
 const RATIO = 1.99;
 
 export function LandingPricing() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -63,11 +65,11 @@ export function LandingPricing() {
       const { data, error } = await supabase.functions.invoke("mp-create-subscription", { body: {} });
       if (error) throw error;
       const url = (data as any)?.init_point;
-      if (!url) throw new Error((data as any)?.error || "No se pudo crear la suscripción");
+      if (!url) throw new Error((data as any)?.error || t("pricing.subErrorTitle"));
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error al crear la suscripción",
+        title: t("pricing.subErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
@@ -84,11 +86,11 @@ export function LandingPricing() {
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
-      if (!url) throw new Error("No se pudo iniciar el pago");
+      if (!url) throw new Error(t("pricing.noMpUrl"));
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error al iniciar el pago",
+        title: t("pricing.paymentErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
@@ -99,7 +101,7 @@ export function LandingPricing() {
   const handleBuyCustom = async () => {
     if (!requireAuth()) return;
     if (customAmountNum < MIN_CUSTOM) {
-      toast({ title: "Monto inválido", description: `Mínimo $${MIN_CUSTOM} UYU`, variant: "destructive" });
+      toast({ title: t("pricing.invalidAmountTitle"), description: t("pricing.invalidAmountDesc", { min: MIN_CUSTOM }), variant: "destructive" });
       return;
     }
     setBusy("custom");
@@ -109,11 +111,11 @@ export function LandingPricing() {
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
-      if (!url) throw new Error("No se pudo iniciar el pago");
+      if (!url) throw new Error(t("pricing.noMpUrl"));
       window.location.href = url;
     } catch (e) {
       toast({
-        title: "Error al iniciar el pago",
+        title: t("pricing.paymentErrorTitle"),
         description: e instanceof Error ? e.message : String(e),
         variant: "destructive",
       });
@@ -126,69 +128,62 @@ export function LandingPricing() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm mb-4">
-            <Sparkles className="h-4 w-4" /> Planes y precios
+            <Sparkles className="h-4 w-4" /> {t("pricing.landingBadge")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            Elegí cómo querés <span className="text-gradient">empezar</span>
+            {t("pricing.landingTitle1")} <span className="text-gradient">{t("pricing.landingTitleHighlight")}</span>
           </h2>
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Suscripción mensual o paquetes prepagos sin vencimiento. Pagás en pesos por Mercado Pago.
+            {t("pricing.landingSub")}
           </p>
         </div>
 
         {/* Subscription card */}
         <Card className="border-primary/50 bg-gradient-to-br from-primary/10 via-primary/5 to-card/80 backdrop-blur shadow-lg shadow-primary/10 relative overflow-hidden mb-8">
           <Badge className="absolute top-4 right-4 gap-1">
-            <Repeat className="h-3 w-3" /> Recomendado
+            <Repeat className="h-3 w-3" /> {t("pricing.subRecommended")}
           </Badge>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-              <CalendarClock className="h-5 w-5 text-primary" /> Plan mensual
+              <CalendarClock className="h-5 w-5 text-primary" /> {t("pricing.subTitle")}
             </CardTitle>
-            <CardDescription>
-              Suscripción que se renueva automáticamente cada mes.
-            </CardDescription>
+            <CardDescription>{t("pricing.subDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div className="space-y-3">
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="text-4xl font-bold">${SUB_PRICE.toLocaleString("es-UY")}</span>
-                  <span className="text-muted-foreground">UYU / mes</span>
+                  <span className="text-muted-foreground">{t("pricing.subPerMonth")}</span>
                 </div>
                 <div className="flex items-center gap-2 py-2 border-y border-border">
                   <Coins className="h-5 w-5 text-primary" />
                   <span className="text-2xl font-bold">{SUB_CREDITS.toLocaleString("es-UY")}</span>
-                  <span className="text-muted-foreground">créditos cada mes</span>
+                  <span className="text-muted-foreground">{t("pricing.subCreditsLabel")}</span>
                 </div>
                 <ul className="space-y-1.5 text-sm">
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Recarga automática mensual</span>
+                    <span>{t("pricing.subFeat1")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Cancelás cuando quieras</span>
+                    <span>{t("pricing.subFeat2")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <span>Sin preocuparte por quedarte sin créditos</span>
+                    <span>{t("pricing.subFeat3")}</span>
                   </li>
                 </ul>
               </div>
-              <Button
-                size="lg"
-                className="sm:self-end"
-                onClick={handleSubscribe}
-                disabled={busy === "sub"}
-              >
+              <Button size="lg" className="sm:self-end" onClick={handleSubscribe} disabled={busy === "sub"}>
                 {busy === "sub" ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                   </>
                 ) : (
                   <>
-                    <Repeat className="h-4 w-4 mr-2" /> Suscribirme
+                    <Repeat className="h-4 w-4 mr-2" /> {t("pricing.subscribe")}
                   </>
                 )}
               </Button>
@@ -204,8 +199,8 @@ export function LandingPricing() {
         ) : packages.length > 0 ? (
           <>
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold">O comprá créditos por única vez</h3>
-              <p className="text-sm text-muted-foreground">Sin vencimiento. Los usás cuando quieras.</p>
+              <h3 className="text-lg font-semibold">{t("pricing.orBuyOneTime")}</h3>
+              <p className="text-sm text-muted-foreground">{t("pricing.orBuyOneTimeSub")}</p>
             </div>
             <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {packages.map((pkg) => (
@@ -216,7 +211,7 @@ export function LandingPricing() {
                   } bg-card/80 backdrop-blur`}
                 >
                   {pkg.highlighted && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Popular</Badge>
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">{t("pricing.popular")}</Badge>
                   )}
                   <CardHeader className="pb-3">
                     <CardTitle className="text-xl sm:text-2xl">{pkg.name}</CardTitle>
@@ -231,13 +226,13 @@ export function LandingPricing() {
                         <span className="text-muted-foreground text-sm">UYU</span>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        {(Number(pkg.price_uyu) / pkg.credits).toFixed(2)} por crédito
+                        {(Number(pkg.price_uyu) / pkg.credits).toFixed(2)} {t("pricing.perCredit")}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 py-3 border-y border-border">
                       <Coins className="h-5 w-5 text-primary" />
                       <span className="text-2xl font-bold">{pkg.credits.toLocaleString("es-UY")}</span>
-                      <span className="text-muted-foreground">créditos</span>
+                      <span className="text-muted-foreground">{t("common.credits")}</span>
                     </div>
                     <Button
                       className="w-full mt-auto"
@@ -248,10 +243,10 @@ export function LandingPricing() {
                     >
                       {busy === pkg.id ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                         </>
                       ) : (
-                        "Comprar"
+                        t("pricing.buy")
                       )}
                     </Button>
                   </CardContent>
@@ -265,24 +260,20 @@ export function LandingPricing() {
         <Card className="mt-8 border-primary/40 bg-gradient-to-br from-primary/5 to-card/80 backdrop-blur shadow-elegant">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-              <Wand2 className="h-5 w-5 text-primary" /> Recarga personalizada
+              <Wand2 className="h-5 w-5 text-primary" /> {t("pricing.customTitle")}
             </CardTitle>
-            <CardDescription>
-              Elegí el monto que quieras (mínimo ${MIN_CUSTOM} UYU) y se acreditan al instante.
-            </CardDescription>
+            <CardDescription>{t("pricing.customDesc", { min: MIN_CUSTOM })}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!user && (
               <div className="flex items-start gap-2 p-3 rounded-lg border border-warning/40 bg-warning/5 text-xs sm:text-sm">
                 <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                <span>
-                  Necesitás tener una cuenta para usar la recarga personalizada. Al hacer click en "Comprar" te llevamos a registrarte.
-                </span>
+                <span>{t("pricing.loginRequiredCustom")}</span>
               </div>
             )}
             <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
               <div className="space-y-2">
-                <Label htmlFor="landing-custom-amount">Monto en UYU</Label>
+                <Label htmlFor="landing-custom-amount">{t("pricing.amountLabel")}</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
@@ -298,17 +289,15 @@ export function LandingPricing() {
                   />
                 </div>
                 {customAmountNum > 0 && customAmountNum < MIN_CUSTOM && (
-                  <p className="text-xs text-destructive">El monto mínimo es ${MIN_CUSTOM} UYU</p>
+                  <p className="text-xs text-destructive">{t("pricing.minError", { min: MIN_CUSTOM })}</p>
                 )}
               </div>
               <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border min-w-[180px]">
                 <Coins className="h-5 w-5 text-primary shrink-0" />
                 <div>
-                  <div className="text-2xl font-bold leading-none">
-                    {customCredits.toLocaleString("es-UY")}
-                  </div>
+                  <div className="text-2xl font-bold leading-none">{customCredits.toLocaleString("es-UY")}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    créditos · ${RATIO.toFixed(2)} c/u
+                    {t("pricing.creditsEach", { ratio: RATIO.toFixed(2) })}
                   </div>
                 </div>
               </div>
@@ -319,15 +308,15 @@ export function LandingPricing() {
               >
                 {busy === "custom" ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> Redirigiendo...
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                   </>
                 ) : (
-                  "Comprar"
+                  t("pricing.buy")
                 )}
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-muted-foreground self-center mr-1">Sugeridos:</span>
+              <span className="text-xs text-muted-foreground self-center mr-1">{t("pricing.suggestions")}</span>
               {[100, 200, 500, 1000, 2500, 5000].map((v) => (
                 <Button
                   key={v}
@@ -345,9 +334,7 @@ export function LandingPricing() {
         </Card>
 
         {!user && (
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            Si no tenés cuenta, te pediremos que te registres antes de continuar con el pago.
-          </p>
+          <p className="text-center text-xs text-muted-foreground mt-6">{t("pricing.loginNotice")}</p>
         )}
       </div>
     </section>
