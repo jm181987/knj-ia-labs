@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
@@ -55,6 +55,17 @@ interface PaymentRow {
   created_at: string;
   approved_at: string | null;
   user_email?: string;
+interface SubscriptionRow {
+  id: string;
+  user_id: string;
+  status: string;
+  monthly_credits: number;
+  amount_uyu: number;
+  next_payment_date: string | null;
+  mp_preapproval_id: string | null;
+  created_at: string;
+  user_email?: string;
+  user_name?: string;
 }
 
 const emptyPkg: Omit<PackageRow, "id"> = {
