@@ -124,6 +124,8 @@ export default function AdminPage() {
   const [waValue, setWaValue] = useState("");
   const [waSubmitting, setWaSubmitting] = useState(false);
 
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+
   const loadAll = async () => {
     setLoading(true);
     try {
