@@ -5,3 +5,4 @@ verify_jwt = false
 
 [functions.mp-create-subscription]
 verify_jwt = true
+
