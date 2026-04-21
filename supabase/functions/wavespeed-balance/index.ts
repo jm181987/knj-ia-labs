@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +12,20 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+function decodeJwtSub(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const padded = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(padded + "===".slice((padded.length + 3) % 4));
+    const claims = JSON.parse(json);
+    if (claims?.exp && Date.now() / 1000 > claims.exp) return null;
+    return typeof claims?.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -22,13 +36,8 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "No autenticado" }, 401);
     }
     const token = authHeader.replace("Bearer ", "");
-    const supabaseAuth = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-    );
-    const { data: claimsData, error: claimsErr } = await supabaseAuth.auth.getClaims(token);
-    const userId = claimsData?.claims?.sub;
-    if (claimsErr || !userId) return jsonResponse({ error: "No autenticado" }, 401);
+    const userId = decodeJwtSub(token);
+    if (!userId) return jsonResponse({ error: "No autenticado" }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
