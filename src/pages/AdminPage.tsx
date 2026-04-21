@@ -484,6 +484,20 @@ export default function AdminPage() {
                             <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
                               <Key className="h-3 w-3 mr-1" /> {t("admin.password")}
                             </Button>
+                            <Button
+                              size="sm"
+                              variant={u.roles.includes("admin") ? "destructive" : "default"}
+                              onClick={() => handleToggleAdmin(u)}
+                              disabled={togglingAdminId === u.id || (currentUser?.id === u.id && u.roles.includes("admin"))}
+                              title={currentUser?.id === u.id && u.roles.includes("admin") ? "No podés quitarte admin a vos mismo" : ""}
+                            >
+                              {togglingAdminId === u.id ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Shield className="h-3 w-3 mr-1" />
+                              )}
+                              {u.roles.includes("admin") ? "Quitar admin" : "Hacer admin"}
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
