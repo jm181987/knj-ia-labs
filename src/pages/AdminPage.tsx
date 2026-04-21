@@ -1127,6 +1127,38 @@ export default function AdminPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog editar WhatsApp */}
+      <Dialog open={!!waUser} onOpenChange={(o) => { if (!o) { setWaUser(null); setWaValue(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar WhatsApp</DialogTitle>
+            <DialogDescription>
+              Número de contacto de <strong>{waUser?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Número (con código de país)</Label>
+            <Input
+              type="tel"
+              value={waValue}
+              onChange={(e) => setWaValue(e.target.value)}
+              placeholder="+598 99 123 456"
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              Dejá vacío para borrar el número. Solo dígitos y el signo +.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setWaUser(null); setWaValue(""); }}>{t("common.cancel")}</Button>
+            <Button onClick={handleSaveWhatsapp} disabled={waSubmitting}>
+              {waSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {t("common.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog editar precio */}
       <Dialog open={!!editingPrice} onOpenChange={(o) => !o && setEditingPrice(null)}>
         <DialogContent>
