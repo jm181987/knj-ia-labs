@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 import { useCredits } from "./useCredits";
-import { useAdmin } from "./useAdmin";
 
 const DEFAULT_THRESHOLD = 10;
 const SESSION_KEY_PREFIX = "lowCreditsAlertShown:";
@@ -15,8 +14,7 @@ const SESSION_KEY_PREFIX = "lowCreditsAlertShown:";
  * - El umbral se puede configurar en app_settings (key: low_credits_threshold).
  */
 export function useLowCreditsAlert() {
-  const { user } = useAuth();
-  const { isAdmin } = useAdmin();
+  const { user, isAdmin } = useAuth();
   const { balance, loading } = useCredits();
   const navigate = useNavigate();
   const location = useLocation();
