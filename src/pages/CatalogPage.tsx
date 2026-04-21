@@ -275,10 +275,15 @@ const CatalogList = memo(function CatalogList({
                   {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} cr
                 </Badge>
                 {isAdmin && (
-                  <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400" title="Costo real (admin)">
-                    <Coins className="h-2.5 w-2.5" />
-                    {adminCost(m.base_price, pricing.creditsPerUsd)} cr admin
-                  </Badge>
+                  <>
+                    <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400" title="Costo real en créditos (admin)">
+                      <Coins className="h-2.5 w-2.5" />
+                      {adminCost(m.base_price, pricing.creditsPerUsd)} cr admin
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400" title="Costo Wavespeed por uso">
+                      ${(m.base_price ?? 0).toFixed(3)} WS
+                    </Badge>
+                  </>
                 )}
               </CardContent>
               <CardFooter className="pt-2">
