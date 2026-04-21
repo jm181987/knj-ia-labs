@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Search, Sparkles, Wand2, Library, Coins } from "lucide-react";
-import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
+import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, computeModelSpecificMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -345,11 +345,11 @@ function ModelDialogContent({
       <DialogFooter className="flex-row items-center justify-between gap-2 p-4 sm:p-6 pt-3 border-t border-border/50 shrink-0 sm:space-x-0">
         <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-[10px] sm:text-xs shrink-0">
           <Coins className="h-3 w-3" />
-          {computeModelCostDynamic(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct, values, openModel.request_schema?.properties)} {t("common.credits")}
+          {computeModelCostDynamic(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct, values, openModel.request_schema?.properties, openModel.api_path || openModel.model_id)} {t("common.credits")}
         </Badge>
         {isAdmin && (
           <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo Wavespeed (admin: generación gratis)">
-            ${((openModel.base_price ?? 0) * computeDynamicMultiplier(values, openModel.request_schema?.properties)).toFixed(3)} WS · gratis
+            ${((openModel.base_price ?? 0) * computeDynamicMultiplier(values, openModel.request_schema?.properties) * computeModelSpecificMultiplier(openModel.api_path || openModel.model_id, values)).toFixed(3)} WS · gratis
           </Badge>
         )}
         <div className="flex gap-2">
