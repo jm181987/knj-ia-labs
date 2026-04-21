@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.mp-create-subscription]
 verify_jwt = true
+
+[functions.apply-migration]
+verify_jwt = false
