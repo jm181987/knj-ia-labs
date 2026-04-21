@@ -143,6 +143,30 @@ function dynamicMultiplier(values: Record<string, unknown> | undefined): number 
   return Math.max(0.25, Math.min(mult, 20));
 }
 
+// Multiplicador específico por modelo. Algunos modelos (como multitalk) cobran
+// por SEGUNDO de audio/video generado y el base_price no refleja el costo real.
+// Esto se calcula sobre el multiplicador dinámico estándar.
+function modelSpecificMultiplier(modelPath: string, values: Record<string, unknown> | undefined): number {
+  if (!values) return 1;
+  const path = modelPath.toLowerCase();
+
+  // multitalk: $0.15 base por 5s, escala lineal con duración del audio.
+  // Si no hay duration explícita, asumimos peor caso (10s = 2x).
+  if (path.includes("multitalk")) {
+    const dur = numVal(values.duration) || numVal(values.num_seconds) || numVal(values.seconds);
+    if (dur && dur > 0) return Math.max(1, dur / 5);
+    return 2; // peor caso conservador
+  }
+
+  // Modelos de video largos: aplicar piso de seguridad para audios/duración.
+  if (path.includes("veo") || path.includes("sora")) {
+    const dur = numVal(values.duration);
+    if (dur && dur > 8) return dur / 8;
+  }
+
+  return 1;
+}
+
 async function updateProviderHealth(supabase: any, healthy: boolean, latencyMs: number | null, error?: string) {
   await supabase.from("app_settings").upsert({
     key: "provider_health",
