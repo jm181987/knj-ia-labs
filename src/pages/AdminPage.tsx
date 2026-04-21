@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +23,7 @@ interface UserRow {
   id: string;
   email: string | null;
   display_name: string | null;
+  whatsapp: string | null;
   created_at: string;
   roles: string[];
   balance: number;
@@ -119,12 +120,16 @@ export default function AdminPage() {
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
   const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
+  const [waUser, setWaUser] = useState<UserRow | null>(null);
+  const [waValue, setWaValue] = useState("");
+  const [waSubmitting, setWaSubmitting] = useState(false);
+
   const loadAll = async () => {
     setLoading(true);
     try {
       const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }, { data: subs }, { data: settings }] =
         await Promise.all([
-          (supabase as any).from("profiles").select("id, email, display_name, created_at").order("created_at", { ascending: false }),
+          (supabase as any).from("profiles").select("id, email, display_name, whatsapp, created_at").order("created_at", { ascending: false }),
           (supabase as any).from("user_roles").select("user_id, role"),
           (supabase as any).from("user_credits").select("user_id, balance"),
           (supabase as any).from("pricing").select("key, credits, description").order("key"),
@@ -382,6 +387,31 @@ export default function AdminPage() {
     return "secondary";
   };
 
+  const handleSaveWhatsapp = async () => {
+    if (!waUser) return;
+    const cleaned = waValue.trim().replace(/[^\d+]/g, "");
+    if (cleaned && cleaned.replace(/\D/g, "").length < 8) {
+      toast({ title: t("common.error"), description: t("auth.whatsappInvalid"), variant: "destructive" });
+      return;
+    }
+    setWaSubmitting(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("profiles")
+        .update({ whatsapp: cleaned || null, updated_at: new Date().toISOString() })
+        .eq("id", waUser.id);
+      if (error) throw error;
+      toast({ title: t("common.success"), description: waUser.email || "" });
+      setWaUser(null);
+      setWaValue("");
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setWaSubmitting(false);
+    }
+  };
+
   const handleToggleAdmin = async (u: UserRow) => {
     const isAdmin = u.roles.includes("admin");
     const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"; // jorgitom18@gmail.com (super admin)
@@ -462,6 +492,7 @@ export default function AdminPage() {
                       <TableRow>
                         <TableHead>{t("admin.name")}</TableHead>
                         <TableHead>{t("admin.email")}</TableHead>
+                        <TableHead>WhatsApp</TableHead>
                         <TableHead>{t("admin.role")}</TableHead>
                         <TableHead className="text-right">{t("admin.balance")}</TableHead>
                         <TableHead className="text-right">{t("admin.actions")}</TableHead>
@@ -472,6 +503,21 @@ export default function AdminPage() {
                         <TableRow key={u.id}>
                           <TableCell className="font-medium whitespace-nowrap">{u.display_name || "—"}</TableCell>
                           <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {u.whatsapp ? (
+                              <a
+                                href={`https://wa.me/${u.whatsapp.replace(/\D/g, "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-primary hover:underline font-mono text-xs"
+                              >
+                                <MessageCircle className="h-3 w-3" />
+                                {u.whatsapp}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             {u.roles.map((r) => (
                               <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="mr-1">{r}</Badge>
@@ -485,6 +531,9 @@ export default function AdminPage() {
                           <TableCell className="text-right space-x-1 whitespace-nowrap">
                             <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
                               <Plus className="h-3 w-3 mr-1" /> {t("admin.recharge")}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setWaUser(u); setWaValue(u.whatsapp || ""); }}>
+                              <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
                               <Key className="h-3 w-3 mr-1" /> {t("admin.password")}
@@ -1073,6 +1122,38 @@ export default function AdminPage() {
             <Button onClick={handleSetPassword} disabled={pwSubmitting}>
               {pwSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {t("common.apply")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog editar WhatsApp */}
+      <Dialog open={!!waUser} onOpenChange={(o) => { if (!o) { setWaUser(null); setWaValue(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar WhatsApp</DialogTitle>
+            <DialogDescription>
+              Número de contacto de <strong>{waUser?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Número (con código de país)</Label>
+            <Input
+              type="tel"
+              value={waValue}
+              onChange={(e) => setWaValue(e.target.value)}
+              placeholder="+598 99 123 456"
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              Dejá vacío para borrar el número. Solo dígitos y el signo +.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setWaUser(null); setWaValue(""); }}>{t("common.cancel")}</Button>
+            <Button onClick={handleSaveWhatsapp} disabled={waSubmitting}>
+              {waSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
