@@ -384,6 +384,11 @@ export default function AdminPage() {
 
   const handleToggleAdmin = async (u: UserRow) => {
     const isAdmin = u.roles.includes("admin");
+    const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"; // jorgitom18@gmail.com (super admin)
+    if (u.id === PROTECTED_ADMIN_ID && isAdmin) {
+      toast({ title: t("common.error"), description: "Este usuario es super admin y no puede ser removido.", variant: "destructive" });
+      return;
+    }
     if (currentUser?.id === u.id && isAdmin) {
       toast({ title: t("common.error"), description: "No podés quitarte el rol de admin a vos mismo.", variant: "destructive" });
       return;
@@ -488,8 +493,18 @@ export default function AdminPage() {
                               size="sm"
                               variant={u.roles.includes("admin") ? "destructive" : "default"}
                               onClick={() => handleToggleAdmin(u)}
-                              disabled={togglingAdminId === u.id || (currentUser?.id === u.id && u.roles.includes("admin"))}
-                              title={currentUser?.id === u.id && u.roles.includes("admin") ? "No podés quitarte admin a vos mismo" : ""}
+                              disabled={
+                                togglingAdminId === u.id ||
+                                (currentUser?.id === u.id && u.roles.includes("admin")) ||
+                                (u.id === "6aabbe63-2a25-4eff-b16a-1f6ca663b00a" && u.roles.includes("admin"))
+                              }
+                              title={
+                                u.id === "6aabbe63-2a25-4eff-b16a-1f6ca663b00a" && u.roles.includes("admin")
+                                  ? "Super admin protegido"
+                                  : currentUser?.id === u.id && u.roles.includes("admin")
+                                  ? "No podés quitarte admin a vos mismo"
+                                  : ""
+                              }
                             >
                               {togglingAdminId === u.id ? (
                                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
