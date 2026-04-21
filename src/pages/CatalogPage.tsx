@@ -348,14 +348,8 @@ function ModelDialogContent({
           {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
         </Badge>
         {isAdmin && (
-          <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo real (admin)">
-            <Coins className="h-3 w-3" />
-            {adminCost(openModel.base_price, pricing.creditsPerUsd)} admin
-          </Badge>
-        )}
-        {isAdmin && (
-          <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo Wavespeed por uso">
-            ${(openModel.base_price ?? 0).toFixed(3)} WS
+          <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo Wavespeed (admin: generación gratis)">
+            ${(openModel.base_price ?? 0).toFixed(3)} WS · {adminCost(openModel.base_price, pricing.creditsPerUsd)}cr · gratis
           </Badge>
         )}
         <div className="flex gap-2">
