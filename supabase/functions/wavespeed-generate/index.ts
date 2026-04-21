@@ -159,37 +159,37 @@ Deno.serve(async (req) => {
 
       const { markup, creditsPerUsd, mpFeePct } = await getPricingSettings(supabase);
 
-      // Check si el usuario es admin → precio "al costo" (sin markup, sin fee MP)
+      // Check si el usuario es admin → no se descuentan créditos (uso libre interno)
       const { data: isAdminUser } = await supabase.rpc("has_role", {
         _user_id: userId,
         _role: "admin",
       });
 
-      const cost = isAdminUser
-        ? Math.max(1, Math.ceil((Number(basePrice) || 0) * creditsPerUsd))
-        : computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
+      const cost = computeCost(Number(basePrice) || 0, markup, creditsPerUsd, mpFeePct);
+      const adminCostInfo = Math.max(1, Math.ceil((Number(basePrice) || 0) * creditsPerUsd));
 
       if (isAdminUser) {
-        log("info", "admin_cost_applied", { userId, basePrice, cost });
-      }
-
-      // Débito atómico
-      const { error: debitErr } = await supabase.rpc("debit_credits_for_user", {
-        _user_id: userId,
-        _amount: cost,
-        _reason: `Generación: ${modelLabel || modelPath}`,
-      });
-      if (debitErr) {
-        if (debitErr.message?.includes("insufficient_credits")) {
-          log("info", "debit_insufficient", { userId, cost });
-          return json({ code: 2, message: `Saldo insuficiente. Necesitás ${cost} créditos.` });
+        log("info", "admin_free_generation", { userId, basePrice, adminCostInfo, modelPath });
+      } else {
+        // Débito atómico (solo usuarios no-admin)
+        const { error: debitErr } = await supabase.rpc("debit_credits_for_user", {
+          _user_id: userId,
+          _amount: cost,
+          _reason: `Generación: ${modelLabel || modelPath}`,
+        });
+        if (debitErr) {
+          if (debitErr.message?.includes("insufficient_credits")) {
+            log("info", "debit_insufficient", { userId, cost });
+            return json({ code: 2, message: `Saldo insuficiente. Necesitás ${cost} créditos.` });
+          }
+          log("error", "debit_failed", { userId, cost, error: debitErr.message });
+          throw new Error(`DB debit: ${debitErr.message}`);
         }
-        log("error", "debit_failed", { userId, cost, error: debitErr.message });
-        throw new Error(`DB debit: ${debitErr.message}`);
+        log("info", "debit_ok", { userId, cost, modelPath });
       }
-      log("info", "debit_ok", { userId, cost, modelPath });
 
       const refund = async (reason: string) => {
+        if (isAdminUser) return; // admins no pagaron, no hay nada que devolver
         const { error: rErr } = await supabase.rpc("refund_credits_for_user", {
           _user_id: userId, _amount: cost, _reason: reason, _generation_id: null,
         });
