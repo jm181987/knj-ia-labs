@@ -97,6 +97,52 @@ function computeCost(basePrice: number, markup: number, creditsPerUsd: number, m
   return Math.max(1, Math.ceil(basePrice * effectiveMarkup * creditsPerUsd));
 }
 
+// ===== Multiplicador dinámico según parámetros del usuario =====
+const RES_MULT: Record<string, number> = {
+  "256p": 0.5, "360p": 0.7, "480p": 1, "540p": 1.2, "576p": 1.3,
+  "720p": 1.5, "768p": 1.7, "1080p": 2.5, "1440p": 3.5, "2k": 3.5,
+  "4k": 5, "2160p": 5,
+};
+function resolutionMultiplier(value: unknown): number {
+  if (value == null) return 1;
+  const s = String(value).toLowerCase().trim();
+  if (RES_MULT[s]) return RES_MULT[s];
+  const m = s.match(/(\d{2,5})\s*[x*×]\s*(\d{2,5})/);
+  if (m) {
+    const px = Number(m[1]) * Number(m[2]);
+    return Math.max(0.5, Math.min(8, px / 410_000));
+  }
+  const num = Number(s.replace(/[^\d]/g, ""));
+  if (Number.isFinite(num) && num > 0) {
+    const k = `${num}p`;
+    if (RES_MULT[k]) return RES_MULT[k];
+  }
+  return 1;
+}
+function numVal(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace(/[^\d.]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+function dynamicMultiplier(values: Record<string, unknown> | undefined): number {
+  if (!values) return 1;
+  let mult = 1;
+  const durKey = ["duration", "num_seconds", "seconds", "video_length"].find((k) => k in values);
+  if (durKey) { const d = numVal(values[durKey]); if (d && d > 0) mult *= d / 5; }
+  const cKey = ["num_images", "image_count", "n", "num_outputs", "batch_size"].find((k) => k in values);
+  if (cKey) { const c = numVal(values[cKey]); if (c && c > 0) mult *= c; }
+  const rKey = ["resolution", "size", "video_resolution"].find((k) => k in values);
+  if (rKey) mult *= resolutionMultiplier(values[rKey]);
+  const fKey = ["num_frames", "frames"].find((k) => k in values);
+  if (fKey) { const f = numVal(values[fKey]); if (f && f > 0) mult *= f / 81; }
+  const sKey = ["num_inference_steps", "steps"].find((k) => k in values);
+  if (sKey) { const s = numVal(values[sKey]); if (s && s > 30) mult *= s / 30; }
+  return Math.max(0.25, Math.min(mult, 20));
+}
+
 async function updateProviderHealth(supabase: any, healthy: boolean, latencyMs: number | null, error?: string) {
   await supabase.from("app_settings").upsert({
     key: "provider_health",
