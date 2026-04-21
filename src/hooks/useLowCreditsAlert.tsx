@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 import { useCredits } from "./useCredits";
+import { useAdmin } from "./useAdmin";
 
 const DEFAULT_THRESHOLD = 10;
 const SESSION_KEY_PREFIX = "lowCreditsAlertShown:";
@@ -15,6 +16,7 @@ const SESSION_KEY_PREFIX = "lowCreditsAlertShown:";
  */
 export function useLowCreditsAlert() {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const { balance, loading } = useCredits();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +24,7 @@ export function useLowCreditsAlert() {
 
   useEffect(() => {
     if (!user || loading || balance === null) return;
+    if (isAdmin) return; // Los admins no necesitan alerta de créditos
     if (location.pathname.startsWith("/pricing")) return;
     if (firedRef.current) return;
 
