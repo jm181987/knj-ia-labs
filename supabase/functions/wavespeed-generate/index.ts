@@ -236,10 +236,11 @@ Deno.serve(async (req) => {
       });
 
       const dynMult = dynamicMultiplier(payload);
-      const effectivePrice = (Number(basePrice) || 0) * dynMult;
+      const modelMult = modelSpecificMultiplier(modelPath, payload);
+      const effectivePrice = (Number(basePrice) || 0) * dynMult * modelMult;
       const cost = computeCost(effectivePrice, markup, creditsPerUsd, mpFeePct);
       const adminCostInfo = Math.max(1, Math.ceil(effectivePrice * creditsPerUsd));
-      log("info", "cost_calc", { basePrice, dynMult, effectivePrice, cost });
+      log("info", "cost_calc", { basePrice, dynMult, modelMult, effectivePrice, cost });
 
       if (isAdminUser) {
         log("info", "admin_free_generation", { userId, basePrice, adminCostInfo, modelPath });
