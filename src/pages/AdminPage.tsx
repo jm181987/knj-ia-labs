@@ -14,6 +14,7 @@ import {
 import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
 import { useTranslation } from "react-i18next";
