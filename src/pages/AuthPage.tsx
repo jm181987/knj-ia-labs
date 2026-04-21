@@ -23,6 +23,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [loading, setLoading] = useState(false);
 
   const searchParams = new URLSearchParams(location.search);
@@ -38,12 +39,19 @@ export default function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        const cleanWa = whatsapp.replace(/[^\d+]/g, "");
+        if (!cleanWa || cleanWa.replace(/\D/g, "").length < 8) {
+          throw new Error(t("auth.whatsappInvalid"));
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/app`,
-            data: { display_name: displayName || email.split("@")[0] },
+            data: {
+              display_name: displayName || email.split("@")[0],
+              whatsapp: cleanWa,
+            },
           },
         });
         if (error) throw error;
@@ -101,6 +109,21 @@ export default function AuthPage() {
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder={t("auth.namePh")}
                     />
+                  </div>
+                )}
+                {mode === "signup" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp">{t("auth.whatsapp")}</Label>
+                    <Input
+                      id="whatsapp"
+                      type="tel"
+                      required
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder={t("auth.whatsappPh")}
+                      autoComplete="tel"
+                    />
+                    <p className="text-xs text-muted-foreground">{t("auth.whatsappHint")}</p>
                   </div>
                 )}
                 <div className="space-y-2">
