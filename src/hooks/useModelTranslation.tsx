@@ -180,7 +180,9 @@ export function usePrewarmTopModels(_models: WSCatalogModel[], _topN = 8, _concu
   }, []);
 }
 
-// Hook ligero para traducir solo descripciones de tarjetas
+// Hook ligero: ya NO pretraduce las tarjetas del catálogo (era muy costoso
+// con 800+ modelos). Solo devuelve traducciones que ya estén cacheadas.
+// Las traducciones reales se hacen al abrir el modal de cada modelo.
 export function useTranslatedDescriptions(models: WSCatalogModel[]) {
   const { i18n } = useTranslation();
   const lang = (i18n.language || "es").slice(0, 2);
@@ -191,66 +193,12 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
       setMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
-
-    let cancelled = false;
-    const initial: Record<string, string> = {};
-    const toFetch: WSCatalogModel[] = [];
+    const cached: Record<string, string> = {};
     for (const m of models) {
       const key = `${lang}:${m.model_id}`;
-      if (cardCache.has(key)) {
-        initial[m.model_id] = cardCache.get(key)!;
-      } else if (m.description) {
-        toFetch.push(m);
-      }
+      if (cardCache.has(key)) cached[m.model_id] = cardCache.get(key)!;
     }
-    setMap(initial);
-
-    // Procesamos en lotes pequeños con yield al main thread para no congelar el navegador.
-    const CONCURRENCY = 3;
-    const BATCH_FLUSH = 20;
-    const idle = (cb: () => void) => {
-      const w: any = typeof window !== "undefined" ? window : {};
-      if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(cb, { timeout: 500 });
-      else setTimeout(cb, 16);
-    };
-
-    const run = async () => {
-      const nextMap = { ...initial };
-      let pending = 0;
-      let queueIdx = 0;
-
-      const flush = () => {
-        if (cancelled) return;
-        saveLS(LS_CARD_KEY, cardCache);
-        setMap({ ...nextMap });
-      };
-
-      const worker = async () => {
-        while (!cancelled && queueIdx < toFetch.length) {
-          const m = toFetch[queueIdx++];
-          const key = `${lang}:${m.model_id}`;
-          const translated = await translateText(m.description || "", lang);
-          if (cancelled) return;
-          const finalText = translated || m.description || "";
-          nextMap[m.model_id] = finalText;
-          if (translated) cardCache.set(key, translated);
-          pending++;
-          if (pending >= BATCH_FLUSH) {
-            pending = 0;
-            await new Promise<void>((res) => idle(() => res()));
-            flush();
-          }
-        }
-      };
-
-      await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
-      if (!cancelled) flush();
-    };
-    run();
-
-    return () => {
-      cancelled = true;
-    };
+    setMap(cached);
   }, [models, lang]);
 
   return map;
