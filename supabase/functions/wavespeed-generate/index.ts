@@ -259,14 +259,21 @@ Deno.serve(async (req) => {
           updateProviderHealth(supabase, false, null, errMsg(e)).catch(() => {});
         }
         log("error", "provider_submit_failed", { userId, modelPath, error: errMsg(e), status: e.providerStatus });
-        return json({ code: 1, message: e.userMessage || GENERIC_PROVIDER_ERROR });
+        // A los admins les mostramos el error técnico real para poder debuggear.
+        const adminMsg = isAdminUser
+          ? `Proveedor ${e.providerStatus || ""}: ${errMsg(e)}`.trim()
+          : (e.userMessage || GENERIC_PROVIDER_ERROR);
+        return json({ code: 1, message: adminMsg });
       }
 
       const taskId = ws?.data?.id || ws?.id;
       if (!taskId) {
         await refund(`Reembolso (sin task_id): ${modelLabel || modelPath}`);
         log("error", "provider_no_taskid", { userId, modelPath, response: ws });
-        return json({ code: 1, message: GENERIC_PROVIDER_ERROR });
+        const adminMsg = isAdminUser
+          ? `Proveedor sin task_id: ${JSON.stringify(ws).slice(0, 300)}`
+          : GENERIC_PROVIDER_ERROR;
+        return json({ code: 1, message: adminMsg });
       }
 
       const { data: gen, error } = await supabase
