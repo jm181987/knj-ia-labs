@@ -14,7 +14,7 @@ const SESSION_KEY_PREFIX = "lowCreditsAlertShown:";
  * - El umbral se puede configurar en app_settings (key: low_credits_threshold).
  */
 export function useLowCreditsAlert() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { balance, loading } = useCredits();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +22,7 @@ export function useLowCreditsAlert() {
 
   useEffect(() => {
     if (!user || loading || balance === null) return;
+    if (isAdmin) return; // Los admins no necesitan alerta de créditos
     if (location.pathname.startsWith("/pricing")) return;
     if (firedRef.current) return;
 
