@@ -55,6 +55,14 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
+        // Notificación WhatsApp al admin (no bloqueante)
+        supabase.functions.invoke("notify-new-user", {
+          body: {
+            email,
+            whatsapp: cleanWa,
+            display_name: displayName || email.split("@")[0],
+          },
+        }).catch((err) => console.warn("notify-new-user failed", err));
         toast({ title: t("auth.accountCreated"), description: t("auth.sessionStarted") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
