@@ -340,10 +340,12 @@ export function computeModelCostDynamic(
   mpFeePct: number,
   values: Record<string, unknown> | undefined,
   schemaProps: Record<string, WSSchemaProp> | undefined,
+  modelPath?: string,
 ): number {
   if (!basePrice || basePrice <= 0) return 1;
   const mult = computeDynamicMultiplier(values, schemaProps);
-  const effective = basePrice * mult;
+  const modelMult = modelPath ? computeModelSpecificMultiplier(modelPath, values) : 1;
+  const effective = basePrice * mult * modelMult;
   const feeFactor = 1 - Math.min(Math.max(mpFeePct, 0), 99) / 100;
   const effectiveMarkup = markup / feeFactor;
   return Math.max(1, Math.ceil(effective * effectiveMarkup * creditsPerUsd));
