@@ -414,6 +414,34 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteUser = async (u: UserRow) => {
+    const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a";
+    if (u.id === PROTECTED_ADMIN_ID) {
+      toast({ title: t("common.error"), description: "Super admin protegido, no se puede eliminar.", variant: "destructive" });
+      return;
+    }
+    if (currentUser?.id === u.id) {
+      toast({ title: t("common.error"), description: "No podés eliminar tu propia cuenta.", variant: "destructive" });
+      return;
+    }
+    const confirmText = `¿ELIMINAR DEFINITIVAMENTE al usuario ${u.email}?\n\nEsto borra:\n• Cuenta de acceso\n• Perfil y créditos\n• Historial de generaciones\n• Pagos y suscripciones\n\nEsta acción NO se puede deshacer.`;
+    if (!confirm(confirmText)) return;
+    setDeletingUserId(u.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: u.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Usuario eliminado", description: u.email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const handleToggleAdmin = async (u: UserRow) => {
     const isAdmin = u.roles.includes("admin");
     const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"; // jorgitom18@gmail.com (super admin)
@@ -563,6 +591,29 @@ export default function AdminPage() {
                                 <Shield className="h-3 w-3 mr-1" />
                               )}
                               {u.roles.includes("admin") ? "Quitar admin" : "Hacer admin"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteUser(u)}
+                              disabled={
+                                deletingUserId === u.id ||
+                                currentUser?.id === u.id ||
+                                u.id === "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"
+                              }
+                              title={
+                                u.id === "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"
+                                  ? "Super admin protegido"
+                                  : currentUser?.id === u.id
+                                  ? "No podés eliminarte a vos mismo"
+                                  : "Eliminar usuario"
+                              }
+                            >
+                              {deletingUserId === u.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3" />
+                              )}
                             </Button>
                           </TableCell>
                         </TableRow>
