@@ -18,20 +18,24 @@ Deno.serve(async (req) => {
   try {
     // Auth: solo admins
     const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return jsonResponse({ error: "No autenticado" }, 401);
+    }
+    const token = authHeader.replace("Bearer ", "");
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: userData, error: userErr } = await supabaseAuth.auth.getUser();
-    if (userErr || !userData?.user) return jsonResponse({ error: "No autenticado" }, 401);
+    const { data: claimsData, error: claimsErr } = await supabaseAuth.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub;
+    if (claimsErr || !userId) return jsonResponse({ error: "No autenticado" }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
     const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userData.user.id,
+      _user_id: userId,
       _role: "admin",
     });
     if (!isAdmin) return jsonResponse({ error: "No autorizado" }, 403);
