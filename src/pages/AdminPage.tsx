@@ -14,6 +14,7 @@ import {
 import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
 import { useTranslation } from "react-i18next";
@@ -82,6 +83,7 @@ const emptyPkg: Omit<PackageRow, "id"> = {
 export default function AdminPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [txs, setTxs] = useState<TxRow[]>([]);
@@ -115,6 +117,7 @@ export default function AdminPage() {
 
   const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
+  const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -379,6 +382,39 @@ export default function AdminPage() {
     return "secondary";
   };
 
+  const handleToggleAdmin = async (u: UserRow) => {
+    const isAdmin = u.roles.includes("admin");
+    if (currentUser?.id === u.id && isAdmin) {
+      toast({ title: t("common.error"), description: "No podés quitarte el rol de admin a vos mismo.", variant: "destructive" });
+      return;
+    }
+    const action = isAdmin ? "quitar permisos de admin a" : "convertir en admin a";
+    if (!confirm(`¿Seguro que querés ${action} ${u.email}?`)) return;
+    setTogglingAdminId(u.id);
+    try {
+      if (isAdmin) {
+        const { error } = await (supabase as any)
+          .from("user_roles")
+          .delete()
+          .eq("user_id", u.id)
+          .eq("role", "admin");
+        if (error) throw error;
+        toast({ title: "Admin removido", description: u.email || "" });
+      } else {
+        const { error } = await (supabase as any)
+          .from("user_roles")
+          .insert({ user_id: u.id, role: "admin" });
+        if (error) throw error;
+        toast({ title: "Admin asignado", description: u.email || "" });
+      }
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setTogglingAdminId(null);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -447,6 +483,20 @@ export default function AdminPage() {
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
                               <Key className="h-3 w-3 mr-1" /> {t("admin.password")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={u.roles.includes("admin") ? "destructive" : "default"}
+                              onClick={() => handleToggleAdmin(u)}
+                              disabled={togglingAdminId === u.id || (currentUser?.id === u.id && u.roles.includes("admin"))}
+                              title={currentUser?.id === u.id && u.roles.includes("admin") ? "No podés quitarte admin a vos mismo" : ""}
+                            >
+                              {togglingAdminId === u.id ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Shield className="h-3 w-3 mr-1" />
+                              )}
+                              {u.roles.includes("admin") ? "Quitar admin" : "Hacer admin"}
                             </Button>
                           </TableCell>
                         </TableRow>
