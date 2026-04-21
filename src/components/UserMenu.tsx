@@ -29,7 +29,11 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
     let cancelled = false;
     const load = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("wavespeed-balance");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const { data, error } = await supabase.functions.invoke("wavespeed-balance", {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
         if (error || (data as any)?.error) return;
         if (!cancelled) setWsBalance((data as any)?.balance_usd ?? null);
       } catch { /* ignore */ }

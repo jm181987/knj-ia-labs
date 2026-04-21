@@ -15,7 +15,11 @@ export function WavespeedBalanceCard() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("wavespeed-balance");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("No autenticado");
+      const { data, error } = await supabase.functions.invoke("wavespeed-balance", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setBalance((data as any)?.balance_usd ?? null);
