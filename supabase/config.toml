@@ -6,3 +6,6 @@ verify_jwt = false
 [functions.mp-create-subscription]
 verify_jwt = true
 
+[functions.notify-new-user]
+verify_jwt = false
+
