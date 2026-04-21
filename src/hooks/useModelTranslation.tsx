@@ -205,27 +205,46 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
     }
     setMap(initial);
 
+    // Procesamos en lotes pequeños con yield al main thread para no congelar el navegador.
+    const CONCURRENCY = 3;
+    const BATCH_FLUSH = 20;
+    const idle = (cb: () => void) => {
+      const w: any = typeof window !== "undefined" ? window : {};
+      if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(cb, { timeout: 500 });
+      else setTimeout(cb, 16);
+    };
+
     const run = async () => {
-      const translatedEntries = await Promise.all(
-        toFetch.map(async (m) => {
+      const nextMap = { ...initial };
+      let pending = 0;
+      let queueIdx = 0;
+
+      const flush = () => {
+        if (cancelled) return;
+        saveLS(LS_CARD_KEY, cardCache);
+        setMap({ ...nextMap });
+      };
+
+      const worker = async () => {
+        while (!cancelled && queueIdx < toFetch.length) {
+          const m = toFetch[queueIdx++];
           const key = `${lang}:${m.model_id}`;
           const translated = await translateText(m.description || "", lang);
-          return [m.model_id, key, translated || m.description || ""] as const;
-        }),
-      );
-
-      if (cancelled) return;
-
-      const nextMap = { ...initial };
-      for (const [modelId, key, translated] of translatedEntries) {
-        nextMap[modelId] = translated;
-        if (translated) {
-          cardCache.set(key, translated);
+          if (cancelled) return;
+          const finalText = translated || m.description || "";
+          nextMap[m.model_id] = finalText;
+          if (translated) cardCache.set(key, translated);
+          pending++;
+          if (pending >= BATCH_FLUSH) {
+            pending = 0;
+            await new Promise<void>((res) => idle(() => res()));
+            flush();
+          }
         }
-      }
+      };
 
-      saveLS(LS_CARD_KEY, cardCache);
-      setMap(nextMap);
+      await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+      if (!cancelled) flush();
     };
     run();
 
