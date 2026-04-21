@@ -198,8 +198,18 @@ export function useTranslatedDescriptions(models: WSCatalogModel[]) {
       const key = `${lang}:${m.model_id}`;
       if (cardCache.has(key)) cached[m.model_id] = cardCache.get(key)!;
     }
-    setMap(cached);
-  }, [models, lang]);
+    setMap((prev) => {
+      const prevKeys = Object.keys(prev);
+      const newKeys = Object.keys(cached);
+      if (prevKeys.length === newKeys.length && newKeys.every((k) => prev[k] === cached[k])) {
+        return prev; // sin cambios → evita loop infinito
+      }
+      return cached;
+    });
+    // Nota: dependemos solo de model_ids concatenados + lang para evitar
+    // re-render por nueva referencia del array `models` en cada render del padre.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [models.map((m) => m.model_id).join(","), lang]);
 
   return map;
 }
