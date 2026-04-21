@@ -319,7 +319,8 @@ export function computeModelSpecificMultiplier(
   if (path.includes("multitalk")) {
     const dur = numericValue(values.duration) ?? numericValue(values.num_seconds) ?? numericValue(values.seconds);
     if (dur && dur > 0) return Math.max(1, dur / 5);
-    return 2;
+    // Sin campo de duración: la define el audio. Estimamos hasta ~20s (4x).
+    return 4;
   }
 
   if (path.includes("veo") || path.includes("sora")) {
