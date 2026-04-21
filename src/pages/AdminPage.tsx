@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +23,7 @@ interface UserRow {
   id: string;
   email: string | null;
   display_name: string | null;
+  whatsapp: string | null;
   created_at: string;
   roles: string[];
   balance: number;
@@ -119,12 +120,16 @@ export default function AdminPage() {
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
   const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
+  const [waUser, setWaUser] = useState<UserRow | null>(null);
+  const [waValue, setWaValue] = useState("");
+  const [waSubmitting, setWaSubmitting] = useState(false);
+
   const loadAll = async () => {
     setLoading(true);
     try {
       const [{ data: profiles }, { data: roles }, { data: credits }, { data: prices }, { data: tx }, { data: pkgs }, { data: pays }, { data: subs }, { data: settings }] =
         await Promise.all([
-          (supabase as any).from("profiles").select("id, email, display_name, created_at").order("created_at", { ascending: false }),
+          (supabase as any).from("profiles").select("id, email, display_name, whatsapp, created_at").order("created_at", { ascending: false }),
           (supabase as any).from("user_roles").select("user_id, role"),
           (supabase as any).from("user_credits").select("user_id, balance"),
           (supabase as any).from("pricing").select("key, credits, description").order("key"),
