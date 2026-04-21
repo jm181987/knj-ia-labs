@@ -19,20 +19,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     // Setup listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (!mounted) return;
       setSession(sess);
       setUser(sess?.user ?? null);
+      setLoading(false);
       if (sess?.user) {
         // Defer role check to avoid deadlock
         setTimeout(async () => {
-          const { data } = await (supabase as any)
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", sess.user.id)
-            .eq("role", "admin")
-            .maybeSingle();
-          setIsAdmin(!!data);
+          try {
+            const { data } = await (supabase as any)
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", sess.user.id)
+              .eq("role", "admin")
+              .maybeSingle();
+            if (mounted) setIsAdmin(!!data);
+          } catch (e) {
+            console.warn("role check failed", e);
+            if (mounted) setIsAdmin(false);
+          }
         }, 0);
       } else {
         setIsAdmin(false);
@@ -40,13 +48,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // THEN check existing session
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session: sess } }) => {
+        if (!mounted) return;
+        setSession(sess);
+        setUser(sess?.user ?? null);
+      })
+      .catch((e) => console.warn("getSession failed", e))
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
+    // Safety net: never stay loading more than 5s
+    const timeout = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
