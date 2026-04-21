@@ -387,6 +387,31 @@ export default function AdminPage() {
     return "secondary";
   };
 
+  const handleSaveWhatsapp = async () => {
+    if (!waUser) return;
+    const cleaned = waValue.trim().replace(/[^\d+]/g, "");
+    if (cleaned && cleaned.replace(/\D/g, "").length < 8) {
+      toast({ title: t("common.error"), description: t("auth.whatsappInvalid"), variant: "destructive" });
+      return;
+    }
+    setWaSubmitting(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("profiles")
+        .update({ whatsapp: cleaned || null, updated_at: new Date().toISOString() })
+        .eq("id", waUser.id);
+      if (error) throw error;
+      toast({ title: t("common.success"), description: waUser.email || "" });
+      setWaUser(null);
+      setWaValue("");
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setWaSubmitting(false);
+    }
+  };
+
   const handleToggleAdmin = async (u: UserRow) => {
     const isAdmin = u.roles.includes("admin");
     const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"; // jorgitom18@gmail.com (super admin)
@@ -467,6 +492,7 @@ export default function AdminPage() {
                       <TableRow>
                         <TableHead>{t("admin.name")}</TableHead>
                         <TableHead>{t("admin.email")}</TableHead>
+                        <TableHead>WhatsApp</TableHead>
                         <TableHead>{t("admin.role")}</TableHead>
                         <TableHead className="text-right">{t("admin.balance")}</TableHead>
                         <TableHead className="text-right">{t("admin.actions")}</TableHead>
@@ -477,6 +503,21 @@ export default function AdminPage() {
                         <TableRow key={u.id}>
                           <TableCell className="font-medium whitespace-nowrap">{u.display_name || "—"}</TableCell>
                           <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {u.whatsapp ? (
+                              <a
+                                href={`https://wa.me/${u.whatsapp.replace(/\D/g, "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-primary hover:underline font-mono text-xs"
+                              >
+                                <MessageCircle className="h-3 w-3" />
+                                {u.whatsapp}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             {u.roles.map((r) => (
                               <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="mr-1">{r}</Badge>
@@ -490,6 +531,9 @@ export default function AdminPage() {
                           <TableCell className="text-right space-x-1 whitespace-nowrap">
                             <Button size="sm" variant="outline" onClick={() => setRechargeUser(u)}>
                               <Plus className="h-3 w-3 mr-1" /> {t("admin.recharge")}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setWaUser(u); setWaValue(u.whatsapp || ""); }}>
+                              <MessageCircle className="h-3 w-3 mr-1" /> WhatsApp
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => { setPwUser(u); setPwValue(""); }}>
                               <Key className="h-3 w-3 mr-1" /> {t("admin.password")}
