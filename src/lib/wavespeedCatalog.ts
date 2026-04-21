@@ -305,6 +305,32 @@ export function computeDynamicMultiplier(
 }
 
 /**
+ * Multiplicador específico por modelo. Replica la lógica del backend
+ * para reflejar el costo real que cobra Wavespeed en modelos que
+ * escalan por duración de audio/video (ej: multitalk).
+ */
+export function computeModelSpecificMultiplier(
+  modelPath: string,
+  values: Record<string, unknown> | undefined,
+): number {
+  if (!values) return 1;
+  const path = modelPath.toLowerCase();
+
+  if (path.includes("multitalk")) {
+    const dur = numericValue(values.duration) ?? numericValue(values.num_seconds) ?? numericValue(values.seconds);
+    if (dur && dur > 0) return Math.max(1, dur / 5);
+    return 2;
+  }
+
+  if (path.includes("veo") || path.includes("sora")) {
+    const dur = numericValue(values.duration);
+    if (dur && dur > 8) return dur / 8;
+  }
+
+  return 1;
+}
+
+/**
  * Versión "dinámica" del costo: aplica multiplicadores según valores.
  */
 export function computeModelCostDynamic(
