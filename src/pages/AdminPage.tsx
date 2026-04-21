@@ -382,6 +382,39 @@ export default function AdminPage() {
     return "secondary";
   };
 
+  const handleToggleAdmin = async (u: UserRow) => {
+    const isAdmin = u.roles.includes("admin");
+    if (currentUser?.id === u.id && isAdmin) {
+      toast({ title: t("common.error"), description: "No podés quitarte el rol de admin a vos mismo.", variant: "destructive" });
+      return;
+    }
+    const action = isAdmin ? "quitar permisos de admin a" : "convertir en admin a";
+    if (!confirm(`¿Seguro que querés ${action} ${u.email}?`)) return;
+    setTogglingAdminId(u.id);
+    try {
+      if (isAdmin) {
+        const { error } = await (supabase as any)
+          .from("user_roles")
+          .delete()
+          .eq("user_id", u.id)
+          .eq("role", "admin");
+        if (error) throw error;
+        toast({ title: "Admin removido", description: u.email || "" });
+      } else {
+        const { error } = await (supabase as any)
+          .from("user_roles")
+          .insert({ user_id: u.id, role: "admin" });
+        if (error) throw error;
+        toast({ title: "Admin asignado", description: u.email || "" });
+      }
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setTogglingAdminId(null);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
