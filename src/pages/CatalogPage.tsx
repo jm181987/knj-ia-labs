@@ -345,11 +345,11 @@ function ModelDialogContent({
       <DialogFooter className="flex-row items-center justify-between gap-2 p-4 sm:p-6 pt-3 border-t border-border/50 shrink-0 sm:space-x-0">
         <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-[10px] sm:text-xs shrink-0">
           <Coins className="h-3 w-3" />
-          {computeModelCost(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} {t("common.credits")}
+          {computeModelCostDynamic(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct, values, openModel.request_schema?.properties)} {t("common.credits")}
         </Badge>
         {isAdmin && (
           <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo Wavespeed (admin: generación gratis)">
-            ${(openModel.base_price ?? 0).toFixed(3)} WS · {adminCost(openModel.base_price, pricing.creditsPerUsd)}cr · gratis
+            ${((openModel.base_price ?? 0) * computeDynamicMultiplier(values, openModel.request_schema?.properties)).toFixed(3)} WS · gratis
           </Badge>
         )}
         <div className="flex gap-2">
