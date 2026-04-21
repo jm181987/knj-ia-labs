@@ -2,7 +2,7 @@
 // Elimina un usuario completamente (auth + datos relacionados via cascade).
 // Usa service role key. Verifica que el caller sea admin.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,35 +12,46 @@ const corsHeaders = {
 
 const PROTECTED_ADMIN_ID = "6aabbe63-2a25-4eff-b16a-1f6ca663b00a"; // super admin
 
+function decodeJwtSub(token: string): string | null {
+  try {
+    const payload = token.split(".")[1];
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const claims = JSON.parse(json);
+    if (claims?.exp && Date.now() / 1000 > claims.exp) return null;
+    return claims?.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) {
+    const token = authHeader.replace("Bearer ", "");
+    const callerId = decodeJwtSub(token);
+    if (!callerId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: isAdmin, error: roleErr } = await userClient.rpc("has_role", {
-      _user_id: userData.user.id,
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    const { data: isAdmin, error: roleErr } = await adminClient.rpc("has_role", {
+      _user_id: callerId,
       _role: "admin",
     });
     if (roleErr || !isAdmin) {
@@ -64,14 +75,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (user_id === userData.user.id) {
+    if (user_id === callerId) {
       return new Response(JSON.stringify({ error: "No podés eliminar tu propia cuenta." }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const adminClient = createClient(supabaseUrl, serviceKey);
 
     // Borrar datos relacionados (las FKs no están definidas, hay que limpiar a mano)
     await adminClient.from("credit_transactions").delete().eq("user_id", user_id);

@@ -428,8 +428,11 @@ export default function AdminPage() {
     if (!confirm(confirmText)) return;
     setDeletingUserId(u.id);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Sesión no disponible");
       const { data, error } = await supabase.functions.invoke("admin-delete-user", {
         body: { user_id: u.id },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
