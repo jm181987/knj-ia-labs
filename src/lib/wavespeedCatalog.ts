@@ -316,15 +316,30 @@ export function computeModelSpecificMultiplier(
   if (!values) return 1;
   const path = modelPath.toLowerCase();
 
-  if (path.includes("multitalk")) {
-    const dur = numericValue(values.duration) ?? numericValue(values.num_seconds) ?? numericValue(values.seconds);
-    if (dur && dur > 0) return Math.max(1, dur / 5);
-    // Sin campo de duración: la define el audio. Estimamos hasta ~20s (4x).
-    return 4;
+  const dur = numericValue(values.duration) ?? numericValue(values.num_seconds) ?? numericValue(values.seconds);
+
+  const audioVideoFamilies: { match: string; base: number; worstCase: number }[] = [
+    { match: "multitalk", base: 5, worstCase: 4 },
+    { match: "lipsync", base: 5, worstCase: 4 },
+    { match: "lip-sync", base: 5, worstCase: 4 },
+    { match: "dubbing", base: 5, worstCase: 6 },
+    { match: "video-dubbing", base: 5, worstCase: 6 },
+    { match: "audio-to-audio", base: 5, worstCase: 4 },
+    { match: "text-to-audio", base: 5, worstCase: 3 },
+    { match: "video-to-audio", base: 5, worstCase: 4 },
+    { match: "video-extend", base: 5, worstCase: 2 },
+    { match: "digital-human", base: 5, worstCase: 4 },
+    { match: "portrait-transfer", base: 5, worstCase: 3 },
+  ];
+
+  for (const f of audioVideoFamilies) {
+    if (path.includes(f.match)) {
+      if (dur && dur > 0) return Math.max(1, dur / f.base);
+      return f.worstCase;
+    }
   }
 
   if (path.includes("veo") || path.includes("sora")) {
-    const dur = numericValue(values.duration);
     if (dur && dur > 8) return dur / 8;
   }
 
