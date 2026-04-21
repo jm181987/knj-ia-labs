@@ -150,19 +150,35 @@ function modelSpecificMultiplier(modelPath: string, values: Record<string, unkno
   if (!values) return 1;
   const path = modelPath.toLowerCase();
 
-  // multitalk: $0.15 base por 5s, escala lineal con duración del audio.
-  // Si no hay duration explícita, asumimos peor caso (10s = 2x).
-  if (path.includes("multitalk")) {
-    const dur = numVal(values.duration) || numVal(values.num_seconds) || numVal(values.seconds);
-    if (dur && dur > 0) return Math.max(1, dur / 5);
-    // No hay campo de duración: la duración la define el audio subido.
-    // Cubrimos hasta ~20s de audio (4x el base de 5s) para no quedarnos cortos.
-    return 4;
+  const dur = numVal(values.duration) || numVal(values.num_seconds) || numVal(values.seconds);
+
+  // Familias que escalan por duración del audio/video subido.
+  // Si el usuario indica duración explícita, escalamos lineal sobre el base (5s).
+  // Si no hay campo de duración (la define el archivo subido), aplicamos
+  // un peor caso conservador para no quedarnos cortos vs el cobro real de Wavespeed.
+  const audioVideoFamilies = [
+    { match: "multitalk", base: 5, worstCase: 4 },     // 5s base, hasta ~20s
+    { match: "lipsync", base: 5, worstCase: 4 },        // lipsync (varios proveedores)
+    { match: "lip-sync", base: 5, worstCase: 4 },
+    { match: "dubbing", base: 5, worstCase: 6 },        // doblaje, audios largos
+    { match: "video-dubbing", base: 5, worstCase: 6 },
+    { match: "audio-to-audio", base: 5, worstCase: 4 },
+    { match: "text-to-audio", base: 5, worstCase: 3 },
+    { match: "video-to-audio", base: 5, worstCase: 4 },
+    { match: "video-extend", base: 5, worstCase: 2 },   // extiende N segundos extras
+    { match: "digital-human", base: 5, worstCase: 4 },  // avatares hablando
+    { match: "portrait-transfer", base: 5, worstCase: 3 },
+  ];
+
+  for (const f of audioVideoFamilies) {
+    if (path.includes(f.match)) {
+      if (dur && dur > 0) return Math.max(1, dur / f.base);
+      return f.worstCase;
+    }
   }
 
-  // Modelos de video largos: aplicar piso de seguridad para audios/duración.
+  // Modelos de video largos: aplicar piso de seguridad si excede el default.
   if (path.includes("veo") || path.includes("sora")) {
-    const dur = numVal(values.duration);
     if (dur && dur > 8) return dur / 8;
   }
 
