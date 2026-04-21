@@ -155,7 +155,9 @@ function modelSpecificMultiplier(modelPath: string, values: Record<string, unkno
   if (path.includes("multitalk")) {
     const dur = numVal(values.duration) || numVal(values.num_seconds) || numVal(values.seconds);
     if (dur && dur > 0) return Math.max(1, dur / 5);
-    return 2; // peor caso conservador
+    // No hay campo de duración: la duración la define el audio subido.
+    // Cubrimos hasta ~20s de audio (4x el base de 5s) para no quedarnos cortos.
+    return 4;
   }
 
   // Modelos de video largos: aplicar piso de seguridad para audios/duración.
