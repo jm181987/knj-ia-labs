@@ -357,6 +357,11 @@ function ModelDialogContent({
             {adminCost(openModel.base_price, pricing.creditsPerUsd)} admin
           </Badge>
         )}
+        {isAdmin && (
+          <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs shrink-0" title="Costo Wavespeed por uso">
+            ${(openModel.base_price ?? 0).toFixed(3)} WS
+          </Badge>
+        )}
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
           <Button size="sm" onClick={handleGenerate} disabled={submitting}>
