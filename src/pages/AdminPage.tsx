@@ -83,6 +83,7 @@ const emptyPkg: Omit<PackageRow, "id"> = {
 export default function AdminPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [pricing, setPricing] = useState<PricingRow[]>([]);
   const [txs, setTxs] = useState<TxRow[]>([]);
@@ -116,6 +117,7 @@ export default function AdminPage() {
 
   const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
+  const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
