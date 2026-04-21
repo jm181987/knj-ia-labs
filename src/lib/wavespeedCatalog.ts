@@ -191,3 +191,135 @@ export function computeModelCost(
   return Math.max(1, Math.ceil(basePrice * effectiveMarkup * creditsPerUsd));
 }
 
+// ============ Multiplicadores dinámicos por parámetros ============
+// Estima el costo real (en USD) de una generación según los valores que
+// el usuario eligió en el formulario. Aplica heurísticas comunes de
+// Wavespeed: duración, cantidad de imágenes, resolución y frames.
+
+const RESOLUTION_MULT: Record<string, number> = {
+  "256p": 0.5,
+  "360p": 0.7,
+  "480p": 1,
+  "540p": 1.2,
+  "576p": 1.3,
+  "720p": 1.5,
+  "768p": 1.7,
+  "1080p": 2.5,
+  "1440p": 3.5,
+  "2k": 3.5,
+  "4k": 5,
+  "2160p": 5,
+};
+
+function resolutionMultiplier(value: unknown): number {
+  if (value == null) return 1;
+  const s = String(value).toLowerCase().trim();
+  if (RESOLUTION_MULT[s]) return RESOLUTION_MULT[s];
+  // Soporta formatos "1280x720", "1920*1080"
+  const m = s.match(/(\d{2,5})\s*[x*×]\s*(\d{2,5})/);
+  if (m) {
+    const w = Number(m[1]); const h = Number(m[2]);
+    const px = w * h;
+    // base 480p ≈ 854x480 = 410k px
+    const ratio = px / 410_000;
+    if (ratio <= 0) return 1;
+    return Math.max(0.5, Math.min(8, ratio));
+  }
+  // Soporta "720", "1080", etc.
+  const num = Number(s.replace(/[^\d]/g, ""));
+  if (Number.isFinite(num) && num > 0) {
+    const key = `${num}p`;
+    if (RESOLUTION_MULT[key]) return RESOLUTION_MULT[key];
+  }
+  return 1;
+}
+
+function numericValue(v: unknown): number | null {
+  if (v == null) return null;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace(/[^\d.]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+/**
+ * Devuelve el factor multiplicador total a aplicar sobre base_price
+ * según los valores del formulario. Resultado típico entre 0.5x y 10x.
+ */
+export function computeDynamicMultiplier(
+  values: Record<string, unknown> | undefined,
+  schemaProps: Record<string, WSSchemaProp> | undefined,
+): number {
+  if (!values) return 1;
+  let mult = 1;
+
+  // Duración: keys comunes
+  const durKey = ["duration", "num_seconds", "seconds", "video_length"].find((k) => k in values);
+  if (durKey) {
+    const d = numericValue(values[durKey]);
+    const baseDur = numericValue(schemaProps?.[durKey]?.default) || 5;
+    if (d && d > 0 && baseDur > 0) mult *= d / baseDur;
+  }
+
+  // Cantidad de imágenes / outputs
+  const countKey = ["num_images", "image_count", "n", "num_outputs", "batch_size"].find((k) => k in values);
+  if (countKey) {
+    const c = numericValue(values[countKey]);
+    const baseC = numericValue(schemaProps?.[countKey]?.default) || 1;
+    if (c && c > 0 && baseC > 0) mult *= c / baseC;
+  }
+
+  // Resolución / size
+  const resKey = ["resolution", "size", "aspect_ratio_resolution", "video_resolution"].find((k) => k in values);
+  if (resKey) {
+    const baseRes = schemaProps?.[resKey]?.default;
+    const userMult = resolutionMultiplier(values[resKey]);
+    const baseMult = resolutionMultiplier(baseRes) || 1;
+    if (baseMult > 0) mult *= userMult / baseMult;
+  }
+
+  // Frames (modelos tipo wan/hunyuan: base 81 frames)
+  const framesKey = ["num_frames", "frames"].find((k) => k in values);
+  if (framesKey) {
+    const f = numericValue(values[framesKey]);
+    const baseF = numericValue(schemaProps?.[framesKey]?.default) || 81;
+    if (f && f > 0 && baseF > 0) mult *= f / baseF;
+  }
+
+  // Pasos de inferencia (sólo si el usuario los sube mucho)
+  const stepsKey = ["num_inference_steps", "steps"].find((k) => k in values);
+  if (stepsKey) {
+    const s = numericValue(values[stepsKey]);
+    const baseS = numericValue(schemaProps?.[stepsKey]?.default) || 30;
+    if (s && s > 0 && baseS > 0) {
+      const r = s / baseS;
+      // Solo penaliza si excede el default (no descuenta si baja)
+      if (r > 1) mult *= r;
+    }
+  }
+
+  // Clamp para evitar números absurdos
+  return Math.max(0.25, Math.min(mult, 20));
+}
+
+/**
+ * Versión "dinámica" del costo: aplica multiplicadores según valores.
+ */
+export function computeModelCostDynamic(
+  basePrice: number | undefined,
+  markup: number,
+  creditsPerUsd: number,
+  mpFeePct: number,
+  values: Record<string, unknown> | undefined,
+  schemaProps: Record<string, WSSchemaProp> | undefined,
+): number {
+  if (!basePrice || basePrice <= 0) return 1;
+  const mult = computeDynamicMultiplier(values, schemaProps);
+  const effective = basePrice * mult;
+  const feeFactor = 1 - Math.min(Math.max(mpFeePct, 0), 99) / 100;
+  const effectiveMarkup = markup / feeFactor;
+  return Math.max(1, Math.ceil(effective * effectiveMarkup * creditsPerUsd));
+}
+
