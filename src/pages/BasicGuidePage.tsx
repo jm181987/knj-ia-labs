@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkles, UserRound } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import nanoBananaLogo from "@/assets/logos/nano-banana.png";
@@ -84,6 +84,34 @@ const videoTemplates = [
   "Video viral: [sujeto] haciendo [acción impactante], cámara [movimiento], estilo [realista/3D/cinemático], duración [segundos], formato 9:16, loop suave.",
   "Producto: [producto] en [escenario], movimiento [giro/zoom/travelling], iluminación [tipo], textura [detalle], sin texto, sin logos extra, final limpio.",
   "Historia corta: inicio [gancho], desarrollo [acción], cierre [transformación], cámara [plano], ritmo [lento/rápido], ambiente [música/energía visual].",
+];
+
+const avatarPromptBlocks = [
+  {
+    title: "1. Partí de la identidad facial",
+    copy: "Cuando uses una foto, aclarale al modelo que debe basarse en esa imagen y conservar rostro, proporciones y rasgos principales.",
+    example:
+      "Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando de forma natural a la cámara, con movimientos sutiles de cabeza y parpadeo realista, expresión amigable y confiada, iluminación cinematográfica, profundidad de campo, textura de piel realista, ultra detallado, calidad 4K.",
+  },
+  {
+    title: "2. Definí movimiento, expresión y estilo",
+    copy: "Kling interpreta la imagen como base, pero el texto define cómo cobra vida: acción, emoción, cámara, iluminación y nivel de realismo.",
+    example:
+      "Una persona basada en la imagen proporcionada, hablando con energía, sonriendo, gesticulando de forma natural, movimientos expresivos, estilo vlog, iluminación brillante, colores vibrantes, ultra realista.",
+  },
+  {
+    title: "3. Agregá restricciones para evitar fallos",
+    copy: "Si buscás fidelidad, pedí movimientos naturales y evitá demasiadas acciones a la vez. Para corregir errores, sumá restricciones claras.",
+    example:
+      "Movimientos naturales sutiles, textura de piel realista, expresiones faciales coherentes, sin deformaciones, sin distorsión facial, sin cambios de identidad.",
+  },
+];
+
+const avatarTemplates = [
+  "Influencer: Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando de forma natural a la cámara, con movimientos sutiles de cabeza y expresiones faciales realistas, tono amigable y confiado, iluminación cinematográfica, fondo desenfocado, ultra realista, calidad 4K.",
+  "Cinemático: Una persona basada en la imagen proporcionada, mirando a la cámara, respiración suave, parpadeo natural, iluminación dramática, la cámara se acerca lentamente, estilo cinematográfico, alto nivel de detalle, profundidad de campo, calidad 4K.",
+  "Corporativo: Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando con claridad, postura firme, movimientos mínimos, expresión neutral y profesional, iluminación de estudio, fondo limpio, estilo corporativo, alta calidad.",
+  "Streamer: Una persona basada en la imagen proporcionada, reaccionando con emoción, expresiones intensas, movimientos dinámicos, iluminación RGB, colores neón, ambiente gamer, alto contraste, ultra detallado.",
 ];
 
 const featuredVideoPrompt =
