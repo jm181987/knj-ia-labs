@@ -120,8 +120,9 @@ const featuredVideoPrompt =
 export default function BasicGuidePage() {
   const { pathname } = useLocation();
   const isVideoGuide = pathname.endsWith("/videos");
-  const activeBlocks = isVideoGuide ? videoPromptBlocks : promptBlocks;
-  const activeTemplates = isVideoGuide ? videoTemplates : quickTemplates;
+  const isAvatarGuide = pathname.endsWith("/avatars");
+  const activeBlocks = isAvatarGuide ? avatarPromptBlocks : isVideoGuide ? videoPromptBlocks : promptBlocks;
+  const activeTemplates = isAvatarGuide ? avatarTemplates : isVideoGuide ? videoTemplates : quickTemplates;
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -177,24 +178,34 @@ export default function BasicGuidePage() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <Film className="h-6 w-6" />
                 </div>
+              ) : isAvatarGuide ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <UserRound className="h-6 w-6" />
+                </div>
               ) : (
                 <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
               )}
               <div>
-                <p className="text-sm font-medium text-primary">Guía para {isVideoGuide ? "videos" : "imágenes"}</p>
+                <p className="text-sm font-medium text-primary">Guía para {isAvatarGuide ? "avatares" : isVideoGuide ? "videos" : "imágenes"}</p>
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isVideoGuide ? "Videos con más gancho y mejor movimiento" : "Menos intentos, prompts más claros"}
+                  {isAvatarGuide
+                    ? "Avatares más fieles, naturales y expresivos"
+                    : isVideoGuide
+                      ? "Videos con más gancho y mejor movimiento"
+                      : "Menos intentos, prompts más claros"}
                 </h2>
               </div>
             </div>
             <p className="leading-7 text-muted-foreground">
-              {isVideoGuide
+              {isAvatarGuide
+                ? "Para crear avatares con Kling, usá una foto clara y un prompt específico sobre identidad facial, expresión, movimiento, cámara, iluminación y estilo visual."
+                : isVideoGuide
                 ? "Para crear videos con más precisión, indicá acción, cámara, duración, ritmo, formato y cómo debe terminar la escena. Eso reduce intentos y mejora la coherencia."
                 : "Para crear imágenes con más precisión, tratá el prompt como una receta visual: primero definí qué debe aparecer, después cómo debe verse y al final qué errores evitar."}
             </p>
             <Button asChild variant="secondary" className="gap-2">
-              <Link to={isVideoGuide ? "/app/catalog?cat=video" : "/app/catalog?cat=image"}>
-                Probar modelos de {isVideoGuide ? "video" : "imagen"} <ArrowRight className="h-4 w-4" />
+              <Link to={isAvatarGuide ? "/app/catalog?cat=avatars" : isVideoGuide ? "/app/catalog?cat=video" : "/app/catalog?cat=image"}>
+                Probar modelos de {isAvatarGuide ? "avatares" : isVideoGuide ? "video" : "imagen"} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
