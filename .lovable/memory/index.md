@@ -3,6 +3,7 @@
 # Project Memory
 
 ## Core
+Guía básica debe mantenerse traducida en ES/EN/PT para imágenes, videos y avatares.
 KNJ PRO — app de generación video/imagen (Wavespeed). Acento púrpura (#7C3AED). Lovable Cloud (Supabase).
 Admins tienen permisos totales (RLS via has_role + edge functions con service role): editar/eliminar cualquier usuario, pagos, créditos, paquetes, pricing, testimonios, suscripciones y settings. No pedirles confirmación de "permisos".
 Admins NO usan sistema de créditos: no mostrarles alertas de saldo bajo ni bloqueos por créditos.

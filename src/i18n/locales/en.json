@@ -24,8 +24,8 @@
   "nav": {
     "navigation": "Navigation",
     "generate": "Generate",
-   "avatars": "Avatars",
-   "catalog": "Catalog",
+    "avatars": "Avatars",
+    "catalog": "Catalog",
     "history": "History",
     "gallery": "Gallery",
     "basicGuide": "Basic guide",
@@ -343,5 +343,130 @@
     "activeDesc": "Visible to users",
     "highlightedDesc": "Mark as \"Most popular\"",
     "deletePkgConfirm": "Delete this package? Existing payments are not affected."
+  },
+  "guide": {
+    "badge": "Basic guide",
+    "title": "How to start creating in KNJ PRO",
+    "subtitle": "A quick walkthrough to choose models, prepare prompts, manage credits, and find your results.",
+    "catalogCta": "Go to catalog",
+    "stepLabel": "Step {{number}}",
+    "steps": [
+      {
+        "title": "Choose a tool",
+        "description": "Open the catalog and select the model that best fits your image, video, avatar, or enhancement."
+      },
+      {
+        "title": "Write a clear prompt",
+        "description": "Specify subject, style, action, format, and important details. The more specific you are, the better the result."
+      },
+      {
+        "title": "Review the cost",
+        "description": "Each model shows its credit cost before generation so you can control your balance."
+      },
+      {
+        "title": "Track progress",
+        "description": "Your jobs appear in History with their status: pending, processing, completed, or failed."
+      },
+      {
+        "title": "Download your results",
+        "description": "When the generation is ready, open it from History or Gallery and save the final file."
+      }
+    ],
+    "tipsTitle": "Tips for better results",
+    "tips": [
+      "Use concrete descriptions: scene, lighting, camera, and style.",
+      "Avoid contradictory or overly long prompts.",
+      "If you upload a reference, make sure it is clear and high quality.",
+      "Download important creations: they are kept for a limited time."
+    ],
+    "templatesTitle": "Quick templates",
+    "image": {
+      "eyebrow": "Guide for images",
+      "title": "Fewer attempts, clearer prompts",
+      "description": "To create images more accurately, treat the prompt like a visual recipe: first define what should appear, then how it should look, and finally which errors to avoid.",
+      "tryCta": "Try image models",
+      "blocks": [
+        {
+          "title": "1. Build the prompt in blocks",
+          "copy": "Order the idea from most important to secondary: subject, action, environment, style, camera, light, and restrictions.",
+          "example": "Editorial portrait of a Uruguayan entrepreneur holding a skincare product, bright interior, clean background, realistic photography, 50mm lens, soft side light, natural colors, no text or logos."
+        },
+        {
+          "title": "2. Say what to keep and what to change",
+          "copy": "When editing an image, separate what must remain untouched from what you want to modify to avoid unpredictable results.",
+          "example": "Keep face, pose, and clothing. Change the background to a minimalist beige studio, improve lighting, add natural shadow, keep real proportions."
+        },
+        {
+          "title": "3. Use simple restrictions",
+          "copy": "Restrictions reduce failed attempts. Explicitly ask to avoid text, watermarks, extra fingers, blur, or cluttered backgrounds.",
+          "example": "No text, no watermark, no deformed hands, no duplicated objects, no messy background, do not change the subject identity."
+        }
+      ],
+      "templates": [
+        "Product photo: [product] on [surface], [type] background, [type] light, [brand] style, [shot] camera, no text.",
+        "Portrait: [person] in [place], [emotion] expression, [detail] clothing, [type] light, [mm] lens, realistic, keep natural features.",
+        "Edit: keep [elements], change [elements], add [detail], [visual reference] style, clean and coherent result."
+      ]
+    },
+    "video": {
+      "eyebrow": "Guide for videos",
+      "title": "Videos with stronger hooks and better motion",
+      "description": "To create videos more precisely, specify action, camera, duration, rhythm, format, and how the scene should end. This reduces attempts and improves coherence.",
+      "tryCta": "Try video models",
+      "exampleEyebrow": "Advanced example",
+      "exampleTitle": "Cinematic action prompt",
+      "featuredPrompt": "In a ruined biotechnology city overrun by organic vegetation, a high-speed FPV camera races through streets swallowed by biomechanical structures; mutant soldiers clash with armored squads while acid rain cuts diagonally across the screen; the camera performs vertical climbs along living skyscraper walls, spins through shattered interiors pulsing with bioluminescent veins, then dives back into open combat zones filled with explosions and collapsing terrain; organic particles and debris stretch into glowing trails, creating a nightmarish fusion of technology, decay, and relentless motion.",
+      "blocks": [
+        {
+          "title": "1. Open with motion in the first seconds",
+          "copy": "Short videos need to hook fast: start with a clear action, visual change, or moving camera.",
+          "example": "Vertical 9:16 video, a coffee cup spins on a table while steam forms a soft silhouette, macro camera pushing in, warm morning light, fluid motion, 5-second duration, perfect loop."
+        },
+        {
+          "title": "2. Specify camera, rhythm, and duration",
+          "copy": "Define whether you want zoom, tracking, pan, slow motion, fast cuts, or a continuous shot to reduce random results.",
+          "example": "Continuous 6-second shot, slow dolly-in camera toward a perfume on transparent acrylic, elegant reflections, dark background, subtle particles, no text, no hands."
+        },
+        {
+          "title": "3. Think of the ending as a loop",
+          "copy": "If the video is for social media, ask for the last frame to connect with the first so it repeats naturally.",
+          "example": "Animation of a sports sneaker floating and rotating 360 degrees, studio lights, clean background, ending identical to the beginning for a seamless loop, premium commercial style."
+        }
+      ],
+      "templates": [
+        "Viral video: [subject] doing [impactful action], camera [movement], [realistic/3D/cinematic] style, [seconds] duration, 9:16 format, smooth loop.",
+        "Product: [product] in [setting], [spin/zoom/tracking] movement, [type] lighting, [detail] texture, no text, no extra logos, clean ending.",
+        "Short story: opening [hook], development [action], ending [transformation], camera [shot], [slow/fast] rhythm, [music/visual energy] atmosphere."
+      ]
+    },
+    "avatar": {
+      "eyebrow": "Guide for avatars",
+      "title": "More faithful, natural, and expressive avatars",
+      "description": "To create avatars with Kling, use a clear photo and a prompt that is specific about facial identity, expression, motion, camera, lighting, and visual style.",
+      "tryCta": "Try avatar models",
+      "blocks": [
+        {
+          "title": "1. Start from facial identity",
+          "copy": "When using a photo, tell the model to base the result on that image and preserve the face, proportions, and main features.",
+          "example": "A realistic person based on the provided image, maintaining facial identity, speaking naturally to the camera with subtle head movements and realistic blinking, friendly and confident expression, cinematic lighting, depth of field, realistic skin texture, ultra detailed, 4K quality."
+        },
+        {
+          "title": "2. Define motion, expression, and style",
+          "copy": "Kling interprets the image as the base, but the text defines how it comes to life: action, emotion, camera, lighting, and realism level.",
+          "example": "A person based on the provided image, speaking energetically, smiling, gesturing naturally, expressive movements, vlog style, bright lighting, vibrant colors, ultra realistic."
+        },
+        {
+          "title": "3. Add restrictions to avoid failures",
+          "copy": "If you want fidelity, request subtle natural movements and avoid too many actions at once. To correct errors, add clear restrictions.",
+          "example": "Subtle natural movements, realistic skin texture, coherent facial expressions, no deformations, no facial distortion, no identity changes."
+        }
+      ],
+      "templates": [
+        "Influencer: A person based on the provided image, maintaining facial identity, speaking naturally to the camera, with subtle head movements and realistic facial expressions, friendly and confident tone, cinematic lighting, blurred background, ultra realistic, 4K quality.",
+        "Cinematic: A person based on the provided image, looking at the camera, soft breathing, natural blinking, dramatic lighting, camera slowly pushing in, cinematic style, high detail, depth of field, 4K quality.",
+        "Corporate: A person based on the provided image, maintaining facial identity, speaking clearly, firm posture, minimal movement, neutral and professional expression, studio lighting, clean background, corporate style, high quality.",
+        "Streamer: A person based on the provided image, reacting excitedly, intense expressions, dynamic movements, RGB lighting, neon colors, gamer atmosphere, high contrast, ultra detailed."
+      ]
+    }
   }
 }
