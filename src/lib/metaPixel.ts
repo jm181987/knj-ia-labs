@@ -9,12 +9,8 @@ declare global {
   }
 }
 
-let browserPixelInitialized = false;
-
 const initBrowserPixel = () => {
-  if (browserPixelInitialized || typeof window === "undefined" || !META_PIXEL_ID) return;
-
-  browserPixelInitialized = true;
+  if (typeof window === "undefined" || !META_PIXEL_ID) return;
 
   if (!window.fbq) {
     const fbq = (...args: unknown[]) => {
@@ -36,7 +32,10 @@ const initBrowserPixel = () => {
     firstScript.parentNode?.insertBefore(script, firstScript);
   }
 
-  window.fbq("init", META_PIXEL_ID);
+  if (!(window.fbq as typeof window.fbq & { initialized?: boolean })?.initialized) {
+    window.fbq("init", META_PIXEL_ID);
+    (window.fbq as typeof window.fbq & { initialized?: boolean }).initialized = true;
+  }
 };
 
 const getCookie = (name: string) => {
