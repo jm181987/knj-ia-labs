@@ -1,4 +1,4 @@
-import { History, Image, Shield, Coins, Library, ChevronDown } from "lucide-react";
+import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
@@ -44,6 +44,7 @@ export function AppSidebar() {
   const tail = [
     { titleKey: "nav.history", url: "/app/history", icon: History },
     { titleKey: "nav.gallery", url: "/app/gallery", icon: Image },
+    { titleKey: "nav.basicGuide", url: "/app/guide", icon: BookOpen },
     { titleKey: "nav.buyCredits", url: "/app/pricing", icon: Coins },
   ];
 
