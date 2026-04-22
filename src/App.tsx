@@ -58,6 +58,7 @@ const App = () => (
                       <Route path="catalog" element={<CatalogPage />} />
                       <Route path="guide" element={<BasicGuidePage />} />
                       <Route path="guide/videos" element={<BasicGuidePage />} />
+                      <Route path="guide/avatars" element={<BasicGuidePage />} />
                       <Route path="pricing" element={<PricingPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
