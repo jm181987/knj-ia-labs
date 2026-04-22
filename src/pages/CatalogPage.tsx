@@ -22,6 +22,29 @@ function adminCost(basePrice: number | undefined, creditsPerUsd: number): number
   return Math.max(1, Math.ceil(basePrice * creditsPerUsd));
 }
 
+const FEATURED_MODEL_KEYWORDS = [
+  "sora",
+  "veo",
+  "kling",
+  "seedance",
+  "seedream",
+  "nano-banana",
+  "imagen",
+  "gpt-image",
+  "flux",
+  "runway",
+  "luma",
+  "pixverse",
+  "hailuo",
+  "minimax",
+  "wan",
+];
+
+function isFeaturedModel(model: WSCatalogModel): boolean {
+  const haystack = `${model.model_id} ${model.name || ""}`.toLowerCase();
+  return FEATURED_MODEL_KEYWORDS.some((keyword) => haystack.includes(keyword));
+}
+
 export default function CatalogPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -75,6 +98,11 @@ export default function CatalogPage() {
         );
       })
       .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
+      .sort((a, b) => {
+        const featuredDiff = Number(isFeaturedModel(b)) - Number(isFeaturedModel(a));
+        if (featuredDiff !== 0) return featuredDiff;
+        return (b.sort_order || 0) - (a.sort_order || 0);
+      });
   }, [models, search, category]);
 
   const counts = useMemo(() => {
