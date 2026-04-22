@@ -97,7 +97,6 @@ export default function CatalogPage() {
           getBrand(m.model_id).toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
       .sort((a, b) => {
         const featuredDiff = Number(isFeaturedModel(b)) - Number(isFeaturedModel(a));
         if (featuredDiff !== 0) return featuredDiff;
@@ -287,12 +286,21 @@ const CatalogList = memo(function CatalogList({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((m) => {
           const desc = translatedDescs[m.model_id] || m.description || t("catalog.noDescription");
+          const featured = isFeaturedModel(m);
           return (
-            <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
+            <Card key={m.model_id} className={featured ? "border-primary/50 bg-primary/5 hover:border-primary transition-colors flex flex-col" : "hover:border-primary/50 transition-colors flex flex-col"}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-tight">{prettyName(m.model_id)}</CardTitle>
-                  <Badge variant="outline" className="shrink-0 text-[10px]">{getBrand(m.model_id)}</Badge>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    {featured && (
+                      <Badge className="gap-1 text-[10px]">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        {t("catalog.featured")}
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="text-[10px]">{getBrand(m.model_id)}</Badge>
+                  </div>
                 </div>
                 <CardDescription className="text-xs line-clamp-3">{desc}</CardDescription>
               </CardHeader>
