@@ -85,6 +85,9 @@ const videoTemplates = [
   "Historia corta: inicio [gancho], desarrollo [acción], cierre [transformación], cámara [plano], ritmo [lento/rápido], ambiente [música/energía visual].",
 ];
 
+const featuredVideoPrompt =
+  "En una ciudad biotecnológica en ruinas, invadida por vegetación orgánica, una cámara FPV de alta velocidad avanza a toda velocidad por calles engullidas por estructuras biomecánicas; soldados mutantes se enfrentan a escuadrones blindados mientras la lluvia ácida cruza la pantalla en diagonal; la cámara realiza ascensos verticales por las paredes vivientes de rascacielos, gira a través de interiores destrozados que palpitan con venas bioluminiscentes, para luego sumergirse de nuevo en zonas de combate abiertas, llenas de explosiones y terreno que se derrumba; partículas orgánicas y escombros se extienden formando rastros luminosos, creando una fusión de pesadilla entre tecnología, decadencia y movimiento implacable.";
+
 export default function BasicGuidePage() {
   const { pathname } = useLocation();
   const isVideoGuide = pathname.endsWith("/videos");
@@ -190,6 +193,23 @@ export default function BasicGuidePage() {
             ))}
           </div>
         </section>
+
+        {isVideoGuide && (
+          <section className="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <Film className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-primary">Ejemplo avanzado</p>
+                <h2 className="text-2xl font-semibold tracking-tight">Prompt cinematográfico de acción</h2>
+              </div>
+            </div>
+            <div className="mt-4 rounded-md bg-muted p-4 text-sm leading-6 text-foreground">
+              {featuredVideoPrompt}
+            </div>
+          </section>
+        )}
       </section>
     </main>
   );
