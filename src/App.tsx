@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { MetaPixelTracker } from "@/components/MetaPixelTracker";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import AvatarsPage from "./pages/AvatarsPage";
@@ -32,6 +33,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <MetaPixelTracker />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/terms" element={<TermsPage />} />
