@@ -34,6 +34,7 @@ export function AppSidebar() {
   const [catalogOpen, setCatalogOpen] = useState(
     location.pathname === "/app" || location.pathname.startsWith("/app/catalog"),
   );
+  const [guideOpen, setGuideOpen] = useState(location.pathname.startsWith("/app/guide"));
 
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
@@ -44,7 +45,6 @@ export function AppSidebar() {
   const tail = [
     { titleKey: "nav.history", url: "/app/history", icon: History },
     { titleKey: "nav.gallery", url: "/app/gallery", icon: Image },
-    { titleKey: "nav.basicGuide", url: "/app/guide", icon: BookOpen },
     { titleKey: "nav.buyCredits", url: "/app/pricing", icon: Coins },
   ];
 
@@ -120,6 +120,40 @@ export function AppSidebar() {
                             </SidebarMenuSubItem>
                           );
                         })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  )}
+                </SidebarMenuItem>
+              </Collapsible>
+
+              <Collapsible open={guideOpen} onOpenChange={setGuideOpen}>
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className={`hover:bg-accent/50 w-full ${
+                        location.pathname.startsWith("/app/guide") ? "bg-accent text-accent-foreground font-medium" : ""
+                      }`}
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 text-left">{t("nav.basicGuide")}</span>
+                          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${guideOpen ? "rotate-180" : ""}`} />
+                        </>
+                      )}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  {!collapsed && (
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton asChild isActive={location.pathname === "/app/guide"}>
+                            <NavLink to="/app/guide" onClick={handleNavClick}>
+                              <span className="mr-2">🖼️</span>
+                              <span>{t("catalog.cat.image")}</span>
+                            </NavLink>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   )}
