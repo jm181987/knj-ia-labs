@@ -1,4 +1,4 @@
-import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen } from "lucide-react";
+import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen, Video } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
@@ -151,6 +151,14 @@ export function AppSidebar() {
                             <NavLink to="/app/guide" onClick={handleNavClick}>
                               <span className="mr-2">🖼️</span>
                               <span>{t("catalog.cat.image")}</span>
+                            </NavLink>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                        <SidebarMenuSubItem>
+                          <SidebarMenuSubButton asChild isActive={location.pathname === "/app/guide/videos"}>
+                            <NavLink to="/app/guide/videos" onClick={handleNavClick}>
+                              <Video className="mr-2 h-3.5 w-3.5" />
+                              <span>{t("catalog.cat.video")}</span>
                             </NavLink>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>

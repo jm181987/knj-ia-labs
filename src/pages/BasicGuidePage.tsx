@@ -1,5 +1,5 @@
-import { ArrowRight, BookOpen, Coins, Download, History, ImagePlus, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkles } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import nanoBananaLogo from "@/assets/logos/nano-banana.png";
 
@@ -58,7 +58,39 @@ const quickTemplates = [
   "Edición: mantener [elementos], cambiar [elementos], agregar [detalle], estilo [referencia visual], resultado limpio y coherente.",
 ];
 
+const videoPromptBlocks = [
+  {
+    title: "1. Abrí con movimiento en los primeros segundos",
+    copy: "Los videos cortos necesitan enganchar rápido: empezá con una acción clara, cambio visual o cámara en movimiento.",
+    example:
+      "Video vertical 9:16, una taza de café gira sobre una mesa mientras vapor forma una silueta suave, cámara macro acercándose, luz cálida de mañana, movimiento fluido, duración 5 segundos, loop perfecto.",
+  },
+  {
+    title: "2. Indicá cámara, ritmo y duración",
+    copy: "Definí si querés zoom, travelling, paneo, cámara lenta, cortes rápidos o una toma continua para reducir resultados aleatorios.",
+    example:
+      "Toma continua de 6 segundos, cámara dolly-in lenta hacia un perfume sobre acrílico transparente, reflejos elegantes, fondo oscuro, partículas sutiles, sin texto, sin manos.",
+  },
+  {
+    title: "3. Pensá el final como bucle",
+    copy: "Si el video será para redes, pedí que el último cuadro conecte con el primero para que se repita de forma natural.",
+    example:
+      "Animación de zapatilla deportiva flotando y girando 360 grados, luces de estudio, fondo limpio, final idéntico al inicio para loop seamless, estilo comercial premium.",
+  },
+];
+
+const videoTemplates = [
+  "Video viral: [sujeto] haciendo [acción impactante], cámara [movimiento], estilo [realista/3D/cinemático], duración [segundos], formato 9:16, loop suave.",
+  "Producto: [producto] en [escenario], movimiento [giro/zoom/travelling], iluminación [tipo], textura [detalle], sin texto, sin logos extra, final limpio.",
+  "Historia corta: inicio [gancho], desarrollo [acción], cierre [transformación], cámara [plano], ritmo [lento/rápido], ambiente [música/energía visual].",
+];
+
 export default function BasicGuidePage() {
+  const { pathname } = useLocation();
+  const isVideoGuide = pathname.endsWith("/videos");
+  const activeBlocks = isVideoGuide ? videoPromptBlocks : promptBlocks;
+  const activeTemplates = isVideoGuide ? videoTemplates : quickTemplates;
+
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
       <section className="mx-auto max-w-5xl space-y-8">
@@ -109,24 +141,34 @@ export default function BasicGuidePage() {
         <section className="grid gap-6 border-t border-border/60 pt-8 lg:grid-cols-[0.85fr_1.15fr]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
+              {isVideoGuide ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Film className="h-6 w-6" />
+                </div>
+              ) : (
+                <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
+              )}
               <div>
-                <p className="text-sm font-medium text-primary">Guía para imágenes</p>
-                <h2 className="text-2xl font-semibold tracking-tight">Menos intentos, prompts más claros</h2>
+                <p className="text-sm font-medium text-primary">Guía para {isVideoGuide ? "videos" : "imágenes"}</p>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {isVideoGuide ? "Videos con más gancho y mejor movimiento" : "Menos intentos, prompts más claros"}
+                </h2>
               </div>
             </div>
             <p className="leading-7 text-muted-foreground">
-              Para crear imágenes con más precisión, tratá el prompt como una receta visual: primero definí qué debe aparecer, después cómo debe verse y al final qué errores evitar.
+              {isVideoGuide
+                ? "Para crear videos con más precisión, indicá acción, cámara, duración, ritmo, formato y cómo debe terminar la escena. Eso reduce intentos y mejora la coherencia."
+                : "Para crear imágenes con más precisión, tratá el prompt como una receta visual: primero definí qué debe aparecer, después cómo debe verse y al final qué errores evitar."}
             </p>
             <Button asChild variant="secondary" className="gap-2">
-              <Link to="/app/catalog?cat=image">
-                Probar modelos de imagen <ArrowRight className="h-4 w-4" />
+              <Link to={isVideoGuide ? "/app/catalog?cat=video" : "/app/catalog?cat=image"}>
+                Probar modelos de {isVideoGuide ? "video" : "imagen"} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
 
           <div className="grid gap-4">
-            {promptBlocks.map((block) => (
+            {activeBlocks.map((block) => (
               <article key={block.title} className="rounded-lg border border-border bg-card p-5 shadow-sm">
                 <h3 className="font-semibold tracking-tight text-foreground">{block.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{block.copy}</p>
@@ -141,7 +183,7 @@ export default function BasicGuidePage() {
         <section className="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
           <h2 className="text-2xl font-semibold tracking-tight">Plantillas rápidas</h2>
           <div className="mt-4 grid gap-3">
-            {quickTemplates.map((template) => (
+            {activeTemplates.map((template) => (
               <div key={template} className="rounded-md bg-muted p-4 text-sm leading-6 text-muted-foreground">
                 {template}
               </div>
