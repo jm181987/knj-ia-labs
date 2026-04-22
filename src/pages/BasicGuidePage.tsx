@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, Coins, Download, History, ImagePlus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import nanoBananaLogo from "@/assets/logos/nano-banana.png";
 
 const steps = [
   {
@@ -28,6 +29,33 @@ const steps = [
     title: "Descargá tus resultados",
     description: "Cuando la generación esté lista, abrila desde Historial o Galería y guardá el archivo final.",
   },
+];
+
+const promptBlocks = [
+  {
+    title: "1. Armá el prompt por bloques",
+    copy: "Ordená la idea de lo más importante a lo secundario: sujeto, acción, entorno, estilo, cámara, luz y restricciones.",
+    example:
+      "Retrato editorial de una emprendedora uruguaya sosteniendo un producto de skincare, interior luminoso, fondo limpio, fotografía realista, lente 50mm, luz suave lateral, colores naturales, sin texto ni logos.",
+  },
+  {
+    title: "2. Decí qué conservar y qué cambiar",
+    copy: "Cuando edites una imagen, separá lo intocable de lo que querés modificar para evitar resultados impredecibles.",
+    example:
+      "Mantener rostro, pose y ropa. Cambiar el fondo por un estudio minimalista beige, mejorar iluminación, agregar sombra natural, conservar proporciones reales.",
+  },
+  {
+    title: "3. Usá restricciones simples",
+    copy: "Las restricciones reducen intentos fallidos. Pedí explícitamente evitar texto, marcas de agua, dedos extra, desenfoque o fondos cargados.",
+    example:
+      "Sin texto, sin watermark, sin manos deformes, sin objetos duplicados, sin fondo desordenado, no cambiar identidad del sujeto.",
+  },
+];
+
+const quickTemplates = [
+  "Foto de producto: [producto] sobre [superficie], fondo [tipo], luz [tipo], estilo [marca], cámara [plano], sin texto.",
+  "Retrato: [persona] en [lugar], expresión [emoción], ropa [detalle], luz [tipo], lente [mm], realista, mantener rasgos naturales.",
+  "Edición: mantener [elementos], cambiar [elementos], agregar [detalle], estilo [referencia visual], resultado limpio y coherente.",
 ];
 
 export default function BasicGuidePage() {
@@ -76,6 +104,49 @@ export default function BasicGuidePage() {
             <li>• Si subís una referencia, verificá que sea clara y de buena calidad.</li>
             <li>• Descargá tus creaciones importantes: se conservan por tiempo limitado.</li>
           </ul>
+        </section>
+
+        <section className="grid gap-6 border-t border-border/60 pt-8 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
+              <div>
+                <p className="text-sm font-medium text-primary">Guía para imágenes</p>
+                <h2 className="text-2xl font-semibold tracking-tight">Menos intentos, prompts más claros</h2>
+              </div>
+            </div>
+            <p className="leading-7 text-muted-foreground">
+              Para crear imágenes con más precisión, tratá el prompt como una receta visual: primero definí qué debe aparecer, después cómo debe verse y al final qué errores evitar.
+            </p>
+            <Button asChild variant="secondary" className="gap-2">
+              <Link to="/app/catalog?cat=image">
+                Probar modelos de imagen <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid gap-4">
+            {promptBlocks.map((block) => (
+              <article key={block.title} className="rounded-lg border border-border bg-card p-5 shadow-sm">
+                <h3 className="font-semibold tracking-tight text-foreground">{block.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{block.copy}</p>
+                <div className="mt-4 rounded-md bg-muted p-4 text-sm leading-6 text-foreground">
+                  {block.example}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
+          <h2 className="text-2xl font-semibold tracking-tight">Plantillas rápidas</h2>
+          <div className="mt-4 grid gap-3">
+            {quickTemplates.map((template) => (
+              <div key={template} className="rounded-md bg-muted p-4 text-sm leading-6 text-muted-foreground">
+                {template}
+              </div>
+            ))}
+          </div>
         </section>
       </section>
     </main>
