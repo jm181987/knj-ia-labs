@@ -2,6 +2,7 @@ import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkl
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import nanoBananaLogo from "@/assets/logos/nano-banana.png";
+import videoPromptExample from "@/assets/video-prompt-example.mp4";
 
 const steps = [
   {
@@ -205,8 +206,18 @@ export default function BasicGuidePage() {
                 <h2 className="text-2xl font-semibold tracking-tight">Prompt cinematográfico de acción</h2>
               </div>
             </div>
-            <div className="mt-4 rounded-md bg-muted p-4 text-sm leading-6 text-foreground">
-              {featuredVideoPrompt}
+            <div className="mt-4 grid gap-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+              <div className="overflow-hidden rounded-md border border-border bg-muted">
+                <video
+                  src={videoPromptExample}
+                  className="aspect-video w-full object-cover"
+                  controls
+                  preload="metadata"
+                />
+              </div>
+              <div className="rounded-md bg-muted p-4 text-sm leading-6 text-foreground">
+                {featuredVideoPrompt}
+              </div>
             </div>
           </section>
         )}
