@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Coins, Download, Film, History, ImagePlus, Sparkles, UserRound } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import nanoBananaLogo from "@/assets/logos/nano-banana.png";
@@ -86,14 +86,43 @@ const videoTemplates = [
   "Historia corta: inicio [gancho], desarrollo [acción], cierre [transformación], cámara [plano], ritmo [lento/rápido], ambiente [música/energía visual].",
 ];
 
+const avatarPromptBlocks = [
+  {
+    title: "1. Partí de la identidad facial",
+    copy: "Cuando uses una foto, aclarale al modelo que debe basarse en esa imagen y conservar rostro, proporciones y rasgos principales.",
+    example:
+      "Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando de forma natural a la cámara, con movimientos sutiles de cabeza y parpadeo realista, expresión amigable y confiada, iluminación cinematográfica, profundidad de campo, textura de piel realista, ultra detallado, calidad 4K.",
+  },
+  {
+    title: "2. Definí movimiento, expresión y estilo",
+    copy: "Kling interpreta la imagen como base, pero el texto define cómo cobra vida: acción, emoción, cámara, iluminación y nivel de realismo.",
+    example:
+      "Una persona basada en la imagen proporcionada, hablando con energía, sonriendo, gesticulando de forma natural, movimientos expresivos, estilo vlog, iluminación brillante, colores vibrantes, ultra realista.",
+  },
+  {
+    title: "3. Agregá restricciones para evitar fallos",
+    copy: "Si buscás fidelidad, pedí movimientos naturales y evitá demasiadas acciones a la vez. Para corregir errores, sumá restricciones claras.",
+    example:
+      "Movimientos naturales sutiles, textura de piel realista, expresiones faciales coherentes, sin deformaciones, sin distorsión facial, sin cambios de identidad.",
+  },
+];
+
+const avatarTemplates = [
+  "Influencer: Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando de forma natural a la cámara, con movimientos sutiles de cabeza y expresiones faciales realistas, tono amigable y confiado, iluminación cinematográfica, fondo desenfocado, ultra realista, calidad 4K.",
+  "Cinemático: Una persona basada en la imagen proporcionada, mirando a la cámara, respiración suave, parpadeo natural, iluminación dramática, la cámara se acerca lentamente, estilo cinematográfico, alto nivel de detalle, profundidad de campo, calidad 4K.",
+  "Corporativo: Una persona basada en la imagen proporcionada, manteniendo la identidad facial, hablando con claridad, postura firme, movimientos mínimos, expresión neutral y profesional, iluminación de estudio, fondo limpio, estilo corporativo, alta calidad.",
+  "Streamer: Una persona basada en la imagen proporcionada, reaccionando con emoción, expresiones intensas, movimientos dinámicos, iluminación RGB, colores neón, ambiente gamer, alto contraste, ultra detallado.",
+];
+
 const featuredVideoPrompt =
   "En una ciudad biotecnológica en ruinas, invadida por vegetación orgánica, una cámara FPV de alta velocidad avanza a toda velocidad por calles engullidas por estructuras biomecánicas; soldados mutantes se enfrentan a escuadrones blindados mientras la lluvia ácida cruza la pantalla en diagonal; la cámara realiza ascensos verticales por las paredes vivientes de rascacielos, gira a través de interiores destrozados que palpitan con venas bioluminiscentes, para luego sumergirse de nuevo en zonas de combate abiertas, llenas de explosiones y terreno que se derrumba; partículas orgánicas y escombros se extienden formando rastros luminosos, creando una fusión de pesadilla entre tecnología, decadencia y movimiento implacable.";
 
 export default function BasicGuidePage() {
   const { pathname } = useLocation();
   const isVideoGuide = pathname.endsWith("/videos");
-  const activeBlocks = isVideoGuide ? videoPromptBlocks : promptBlocks;
-  const activeTemplates = isVideoGuide ? videoTemplates : quickTemplates;
+  const isAvatarGuide = pathname.endsWith("/avatars");
+  const activeBlocks = isAvatarGuide ? avatarPromptBlocks : isVideoGuide ? videoPromptBlocks : promptBlocks;
+  const activeTemplates = isAvatarGuide ? avatarTemplates : isVideoGuide ? videoTemplates : quickTemplates;
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -149,24 +178,34 @@ export default function BasicGuidePage() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <Film className="h-6 w-6" />
                 </div>
+              ) : isAvatarGuide ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <UserRound className="h-6 w-6" />
+                </div>
               ) : (
                 <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
               )}
               <div>
-                <p className="text-sm font-medium text-primary">Guía para {isVideoGuide ? "videos" : "imágenes"}</p>
+                <p className="text-sm font-medium text-primary">Guía para {isAvatarGuide ? "avatares" : isVideoGuide ? "videos" : "imágenes"}</p>
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {isVideoGuide ? "Videos con más gancho y mejor movimiento" : "Menos intentos, prompts más claros"}
+                  {isAvatarGuide
+                    ? "Avatares más fieles, naturales y expresivos"
+                    : isVideoGuide
+                      ? "Videos con más gancho y mejor movimiento"
+                      : "Menos intentos, prompts más claros"}
                 </h2>
               </div>
             </div>
             <p className="leading-7 text-muted-foreground">
-              {isVideoGuide
+              {isAvatarGuide
+                ? "Para crear avatares con Kling, usá una foto clara y un prompt específico sobre identidad facial, expresión, movimiento, cámara, iluminación y estilo visual."
+                : isVideoGuide
                 ? "Para crear videos con más precisión, indicá acción, cámara, duración, ritmo, formato y cómo debe terminar la escena. Eso reduce intentos y mejora la coherencia."
                 : "Para crear imágenes con más precisión, tratá el prompt como una receta visual: primero definí qué debe aparecer, después cómo debe verse y al final qué errores evitar."}
             </p>
             <Button asChild variant="secondary" className="gap-2">
-              <Link to={isVideoGuide ? "/app/catalog?cat=video" : "/app/catalog?cat=image"}>
-                Probar modelos de {isVideoGuide ? "video" : "imagen"} <ArrowRight className="h-4 w-4" />
+              <Link to={isAvatarGuide ? "/app/catalog?cat=avatars" : isVideoGuide ? "/app/catalog?cat=video" : "/app/catalog?cat=image"}>
+                Probar modelos de {isAvatarGuide ? "avatares" : isVideoGuide ? "video" : "imagen"} <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
