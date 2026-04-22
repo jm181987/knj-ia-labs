@@ -23,6 +23,7 @@ import PricingPage from "./pages/PricingPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
 import PaymentPendingPage from "./pages/PaymentPendingPage";
+import BasicGuidePage from "./pages/BasicGuidePage";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
                       <Route path="gallery" element={<GalleryPage />} />
                       <Route path="avatars" element={<AvatarsPage />} />
                       <Route path="catalog" element={<CatalogPage />} />
+                      <Route path="guide" element={<BasicGuidePage />} />
                       <Route path="pricing" element={<PricingPage />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
