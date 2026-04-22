@@ -141,7 +141,13 @@ export default function BasicGuidePage() {
         <section className="grid gap-6 border-t border-border/60 pt-8 lg:grid-cols-[0.85fr_1.15fr]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
+              {isVideoGuide ? (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Film className="h-6 w-6" />
+                </div>
+              ) : (
+                <img src={nanoBananaLogo} alt="Nano Banana" className="h-12 w-12 rounded-md object-contain" />
+              )}
               <div>
                 <p className="text-sm font-medium text-primary">Guía para {isVideoGuide ? "videos" : "imágenes"}</p>
                 <h2 className="text-2xl font-semibold tracking-tight">
