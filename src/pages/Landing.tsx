@@ -103,6 +103,7 @@ export default function Landing() {
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
+            <Link to="/models" className="hover:text-foreground transition-colors">{t("nav.availableModels")}</Link>
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
             <button type="button" onClick={() => setPricingOpen(true)} className="hover:text-foreground transition-colors">{t("nav.pricing")}</button>
             <a href="#showcase" className="hover:text-foreground transition-colors">{t("nav.showcase")}</a>

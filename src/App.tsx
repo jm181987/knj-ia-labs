@@ -24,6 +24,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
 import PaymentPendingPage from "./pages/PaymentPendingPage";
 import BasicGuidePage from "./pages/BasicGuidePage";
+import ModelsDirectoryPage from "./pages/ModelsDirectoryPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/models" element={<ModelsDirectoryPage />} />
             <Route path="/upload-policy" element={<UploadPolicyPage />} />
             <Route path="/credits-policy" element={<CreditsPolicyPage />} />
             <Route path="/auth" element={<AuthPage />} />
