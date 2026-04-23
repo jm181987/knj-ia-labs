@@ -1,18 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Boxes, Loader2, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, fetchCatalog, getBrand, prettyName, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import knjLogo from "@/assets/knj-logo.png";
