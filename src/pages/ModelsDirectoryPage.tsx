@@ -137,7 +137,7 @@ function ModelCard({ model }: { model: WSCatalogModel }) {
   return (
     <div ref={ref} className="grid gap-4 border-b border-border/60 p-4 last:border-b-0 lg:grid-cols-[210px_minmax(220px,1fr)_150px_220px_minmax(320px,1.4fr)]">
       <div className="flex items-center gap-3">
-        <ProviderLogo brand={brand} />
+        <ProviderLogo brand={brand} modelId={model.model_id} />
         <div className="min-w-0">
           <p className="font-medium text-foreground">{brand}</p>
           <p className="text-xs text-muted-foreground">{category.emoji} {t(`catalog.cat.${category.id}`, category.label)}</p>
