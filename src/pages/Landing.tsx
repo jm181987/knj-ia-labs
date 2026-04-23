@@ -207,7 +207,7 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {[
-              { type: "video", src: "/showcase/knj-pro-3-chicas.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600", code: "KNJ_PRO" },
+              { type: "video", src: "/showcase/knj-pro-3-chicas.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600", code: "KNJ_PRO", hasAudio: true },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
               { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600", code: "VID_004" },
@@ -236,6 +236,16 @@ export default function Landing() {
                       loop
                       playsInline
                       preload="metadata"
+                      onMouseEnter={(event) => {
+                        if (!item.hasAudio) return;
+                        event.currentTarget.muted = false;
+                        event.currentTarget.volume = 0.8;
+                        event.currentTarget.play().catch(() => undefined);
+                      }}
+                      onMouseLeave={(event) => {
+                        if (!item.hasAudio) return;
+                        event.currentTarget.muted = true;
+                      }}
                       className="w-full h-full object-cover aspect-square grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                     />
                     <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10">
