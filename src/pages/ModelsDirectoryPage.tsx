@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CATEGORIES, fetchCatalog, getBrand, prettyName, type WSCatalogModel } from "@/lib/wavespeedCatalog";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import knjLogo from "@/assets/knj-logo.png";
 
 const getInitials = (brand: string) =>
@@ -49,7 +50,7 @@ function ModelRows({ models }: { models: WSCatalogModel[] }) {
           <TableHead className="min-w-[250px]">{t("modelsDirectory.model")}</TableHead>
           <TableHead className="min-w-[150px]">{t("modelsDirectory.type")}</TableHead>
           <TableHead className="min-w-[220px]">{t("modelsDirectory.use")}</TableHead>
-          <TableHead className="min-w-[360px]">{t("modelsDirectory.description")}</TableHead>
+          <TableHead className="min-w-[520px]">{t("modelsDirectory.description")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -79,7 +80,7 @@ function ModelRows({ models }: { models: WSCatalogModel[] }) {
               <TableCell className="text-sm text-muted-foreground">
                 {t(`modelsDirectory.uses.${typeKey(model.type)}`, t("modelsDirectory.uses.generic"))}
               </TableCell>
-              <TableCell className="text-sm leading-relaxed text-muted-foreground">
+              <TableCell className="min-w-[520px] max-w-[680px] whitespace-normal break-words align-top text-sm leading-relaxed text-muted-foreground">
                 {model.description || t("modelsDirectory.noDescription")}
               </TableCell>
             </TableRow>
@@ -149,6 +150,7 @@ export default function ModelsDirectoryPage() {
             <span className="hidden font-bold tracking-tight sm:inline">KNJ<span className="text-gradient"> PRO</span></span>
           </Link>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link to="/">
               <Button variant="ghost" size="sm">{t("modelsDirectory.backLanding")}</Button>
             </Link>
