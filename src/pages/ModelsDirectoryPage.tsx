@@ -32,55 +32,104 @@ function ProviderLogo({ brand }: { brand: string }) {
   );
 }
 
+function useVisibleOnce<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible || !ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "500px" },
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [visible]);
+
+  return { ref, visible };
+}
+
+function ModelCard({ model }: { model: WSCatalogModel }) {
+  const { t, i18n } = useTranslation();
+  const { ref, visible } = useVisibleOnce<HTMLDivElement>();
+  const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+  const brand = getBrand(model.model_id);
+  const category = categoryFor(model);
+  const lang = (i18n.language || "es").slice(0, 2);
+
+  useEffect(() => {
+    setTranslatedDescription(null);
+    if (!visible || lang === "en" || !model.description) return;
+
+    let cancelled = false;
+    supabase.functions
+      .invoke("translate-model", {
+        body: {
+          model_id: model.model_id,
+          lang,
+          description: model.description,
+          fields: {},
+        },
+      })
+      .then(({ data }) => {
+        if (!cancelled && data?.code === 0 && data?.data?.description) {
+          setTranslatedDescription(data.data.description);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, model.description, model.model_id, visible]);
+
+  return (
+    <div ref={ref} className="grid gap-4 border-b border-border/60 p-4 last:border-b-0 lg:grid-cols-[210px_minmax(220px,1fr)_150px_220px_minmax(320px,1.4fr)]">
+      <div className="flex items-center gap-3">
+        <ProviderLogo brand={brand} />
+        <div className="min-w-0">
+          <p className="font-medium text-foreground">{brand}</p>
+          <p className="text-xs text-muted-foreground">{category.emoji} {t(`catalog.cat.${category.id}`, category.label)}</p>
+        </div>
+      </div>
+      <div className="min-w-0">
+        <p className="font-medium text-foreground">{model.name || prettyName(model.model_id)}</p>
+        <p className="mt-1 break-all font-mono-tech text-[11px] text-muted-foreground">{model.model_id}</p>
+      </div>
+      <div>
+        <Badge variant="outline" className="rounded-sm font-mono-tech text-[10px] uppercase tracking-wider">
+          {model.type}
+        </Badge>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {t(`modelsDirectory.uses.${typeKey(model.type)}`, t("modelsDirectory.uses.generic"))}
+      </p>
+      <p className="whitespace-normal break-words text-sm leading-relaxed text-muted-foreground">
+        {translatedDescription || model.description || t("modelsDirectory.noDescription")}
+      </p>
+    </div>
+  );
+}
+
 function ModelRows({ models }: { models: WSCatalogModel[] }) {
   const { t } = useTranslation();
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="min-w-[190px]">{t("modelsDirectory.provider")}</TableHead>
-          <TableHead className="min-w-[250px]">{t("modelsDirectory.model")}</TableHead>
-          <TableHead className="min-w-[150px]">{t("modelsDirectory.type")}</TableHead>
-          <TableHead className="min-w-[220px]">{t("modelsDirectory.use")}</TableHead>
-          <TableHead className="min-w-[520px]">{t("modelsDirectory.description")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {models.map((model) => {
-          const brand = getBrand(model.model_id);
-          const category = categoryFor(model);
-          return (
-            <TableRow key={model.model_id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <ProviderLogo brand={brand} />
-                  <div>
-                    <p className="font-medium text-foreground">{brand}</p>
-                    <p className="text-xs text-muted-foreground">{category.emoji} {t(`catalog.cat.${category.id}`, category.label)}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <p className="font-medium text-foreground">{model.name || prettyName(model.model_id)}</p>
-                <p className="mt-1 max-w-[320px] truncate font-mono-tech text-[11px] text-muted-foreground">{model.model_id}</p>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className="rounded-sm font-mono-tech text-[10px] uppercase tracking-wider">
-                  {model.type}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {t(`modelsDirectory.uses.${typeKey(model.type)}`, t("modelsDirectory.uses.generic"))}
-              </TableCell>
-              <TableCell className="min-w-[520px] max-w-[680px] whitespace-normal break-words align-top text-sm leading-relaxed text-muted-foreground">
-                {model.description || t("modelsDirectory.noDescription")}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <div>
+      <div className="hidden border-b border-border/70 bg-muted/30 px-4 py-3 text-xs font-medium text-muted-foreground lg:grid lg:grid-cols-[210px_minmax(220px,1fr)_150px_220px_minmax(320px,1.4fr)]">
+        <span>{t("modelsDirectory.provider")}</span>
+        <span>{t("modelsDirectory.model")}</span>
+        <span>{t("modelsDirectory.type")}</span>
+        <span>{t("modelsDirectory.use")}</span>
+        <span>{t("modelsDirectory.description")}</span>
+      </div>
+      {models.map((model) => <ModelCard key={model.model_id} model={model} />)}
+    </div>
   );
 }
 
