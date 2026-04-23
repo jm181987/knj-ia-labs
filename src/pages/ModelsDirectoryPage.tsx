@@ -9,6 +9,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, fetchCatalog, getBrand, prettyName, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import knjLogo from "@/assets/knj-logo.png";
+import fluxLogo from "@/assets/logos/flux.png";
+import geminiLogo from "@/assets/logos/gemini.png";
+import googleLogo from "@/assets/logos/google.png";
+import hailuoLogo from "@/assets/logos/hailuo.png";
+import higgsfieldLogo from "@/assets/logos/higgsfield.png";
+import klingLogo from "@/assets/logos/kling.png";
+import ltxvLogo from "@/assets/logos/ltxv.png";
+import nanoBananaLogo from "@/assets/logos/nano-banana.png";
+import openaiLogo from "@/assets/logos/openai.png";
+import seedanceLogo from "@/assets/logos/seedance.png";
+import seedreamLogo from "@/assets/logos/seedream.png";
+import wanLogo from "@/assets/logos/wan.png";
+import wavespeedLogo from "@/assets/logos/wavespeed.png";
 
 const getInitials = (brand: string) =>
   brand
@@ -20,14 +33,47 @@ const getInitials = (brand: string) =>
 
 const typeKey = (type: string) => type.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").toLowerCase();
 
+const PROVIDER_LOGOS: Record<string, string> = {
+  alibaba: wanLogo,
+  "black-forest-labs": fluxLogo,
+  bytedance: seedanceLogo,
+  gemini: geminiLogo,
+  google: googleLogo,
+  hailuo: hailuoLogo,
+  higgsfield: higgsfieldLogo,
+  kling: klingLogo,
+  kwaivgi: klingLogo,
+  ltxv: ltxvLogo,
+  minimax: hailuoLogo,
+  "nano-banana": nanoBananaLogo,
+  openai: openaiLogo,
+  seedance: seedanceLogo,
+  seedream: seedreamLogo,
+  wan: wanLogo,
+  "wavespeed-ai": wavespeedLogo,
+};
+
+function getProviderLogo(modelId: string, brand: string) {
+  const source = `${modelId} ${brand}`.toLowerCase();
+  const slug = modelId.split("/")[0]?.toLowerCase();
+  if (slug && PROVIDER_LOGOS[slug]) return PROVIDER_LOGOS[slug];
+  return Object.entries(PROVIDER_LOGOS).find(([key]) => source.includes(key))?.[1] || null;
+}
+
 function categoryFor(model: WSCatalogModel) {
   return CATEGORIES.find((category) => category.id !== "all" && category.match(model.type)) || CATEGORIES[0];
 }
 
-function ProviderLogo({ brand }: { brand: string }) {
+function ProviderLogo({ brand, modelId }: { brand: string; modelId: string }) {
+  const logo = getProviderLogo(modelId, brand);
+
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-primary/25 bg-primary/10 font-mono-tech text-[11px] font-bold text-primary shadow-elegant">
-      {getInitials(brand)}
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-primary/25 bg-card shadow-elegant">
+      {logo ? (
+        <img src={logo} alt={brand} className="h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <span className="font-mono-tech text-[11px] font-bold text-primary">{getInitials(brand)}</span>
+      )}
     </div>
   );
 }
