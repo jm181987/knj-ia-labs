@@ -13,6 +13,7 @@ import {
   Check,
   X,
   ArrowRight,
+  Volume2,
 } from "lucide-react";
 import knjLogo from "@/assets/knj-logo.png";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
@@ -238,13 +239,24 @@ export default function Landing() {
                       preload="metadata"
                       onMouseEnter={(event) => {
                         if (!item.hasAudio) return;
-                        event.currentTarget.muted = false;
-                        event.currentTarget.volume = 0.8;
-                        event.currentTarget.play().catch(() => undefined);
+                        const video = event.currentTarget;
+                        video.volume = 0.8;
+                        video.muted = false;
+                        video.play().catch(() => {
+                          video.muted = true;
+                          video.play().catch(() => undefined);
+                        });
                       }}
                       onMouseLeave={(event) => {
                         if (!item.hasAudio) return;
                         event.currentTarget.muted = true;
+                      }}
+                      onClick={(event) => {
+                        if (!item.hasAudio) return;
+                        const video = event.currentTarget;
+                        video.volume = 0.8;
+                        video.muted = false;
+                        video.play().catch(() => undefined);
                       }}
                       className="w-full h-full object-cover aspect-square grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                     />
@@ -263,6 +275,12 @@ export default function Landing() {
                 <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white/80 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                   {item.code}
                 </div>
+                {item.hasAudio && (
+                  <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 bg-background/80 backdrop-blur font-mono-tech text-[9px] tracking-wider text-foreground border border-border/70 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Volume2 className="h-3 w-3" />
+                    CLICK AUDIO
+                  </div>
+                )}
               </div>
             ))}
           </div>
