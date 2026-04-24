@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Instagram, Facebook, Linkedin, Youtube, Globe, Music2, Twitter } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
@@ -11,6 +11,13 @@ interface Testimonial {
   role: string | null;
   message: string;
   photo_url: string | null;
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  tiktok_url?: string | null;
+  youtube_url?: string | null;
+  website_url?: string | null;
 }
 
 export function TestimonialsSection() {
@@ -24,7 +31,7 @@ export function TestimonialsSection() {
     (async () => {
       const { data } = await (supabase as any)
         .from("testimonials")
-        .select("id,name,role,message,photo_url")
+        .select("id,name,role,message,photo_url,instagram_url,facebook_url,linkedin_url,twitter_url,tiktok_url,youtube_url,website_url")
         .eq("active", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
@@ -79,6 +86,7 @@ export function TestimonialsSection() {
                     ))}
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">"{t.message}"</p>
+                  <SocialLinks t={t} />
                 </article>
               ))}
             </div>
