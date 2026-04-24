@@ -21,7 +21,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { LandingPricing } from "@/components/LandingPricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BuilderBotChat } from "@/components/BuilderBotChat";
 import {
   Accordion,
   AccordionContent,
