@@ -44,9 +44,9 @@ function SocialLinks({ t }: { t: Testimonial }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="h-7 w-7 grid place-items-center rounded-full border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+          className="h-10 w-10 grid place-items-center rounded-full border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
         >
-          <Icon className="h-3.5 w-3.5" />
+          <Icon className="h-5 w-5" />
         </a>
       ))}
     </div>
