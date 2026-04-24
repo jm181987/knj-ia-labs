@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, Upload, Star } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Upload, Star, Languages } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Testimonial {
@@ -61,6 +61,7 @@ export function TestimonialsAdmin() {
   const [form, setForm] = useState<Omit<Testimonial, "id">>(empty);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [translatingAll, setTranslatingAll] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -200,7 +201,29 @@ export function TestimonialsAdmin() {
           <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-warning" /> Recomendaciones</CardTitle>
           <CardDescription>Aparecen en la landing page (solo activas)</CardDescription>
         </div>
-        <Button onClick={openNew} size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Nueva</Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={async () => {
+              setTranslatingAll(true);
+              const { data, error } = await supabase.functions.invoke("translate-testimonials", { body: {} });
+              setTranslatingAll(false);
+              if (error) {
+                toast({ title: "Error", description: error.message, variant: "destructive" });
+              } else {
+                toast({ title: "Traducciones generadas", description: `Actualizadas: ${(data as any)?.updated ?? 0}` });
+                load();
+              }
+            }}
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            disabled={translatingAll}
+          >
+            {translatingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+            Traducir todas
+          </Button>
+          <Button onClick={openNew} size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Nueva</Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
