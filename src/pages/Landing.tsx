@@ -83,6 +83,15 @@ const faqItems = [
 export default function Landing() {
   const { t } = useTranslation();
   const [pricingOpen, setPricingOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const handlePricingClick = () => {
+    if (!user) {
+      navigate("/auth?redirect=/app/pricing");
+      return;
+    }
+    setPricingOpen(true);
+  };
   return (
     <div className="min-h-screen flex flex-col">
       {/* Promo banner */}
@@ -107,7 +116,7 @@ export default function Landing() {
             <a href="#features" className="hover:text-foreground transition-colors">{t("nav.features")}</a>
             <Link to="/models" className="hover:text-foreground transition-colors">{t("nav.availableModels")}</Link>
             <a href="#savings" className="hover:text-foreground transition-colors">{t("nav.savings")}</a>
-            <button type="button" onClick={() => setPricingOpen(true)} className="hover:text-foreground transition-colors">{t("nav.pricing")}</button>
+            <button type="button" onClick={handlePricingClick} className="hover:text-foreground transition-colors">{t("nav.pricing")}</button>
             <a href="#showcase" className="hover:text-foreground transition-colors">{t("nav.showcase")}</a>
             <a href="#faq" className="hover:text-foreground transition-colors">{t("nav.faq")}</a>
           </nav>
