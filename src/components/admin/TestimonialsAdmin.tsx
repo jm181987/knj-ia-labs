@@ -119,7 +119,7 @@ export function TestimonialsAdmin() {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name.trim(),
       role: form.role?.trim() || null,
       message: form.message.trim(),
@@ -133,21 +133,52 @@ export function TestimonialsAdmin() {
       tiktok_url: form.tiktok_url?.trim() || null,
       youtube_url: form.youtube_url?.trim() || null,
       website_url: form.website_url?.trim() || null,
-      message_en: form.message_en?.trim() || null,
-      message_pt: form.message_pt?.trim() || null,
-      role_en: form.role_en?.trim() || null,
-      role_pt: form.role_pt?.trim() || null,
     };
-    const { error } = editing
-      ? await (supabase as any).from("testimonials").update(payload).eq("id", editing.id)
-      : await (supabase as any).from("testimonials").insert(payload);
-    setSaving(false);
+
+    // Si el texto cambió respecto al original, forzar regeneración de traducciones
+    const messageChanged = editing && editing.message !== payload.message;
+    const roleChanged = editing && (editing.role || null) !== payload.role;
+    if (!editing || messageChanged) {
+      payload.message_en = null;
+      payload.message_pt = null;
+    }
+    if (!editing || roleChanged) {
+      payload.role_en = null;
+      payload.role_pt = null;
+    }
+
+    let savedId: string | undefined = editing?.id;
+    let error: any = null;
+    if (editing) {
+      const res = await (supabase as any).from("testimonials").update(payload).eq("id", editing.id);
+      error = res.error;
+    } else {
+      const res = await (supabase as any).from("testimonials").insert(payload).select("id").single();
+      error = res.error;
+      savedId = res.data?.id;
+    }
+
     if (error) {
+      setSaving(false);
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: editing ? "Actualizado" : "Creado" });
+    toast({ title: editing ? "Actualizado" : "Creado", description: "Generando traducciones…" });
     setOpen(false);
+
+    // Disparar traducción automática (no bloqueante para el cierre del modal)
+    if (savedId) {
+      supabase.functions.invoke("translate-testimonials", { body: { id: savedId } })
+        .then(({ error: fnErr }) => {
+          if (fnErr) {
+            toast({ title: "Traducción falló", description: fnErr.message, variant: "destructive" });
+          } else {
+            toast({ title: "Traducciones listas" });
+          }
+          load();
+        });
+    }
+    setSaving(false);
     load();
   };
 
