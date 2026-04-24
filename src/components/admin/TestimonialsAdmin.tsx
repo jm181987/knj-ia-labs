@@ -243,27 +243,9 @@ export function TestimonialsAdmin() {
                 <Label>Mensaje *</Label>
                 <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} rows={4} />
               </div>
-              <div className="space-y-2 rounded-lg border border-border p-3">
-                <Label className="text-xs text-muted-foreground">Traducciones (opcional)</Label>
-                <div className="grid gap-2">
-                  <div>
-                    <Label className="text-xs">Cargo (EN)</Label>
-                    <Input value={form.role_en || ""} onChange={(e) => setForm({ ...form, role_en: e.target.value })} maxLength={150} placeholder="Role in English" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Mensaje (EN)</Label>
-                    <Textarea value={form.message_en || ""} onChange={(e) => setForm({ ...form, message_en: e.target.value })} maxLength={500} rows={3} placeholder="Message in English" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Cargo (PT)</Label>
-                    <Input value={form.role_pt || ""} onChange={(e) => setForm({ ...form, role_pt: e.target.value })} maxLength={150} placeholder="Cargo em português" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Mensaje (PT)</Label>
-                    <Textarea value={form.message_pt || ""} onChange={(e) => setForm({ ...form, message_pt: e.target.value })} maxLength={500} rows={3} placeholder="Mensagem em português" />
-                  </div>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Las traducciones a inglés y portugués se generan automáticamente al guardar.
+              </p>
               <div className="space-y-2 rounded-lg border border-border p-3">
                 <Label className="text-xs text-muted-foreground">Redes sociales (opcional)</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
