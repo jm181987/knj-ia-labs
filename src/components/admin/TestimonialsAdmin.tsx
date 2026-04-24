@@ -19,6 +19,13 @@ interface Testimonial {
   photo_url: string | null;
   active: boolean;
   sort_order: number;
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  tiktok_url?: string | null;
+  youtube_url?: string | null;
+  website_url?: string | null;
 }
 
 const empty: Omit<Testimonial, "id"> = {
@@ -28,6 +35,13 @@ const empty: Omit<Testimonial, "id"> = {
   photo_url: "",
   active: true,
   sort_order: 0,
+  instagram_url: "",
+  facebook_url: "",
+  linkedin_url: "",
+  twitter_url: "",
+  tiktok_url: "",
+  youtube_url: "",
+  website_url: "",
 };
 
 export function TestimonialsAdmin() {
@@ -60,6 +74,13 @@ export function TestimonialsAdmin() {
     setForm({
       name: t.name, role: t.role || "", message: t.message,
       photo_url: t.photo_url || "", active: t.active, sort_order: t.sort_order,
+      instagram_url: t.instagram_url || "",
+      facebook_url: t.facebook_url || "",
+      linkedin_url: t.linkedin_url || "",
+      twitter_url: t.twitter_url || "",
+      tiktok_url: t.tiktok_url || "",
+      youtube_url: t.youtube_url || "",
+      website_url: t.website_url || "",
     });
     setOpen(true);
   };
@@ -93,6 +114,13 @@ export function TestimonialsAdmin() {
       photo_url: form.photo_url?.trim() || null,
       active: form.active,
       sort_order: Number(form.sort_order) || 0,
+      instagram_url: form.instagram_url?.trim() || null,
+      facebook_url: form.facebook_url?.trim() || null,
+      linkedin_url: form.linkedin_url?.trim() || null,
+      twitter_url: form.twitter_url?.trim() || null,
+      tiktok_url: form.tiktok_url?.trim() || null,
+      youtube_url: form.youtube_url?.trim() || null,
+      website_url: form.website_url?.trim() || null,
     };
     const { error } = editing
       ? await (supabase as any).from("testimonials").update(payload).eq("id", editing.id)
