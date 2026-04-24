@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, Upload, Star } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Upload, Star, Languages } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Testimonial {
@@ -61,6 +61,7 @@ export function TestimonialsAdmin() {
   const [form, setForm] = useState<Omit<Testimonial, "id">>(empty);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [translatingAll, setTranslatingAll] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -119,7 +120,7 @@ export function TestimonialsAdmin() {
       return;
     }
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: form.name.trim(),
       role: form.role?.trim() || null,
       message: form.message.trim(),
@@ -133,21 +134,52 @@ export function TestimonialsAdmin() {
       tiktok_url: form.tiktok_url?.trim() || null,
       youtube_url: form.youtube_url?.trim() || null,
       website_url: form.website_url?.trim() || null,
-      message_en: form.message_en?.trim() || null,
-      message_pt: form.message_pt?.trim() || null,
-      role_en: form.role_en?.trim() || null,
-      role_pt: form.role_pt?.trim() || null,
     };
-    const { error } = editing
-      ? await (supabase as any).from("testimonials").update(payload).eq("id", editing.id)
-      : await (supabase as any).from("testimonials").insert(payload);
-    setSaving(false);
+
+    // Si el texto cambió respecto al original, forzar regeneración de traducciones
+    const messageChanged = editing && editing.message !== payload.message;
+    const roleChanged = editing && (editing.role || null) !== payload.role;
+    if (!editing || messageChanged) {
+      payload.message_en = null;
+      payload.message_pt = null;
+    }
+    if (!editing || roleChanged) {
+      payload.role_en = null;
+      payload.role_pt = null;
+    }
+
+    let savedId: string | undefined = editing?.id;
+    let error: any = null;
+    if (editing) {
+      const res = await (supabase as any).from("testimonials").update(payload).eq("id", editing.id);
+      error = res.error;
+    } else {
+      const res = await (supabase as any).from("testimonials").insert(payload).select("id").single();
+      error = res.error;
+      savedId = res.data?.id;
+    }
+
     if (error) {
+      setSaving(false);
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: editing ? "Actualizado" : "Creado" });
+    toast({ title: editing ? "Actualizado" : "Creado", description: "Generando traducciones…" });
     setOpen(false);
+
+    // Disparar traducción automática (no bloqueante para el cierre del modal)
+    if (savedId) {
+      supabase.functions.invoke("translate-testimonials", { body: { id: savedId } })
+        .then(({ error: fnErr }) => {
+          if (fnErr) {
+            toast({ title: "Traducción falló", description: fnErr.message, variant: "destructive" });
+          } else {
+            toast({ title: "Traducciones listas" });
+          }
+          load();
+        });
+    }
+    setSaving(false);
     load();
   };
 
@@ -169,7 +201,29 @@ export function TestimonialsAdmin() {
           <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5 text-warning" /> Recomendaciones</CardTitle>
           <CardDescription>Aparecen en la landing page (solo activas)</CardDescription>
         </div>
-        <Button onClick={openNew} size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Nueva</Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={async () => {
+              setTranslatingAll(true);
+              const { data, error } = await supabase.functions.invoke("translate-testimonials", { body: {} });
+              setTranslatingAll(false);
+              if (error) {
+                toast({ title: "Error", description: error.message, variant: "destructive" });
+              } else {
+                toast({ title: "Traducciones generadas", description: `Actualizadas: ${(data as any)?.updated ?? 0}` });
+                load();
+              }
+            }}
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            disabled={translatingAll}
+          >
+            {translatingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+            Traducir todas
+          </Button>
+          <Button onClick={openNew} size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Nueva</Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -243,27 +297,9 @@ export function TestimonialsAdmin() {
                 <Label>Mensaje *</Label>
                 <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} rows={4} />
               </div>
-              <div className="space-y-2 rounded-lg border border-border p-3">
-                <Label className="text-xs text-muted-foreground">Traducciones (opcional)</Label>
-                <div className="grid gap-2">
-                  <div>
-                    <Label className="text-xs">Cargo (EN)</Label>
-                    <Input value={form.role_en || ""} onChange={(e) => setForm({ ...form, role_en: e.target.value })} maxLength={150} placeholder="Role in English" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Mensaje (EN)</Label>
-                    <Textarea value={form.message_en || ""} onChange={(e) => setForm({ ...form, message_en: e.target.value })} maxLength={500} rows={3} placeholder="Message in English" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Cargo (PT)</Label>
-                    <Input value={form.role_pt || ""} onChange={(e) => setForm({ ...form, role_pt: e.target.value })} maxLength={150} placeholder="Cargo em português" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Mensaje (PT)</Label>
-                    <Textarea value={form.message_pt || ""} onChange={(e) => setForm({ ...form, message_pt: e.target.value })} maxLength={500} rows={3} placeholder="Mensagem em português" />
-                  </div>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Las traducciones a inglés y portugués se generan automáticamente al guardar.
+              </p>
               <div className="space-y-2 rounded-lg border border-border p-3">
                 <Label className="text-xs text-muted-foreground">Redes sociales (opcional)</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
