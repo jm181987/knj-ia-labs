@@ -21,6 +21,39 @@ interface Testimonial {
 }
 
 export function TestimonialsSection() {
+  return <TestimonialsInner />;
+}
+
+function SocialLinks({ t }: { t: Testimonial }) {
+  const items = [
+    { url: t.instagram_url, Icon: Instagram, label: "Instagram" },
+    { url: t.facebook_url, Icon: Facebook, label: "Facebook" },
+    { url: t.linkedin_url, Icon: Linkedin, label: "LinkedIn" },
+    { url: t.twitter_url, Icon: Twitter, label: "X" },
+    { url: t.tiktok_url, Icon: Music2, label: "TikTok" },
+    { url: t.youtube_url, Icon: Youtube, label: "YouTube" },
+    { url: t.website_url, Icon: Globe, label: "Sitio web" },
+  ].filter((i) => i.url);
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-4 flex items-center gap-2 flex-wrap">
+      {items.map(({ url, Icon, label }) => (
+        <a
+          key={label}
+          href={url as string}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+          className="h-7 w-7 grid place-items-center rounded-full border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function TestimonialsInner() {
   const [items, setItems] = useState<Testimonial[]>([]);
   const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
