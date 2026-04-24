@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Instagram, Facebook, Linkedin, Youtube, Globe, Music2, Twitter } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 
@@ -11,9 +11,49 @@ interface Testimonial {
   role: string | null;
   message: string;
   photo_url: string | null;
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  tiktok_url?: string | null;
+  youtube_url?: string | null;
+  website_url?: string | null;
 }
 
 export function TestimonialsSection() {
+  return <TestimonialsInner />;
+}
+
+function SocialLinks({ t }: { t: Testimonial }) {
+  const items = [
+    { url: t.instagram_url, Icon: Instagram, label: "Instagram" },
+    { url: t.facebook_url, Icon: Facebook, label: "Facebook" },
+    { url: t.linkedin_url, Icon: Linkedin, label: "LinkedIn" },
+    { url: t.twitter_url, Icon: Twitter, label: "X" },
+    { url: t.tiktok_url, Icon: Music2, label: "TikTok" },
+    { url: t.youtube_url, Icon: Youtube, label: "YouTube" },
+    { url: t.website_url, Icon: Globe, label: "Sitio web" },
+  ].filter((i) => i.url);
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-4 flex items-center gap-2 flex-wrap">
+      {items.map(({ url, Icon, label }) => (
+        <a
+          key={label}
+          href={url as string}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+          className="h-7 w-7 grid place-items-center rounded-full border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function TestimonialsInner() {
   const [items, setItems] = useState<Testimonial[]>([]);
   const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
@@ -24,7 +64,7 @@ export function TestimonialsSection() {
     (async () => {
       const { data } = await (supabase as any)
         .from("testimonials")
-        .select("id,name,role,message,photo_url")
+        .select("id,name,role,message,photo_url,instagram_url,facebook_url,linkedin_url,twitter_url,tiktok_url,youtube_url,website_url")
         .eq("active", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
@@ -79,6 +119,7 @@ export function TestimonialsSection() {
                     ))}
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">"{t.message}"</p>
+                  <SocialLinks t={t} />
                 </article>
               ))}
             </div>
