@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
         payer_email: user.email,
         external_reference: user.id,
         back_url: `${req.headers.get("origin") || ""}/payment/success?subscription=1`,
+        status: "pending",
       }),
     });
 

@@ -340,9 +340,13 @@ export type Database = {
           instagram_url: string | null
           linkedin_url: string | null
           message: string
+          message_en: string | null
+          message_pt: string | null
           name: string
           photo_url: string | null
           role: string | null
+          role_en: string | null
+          role_pt: string | null
           sort_order: number
           tiktok_url: string | null
           twitter_url: string | null
@@ -358,9 +362,13 @@ export type Database = {
           instagram_url?: string | null
           linkedin_url?: string | null
           message: string
+          message_en?: string | null
+          message_pt?: string | null
           name: string
           photo_url?: string | null
           role?: string | null
+          role_en?: string | null
+          role_pt?: string | null
           sort_order?: number
           tiktok_url?: string | null
           twitter_url?: string | null
@@ -376,9 +384,13 @@ export type Database = {
           instagram_url?: string | null
           linkedin_url?: string | null
           message?: string
+          message_en?: string | null
+          message_pt?: string | null
           name?: string
           photo_url?: string | null
           role?: string | null
+          role_en?: string | null
+          role_pt?: string | null
           sort_order?: number
           tiktok_url?: string | null
           twitter_url?: string | null
