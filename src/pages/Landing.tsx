@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { LandingPricing } from "@/components/LandingPricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Accordion,
   AccordionContent,
