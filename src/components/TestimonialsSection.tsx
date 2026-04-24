@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Quote, Instagram, Facebook, Linkedin, Youtube, Globe, Music2, Twitter } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
+import { useTranslation } from "react-i18next";
 
 interface Testimonial {
   id: string;
@@ -18,6 +19,10 @@ interface Testimonial {
   tiktok_url?: string | null;
   youtube_url?: string | null;
   website_url?: string | null;
+  message_en?: string | null;
+  message_pt?: string | null;
+  role_en?: string | null;
+  role_pt?: string | null;
 }
 
 export function TestimonialsSection() {
@@ -54,6 +59,8 @@ function SocialLinks({ t }: { t: Testimonial }) {
 }
 
 function TestimonialsInner() {
+  const { i18n } = useTranslation();
+  const lang = (i18n.resolvedLanguage || "es").slice(0, 2);
   const [items, setItems] = useState<Testimonial[]>([]);
   const [emblaRef] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: true },
@@ -64,7 +71,7 @@ function TestimonialsInner() {
     (async () => {
       const { data } = await (supabase as any)
         .from("testimonials")
-        .select("id,name,role,message,photo_url,instagram_url,facebook_url,linkedin_url,twitter_url,tiktok_url,youtube_url,website_url")
+        .select("id,name,role,message,photo_url,instagram_url,facebook_url,linkedin_url,twitter_url,tiktok_url,youtube_url,website_url,message_en,message_pt,role_en,role_pt")
         .eq("active", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
@@ -77,6 +84,17 @@ function TestimonialsInner() {
 
   // Duplicar items para el efecto infinito
   const list = [...items, ...items];
+
+  const pickMessage = (t: Testimonial) => {
+    if (lang === "en") return t.message_en?.trim() || t.message;
+    if (lang === "pt") return t.message_pt?.trim() || t.message;
+    return t.message;
+  };
+  const pickRole = (t: Testimonial) => {
+    if (lang === "en") return t.role_en?.trim() || t.role;
+    if (lang === "pt") return t.role_pt?.trim() || t.role;
+    return t.role;
+  };
 
   return (
     <section id="testimonials" className="border-t border-border/60 py-24">
@@ -110,7 +128,7 @@ function TestimonialsInner() {
                     </Avatar>
                     <div className="min-w-0">
                       <div className="font-semibold truncate">{t.name}</div>
-                      {t.role && <div className="text-xs text-muted-foreground truncate">{t.role}</div>}
+                      {pickRole(t) && <div className="text-xs text-muted-foreground truncate">{pickRole(t)}</div>}
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5 mb-3">
@@ -118,7 +136,7 @@ function TestimonialsInner() {
                       <Star key={i} className="h-3.5 w-3.5 fill-warning text-warning" />
                     ))}
                   </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">"{t.message}"</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">"{pickMessage(t)}"</p>
                   <SocialLinks t={t} />
                 </article>
               ))}
