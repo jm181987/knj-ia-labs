@@ -21,7 +21,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { LandingPricing } from "@/components/LandingPricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BuilderBotChat } from "@/components/BuilderBotChat";
 import {
   Accordion,
   AccordionContent,
@@ -85,7 +84,6 @@ export default function Landing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   return (
     <div className="min-h-screen flex flex-col">
-      <BuilderBotChat />
       {/* Promo banner */}
       <div
         className="text-center text-xs sm:text-sm font-medium py-2 px-4 text-white"
