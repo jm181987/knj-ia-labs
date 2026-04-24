@@ -227,6 +227,18 @@ export function TestimonialsAdmin() {
                 <Label>Mensaje *</Label>
                 <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} rows={4} />
               </div>
+              <div className="space-y-2 rounded-lg border border-border p-3">
+                <Label className="text-xs text-muted-foreground">Redes sociales (opcional)</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input value={form.instagram_url || ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="Instagram URL" maxLength={300} />
+                  <Input value={form.facebook_url || ""} onChange={(e) => setForm({ ...form, facebook_url: e.target.value })} placeholder="Facebook URL" maxLength={300} />
+                  <Input value={form.linkedin_url || ""} onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })} placeholder="LinkedIn URL" maxLength={300} />
+                  <Input value={form.twitter_url || ""} onChange={(e) => setForm({ ...form, twitter_url: e.target.value })} placeholder="X / Twitter URL" maxLength={300} />
+                  <Input value={form.tiktok_url || ""} onChange={(e) => setForm({ ...form, tiktok_url: e.target.value })} placeholder="TikTok URL" maxLength={300} />
+                  <Input value={form.youtube_url || ""} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} placeholder="YouTube URL" maxLength={300} />
+                  <Input className="sm:col-span-2" value={form.website_url || ""} onChange={(e) => setForm({ ...form, website_url: e.target.value })} placeholder="Sitio web" maxLength={300} />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Orden</Label>
