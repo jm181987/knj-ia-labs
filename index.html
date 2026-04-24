@@ -55,14 +55,33 @@
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2024535038133024&ev=PageView&noscript=1" alt="" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- BuilderBot Web Chat -->
-    <script
-      src="https://cdn.builderbot.cloud/sdk.umd.js"
-      data-builderbot-chat
-      data-id="cd2b68f1-217a-40c0-8032-b501a80666e4"
-      data-company="KNJ PRO"
-      data-avatar-initials="IA"
-      data-theme-config='{"colors":{"primary":"#3B82F6","accent":"#3B82F6","sendButton":"#3B82F6","sendButtonHover":"#2563EB","text":"#F2F2F2","textSecondary":"#A6ADB8","background":"#1E1F22","backgroundChat":"#24272B","userMessageBg":"rgba(59,130,246,0.15)","userMessageText":"#93C5FD","agentMessageBg":"#2A2E33","agentMessageText":"#F2F2F2","border":"#32363C","hover":"rgba(59,130,246,0.12)","timestamp":"#6B7280","icon":"#A6ADB8","inputBackground":"#202225","inputPlaceholder":"#6B7280"},"spacing":{"borderRadius":"12px","messageBorderRadius":"8px"}}'
-    ></script>
+    <!-- BuilderBot Web Chat (cargado después de que React monte para evitar conflictos) -->
+    <script>
+      (function () {
+        function loadBuilderBot() {
+          if (document.getElementById('builderbot-sdk')) return;
+          var s = document.createElement('script');
+          s.id = 'builderbot-sdk';
+          s.src = 'https://cdn.builderbot.cloud/sdk.umd.js';
+          s.async = true;
+          s.setAttribute('data-builderbot-chat', '');
+          s.setAttribute('data-id', 'cd2b68f1-217a-40c0-8032-b501a80666e4');
+          s.setAttribute('data-company', 'KNJ PRO');
+          s.setAttribute('data-avatar-initials', 'IA');
+          s.setAttribute(
+            'data-theme-config',
+            '{"colors":{"primary":"#3B82F6","accent":"#3B82F6","sendButton":"#3B82F6","sendButtonHover":"#2563EB","text":"#F2F2F2","textSecondary":"#A6ADB8","background":"#1E1F22","backgroundChat":"#24272B","userMessageBg":"rgba(59,130,246,0.15)","userMessageText":"#93C5FD","agentMessageBg":"#2A2E33","agentMessageText":"#F2F2F2","border":"#32363C","hover":"rgba(59,130,246,0.12)","timestamp":"#6B7280","icon":"#A6ADB8","inputBackground":"#202225","inputPlaceholder":"#6B7280"},"spacing":{"borderRadius":"12px","messageBorderRadius":"8px"}}'
+          );
+          document.body.appendChild(s);
+        }
+        if (document.readyState === 'complete') {
+          setTimeout(loadBuilderBot, 800);
+        } else {
+          window.addEventListener('load', function () {
+            setTimeout(loadBuilderBot, 800);
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
