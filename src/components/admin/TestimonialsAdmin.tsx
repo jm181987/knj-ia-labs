@@ -26,6 +26,10 @@ interface Testimonial {
   tiktok_url?: string | null;
   youtube_url?: string | null;
   website_url?: string | null;
+  message_en?: string | null;
+  message_pt?: string | null;
+  role_en?: string | null;
+  role_pt?: string | null;
 }
 
 const empty: Omit<Testimonial, "id"> = {
@@ -42,6 +46,10 @@ const empty: Omit<Testimonial, "id"> = {
   tiktok_url: "",
   youtube_url: "",
   website_url: "",
+  message_en: "",
+  message_pt: "",
+  role_en: "",
+  role_pt: "",
 };
 
 export function TestimonialsAdmin() {
@@ -81,6 +89,10 @@ export function TestimonialsAdmin() {
       tiktok_url: t.tiktok_url || "",
       youtube_url: t.youtube_url || "",
       website_url: t.website_url || "",
+      message_en: t.message_en || "",
+      message_pt: t.message_pt || "",
+      role_en: t.role_en || "",
+      role_pt: t.role_pt || "",
     });
     setOpen(true);
   };
@@ -121,6 +133,10 @@ export function TestimonialsAdmin() {
       tiktok_url: form.tiktok_url?.trim() || null,
       youtube_url: form.youtube_url?.trim() || null,
       website_url: form.website_url?.trim() || null,
+      message_en: form.message_en?.trim() || null,
+      message_pt: form.message_pt?.trim() || null,
+      role_en: form.role_en?.trim() || null,
+      role_pt: form.role_pt?.trim() || null,
     };
     const { error } = editing
       ? await (supabase as any).from("testimonials").update(payload).eq("id", editing.id)
@@ -226,6 +242,27 @@ export function TestimonialsAdmin() {
               <div>
                 <Label>Mensaje *</Label>
                 <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} rows={4} />
+              </div>
+              <div className="space-y-2 rounded-lg border border-border p-3">
+                <Label className="text-xs text-muted-foreground">Traducciones (opcional)</Label>
+                <div className="grid gap-2">
+                  <div>
+                    <Label className="text-xs">Cargo (EN)</Label>
+                    <Input value={form.role_en || ""} onChange={(e) => setForm({ ...form, role_en: e.target.value })} maxLength={150} placeholder="Role in English" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Mensaje (EN)</Label>
+                    <Textarea value={form.message_en || ""} onChange={(e) => setForm({ ...form, message_en: e.target.value })} maxLength={500} rows={3} placeholder="Message in English" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Cargo (PT)</Label>
+                    <Input value={form.role_pt || ""} onChange={(e) => setForm({ ...form, role_pt: e.target.value })} maxLength={150} placeholder="Cargo em português" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Mensaje (PT)</Label>
+                    <Textarea value={form.message_pt || ""} onChange={(e) => setForm({ ...form, message_pt: e.target.value })} maxLength={500} rows={3} placeholder="Mensagem em português" />
+                  </div>
+                </div>
               </div>
               <div className="space-y-2 rounded-lg border border-border p-3">
                 <Label className="text-xs text-muted-foreground">Redes sociales (opcional)</Label>
