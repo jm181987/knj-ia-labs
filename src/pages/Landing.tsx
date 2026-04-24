@@ -84,7 +84,6 @@ export default function Landing() {
   const [pricingOpen, setPricingOpen] = useState(false);
   return (
     <div className="min-h-screen flex flex-col">
-      <BuilderBotChat />
       {/* Promo banner */}
       <div
         className="text-center text-xs sm:text-sm font-medium py-2 px-4 text-white"
