@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { PayPalButton } from "@/components/PayPalButton";
 
 interface Pkg {
   id: string;
@@ -25,6 +26,9 @@ const SUB_PRICE = 900;
 const SUB_CREDITS = 500;
 const MIN_CUSTOM = 80;
 const RATIO = 1.99;
+  const SUB_PRICE_USD = 22.5;
+  const MIN_CUSTOM_USD = 2;
+  const USD_PER_CREDIT = 0.05;
 
 export function LandingPricing() {
   const { t } = useTranslation();
@@ -188,6 +192,13 @@ export function LandingPricing() {
                 )}
               </Button>
             </div>
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                  <span>O pagá con PayPal</span>
+                  <span className="font-semibold text-foreground">${SUB_PRICE_USD} USD/mes</span>
+                </div>
+                <PayPalButton mode="subscription" />
+              </div>
           </CardContent>
         </Card>
 
