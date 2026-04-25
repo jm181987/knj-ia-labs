@@ -6,44 +6,84 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 let cachedClientId: string | null = null;
+let clientIdPromise: Promise<string> | null = null;
 async function getClientId(): Promise<string> {
   if (cachedClientId) return cachedClientId;
-  const { data, error } = await supabase.functions.invoke("paypal-config", { body: {} });
-  if (error) throw new Error(error.message);
-  const id = (data as any)?.client_id;
-  if (!id) throw new Error("PAYPAL_CLIENT_ID no configurado en el backend");
-  cachedClientId = id;
-  return id;
+  if (clientIdPromise) return clientIdPromise;
+  clientIdPromise = (async () => {
+    const { data, error } = await supabase.functions.invoke("paypal-config", { body: {} });
+    if (error) throw new Error(error.message);
+    const id = (data as any)?.client_id;
+    if (!id) throw new Error("PAYPAL_CLIENT_ID no configurado en el backend");
+    cachedClientId = id;
+    return id;
+  })();
+  try {
+    return await clientIdPromise;
+  } finally {
+    clientIdPromise = null;
+  }
 }
 
-let sdkPromise: Promise<any> | null = null;
-async function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
-  if (typeof window === "undefined") return Promise.resolve(null);
-  const clientId = await getClientId();
-  if ((window as any).paypal && (window as any).__paypalSdkConfig === JSON.stringify(opts)) {
-    return Promise.resolve((window as any).paypal);
-  }
-  document.querySelectorAll("script[data-paypal-sdk]").forEach((s) => s.remove());
-  delete (window as any).paypal;
+// Cache de SDKs por configuración. PayPal NO permite cargar múltiples SDKs con
+// configs distintos al mismo tiempo en la misma página, así que mantenemos
+// una sola promesa por config y reutilizamos cuando coincide.
+const sdkPromises = new Map<string, Promise<any>>();
+let activeSdkKey: string | null = null;
 
-  sdkPromise = new Promise((resolve, reject) => {
-    const params = new URLSearchParams({
-      "client-id": clientId,
-      currency: "USD",
-      intent: opts.intent,
+async function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
+  if (typeof window === "undefined") return null;
+  const key = JSON.stringify(opts);
+
+  // Si ya hay un SDK con esta misma config cargado, reutilizar.
+  if (activeSdkKey === key && (window as any).paypal) {
+    return (window as any).paypal;
+  }
+  if (sdkPromises.has(key)) {
+    return sdkPromises.get(key)!;
+  }
+
+  const promise = (async () => {
+    const clientId = await getClientId();
+
+    // Si hay un SDK previo con OTRA config, removerlo.
+    if (activeSdkKey && activeSdkKey !== key) {
+      document.querySelectorAll("script[data-paypal-sdk]").forEach((s) => s.remove());
+      delete (window as any).paypal;
+      activeSdkKey = null;
+    }
+
+    if ((window as any).paypal) {
+      activeSdkKey = key;
+      return (window as any).paypal;
+    }
+
+    return await new Promise<any>((resolve, reject) => {
+      const params = new URLSearchParams({
+        "client-id": clientId,
+        currency: "USD",
+        intent: opts.intent,
+      });
+      if (opts.vault) params.set("vault", "true");
+      const s = document.createElement("script");
+      s.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
+      s.dataset.paypalSdk = "true";
+      s.async = true;
+      s.onload = () => {
+        activeSdkKey = key;
+        resolve((window as any).paypal);
+      };
+      s.onerror = () => {
+        sdkPromises.delete(key);
+        reject(new Error("PayPal SDK falló al cargar"));
+      };
+      document.head.appendChild(s);
     });
-    if (opts.vault) params.set("vault", "true");
-    const s = document.createElement("script");
-    s.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
-    s.dataset.paypalSdk = "true";
-    s.onload = () => {
-      (window as any).__paypalSdkConfig = JSON.stringify(opts);
-      resolve((window as any).paypal);
-    };
-    s.onerror = () => reject(new Error("PayPal SDK falló al cargar"));
-    document.head.appendChild(s);
-  });
-  return sdkPromise;
+  })();
+
+  sdkPromises.set(key, promise);
+  promise.catch(() => sdkPromises.delete(key));
+  return promise;
 }
 
 interface OneTimeProps {
@@ -73,6 +113,8 @@ export function PayPalButton(props: Props) {
   useEffect(() => {
     let cancelled = false;
     const isSub = props.mode === "subscription";
+    setLoading(true);
+    setErr(null);
 
     loadPaypalSdk({ intent: isSub ? "subscription" : "capture", vault: isSub })
       .then((paypal) => {
@@ -139,9 +181,19 @@ export function PayPalButton(props: Props) {
         }
 
         try {
-          paypal.Buttons(buttonsCfg).render(ref.current);
+          const btn = paypal.Buttons(buttonsCfg);
+          if (btn.isEligible && !btn.isEligible()) {
+            setErr("PayPal no disponible en esta región");
+            setLoading(false);
+            return;
+          }
+          btn.render(ref.current).catch((e: any) => {
+            console.error("Render PayPal buttons:", e);
+            if (!cancelled) setErr("No se pudieron mostrar los botones de PayPal");
+          });
         } catch (e) {
           console.error("Render PayPal buttons:", e);
+          if (!cancelled) setErr("No se pudieron mostrar los botones de PayPal");
         }
         setLoading(false);
       })
