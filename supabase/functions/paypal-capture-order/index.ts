@@ -34,9 +34,9 @@ Deno.serve(async (req) => {
     );
 
     const { data: order } = await supabase
-      .from("paypal_orders")
+      .from("payments")
       .select("*")
-      .eq("paypal_order_id", paypal_order_id)
+      .eq("mp_preference_id", paypal_order_id)
       .maybeSingle();
     if (!order) return json({ error: "Orden no encontrada" }, 404);
     if (order.user_id !== user.id) return json({ error: "Forbidden" }, 403);
@@ -58,9 +58,9 @@ Deno.serve(async (req) => {
 
     if (!capRes.ok || capStatus !== "COMPLETED") {
       console.error("PayPal capture failed:", capData);
-      await supabase.from("paypal_orders").update({
+      await supabase.from("payments").update({
         status: "rejected",
-        paypal_response: capData,
+        mp_response: capData,
       }).eq("id", order.id);
       return json({ error: capData?.message || "Captura falló", details: capData }, 400);
     }
@@ -76,9 +76,10 @@ Deno.serve(async (req) => {
       return json({ error: "Capturado pero falló acreditación", details: creditErr.message }, 500);
     }
 
-    await supabase.from("paypal_orders").update({
+    await supabase.from("payments").update({
       status: "approved",
-      paypal_response: capData,
+      mp_payment_id: capData?.purchase_units?.[0]?.payments?.captures?.[0]?.id ?? null,
+      mp_response: capData,
       approved_at: new Date().toISOString(),
     }).eq("id", order.id);
 
