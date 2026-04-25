@@ -383,6 +383,31 @@ export default function AdminPage() {
     }
   };
 
+  const handleReconcilePayments = async () => {
+    setReconciling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-reconcile-payments", {
+        body: { hours: 168 },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const results: any[] = (data as any)?.results || [];
+      const updated = results.filter((r) => r.action === "updated").length;
+      const credited = results.filter((r) => r.credited).length;
+      const notFound = results.filter((r) => r.action === "no_mp_payment_found").length;
+      const errors = results.filter((r) => r.action === "error").length;
+      toast({
+        title: "Reconciliación completa",
+        description: `Revisados: ${(data as any)?.checked ?? 0} · Actualizados: ${updated} · Acreditados: ${credited} · Sin pago en MP: ${notFound}${errors ? ` · Errores: ${errors}` : ""}`,
+      });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setReconciling(false);
+    }
+  };
+
   const statusColor = (s: string) => {
     if (s === "approved") return "default";
     if (s === "rejected") return "destructive";
