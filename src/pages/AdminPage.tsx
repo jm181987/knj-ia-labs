@@ -11,12 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle, RefreshCw } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle, RefreshCw, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
+import { EmailAdmin } from "@/components/admin/EmailAdmin";
 import { useTranslation } from "react-i18next";
 
 interface UserRow {
@@ -531,6 +532,7 @@ export default function AdminPage() {
             <TabsTrigger value="subscriptions"><Repeat className="h-3 w-3 mr-1" /> Suscripciones</TabsTrigger>
             <TabsTrigger value="transactions">{t("admin.tabTransactions")}</TabsTrigger>
             <TabsTrigger value="testimonials">Recomendaciones</TabsTrigger>
+            <TabsTrigger value="emails"><Mail className="h-3 w-3 mr-1" /> Emails</TabsTrigger>
             <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
           </TabsList>
         </div>
@@ -1041,6 +1043,10 @@ export default function AdminPage() {
 
         <TabsContent value="testimonials">
           <TestimonialsAdmin />
+        </TabsContent>
+
+        <TabsContent value="emails">
+          <EmailAdmin />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
