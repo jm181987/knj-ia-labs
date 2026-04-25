@@ -121,6 +121,7 @@ export default function AdminPage() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
+  const [deletingSubId, setDeletingSubId] = useState<string | null>(null);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
   const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
@@ -387,6 +388,24 @@ export default function AdminPage() {
       toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setDeletingPaymentId(null);
+    }
+  };
+
+  const handleDeleteSubscription = async (s: SubscriptionRow) => {
+    if (!confirm(`¿Eliminar la suscripción de ${s.user_email}?\n\nEsta acción es definitiva y solo elimina el registro local. Si la suscripción sigue activa en el proveedor de pago, cancélala primero.`)) return;
+    setDeletingSubId(s.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-subscription", {
+        body: { subscription_id: s.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Suscripción eliminada", description: s.user_email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setDeletingSubId(null);
     }
   };
 
