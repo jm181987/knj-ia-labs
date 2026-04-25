@@ -1009,22 +1009,36 @@ export default function AdminPage() {
                               {s.mp_preapproval_id ? s.mp_preapproval_id.slice(0, 12) + "…" : "—"}
                             </TableCell>
                             <TableCell className="text-right whitespace-nowrap">
-                              {s.status === "authorized" || s.status === "paused" ? (
+                              <div className="inline-flex items-center gap-1 justify-end">
+                                {(s.status === "authorized" || s.status === "paused") && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={cancellingSubId === s.id}
+                                    onClick={() => handleCancelSubscription(s)}
+                                  >
+                                    {cancellingSubId === s.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <>Cancelar</>
+                                    )}
+                                  </Button>
+                                )}
                                 <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  disabled={cancellingSubId === s.id}
-                                  onClick={() => handleCancelSubscription(s)}
+                                  size="icon"
+                                  variant="ghost"
+                                  disabled={deletingSubId === s.id}
+                                  onClick={() => handleDeleteSubscription(s)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  title="Eliminar suscripción"
                                 >
-                                  {cancellingSubId === s.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  {deletingSubId === s.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                   ) : (
-                                    <>Cancelar</>
+                                    <Trash2 className="h-4 w-4" />
                                   )}
                                 </Button>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">—</span>
-                              )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
