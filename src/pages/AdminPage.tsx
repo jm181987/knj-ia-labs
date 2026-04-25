@@ -92,6 +92,7 @@ export default function AdminPage() {
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reconciling, setReconciling] = useState(false);
 
   const [rechargeUser, setRechargeUser] = useState<UserRow | null>(null);
   const [rechargeAmount, setRechargeAmount] = useState("10");
