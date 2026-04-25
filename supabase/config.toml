@@ -12,3 +12,6 @@ verify_jwt = false
 [functions.send-bulk-email]
 verify_jwt = true
 
+[functions.paypal-webhook]
+verify_jwt = false
+
