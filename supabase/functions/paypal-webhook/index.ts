@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
 
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", order.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || order.user_id;
-        await notifyWhatsApp(`✅ *Venta PayPal aprobada*\nUsuario: ${label}\nMonto: $${order.amount_usd} USD\nCréditos: ${order.credits}`);
+        await notifyWhatsApp(`✅ *Venta PayPal aprobada*\nUsuario: ${label}\nMonto: $${order.amount_uyu} USD\nCréditos: ${order.credits}`);
       }
     }
 
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
         }).eq("id", row.id);
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", row.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || row.user_id;
-        await notifyWhatsApp(`🎉 *Suscripción PayPal activa*\nUsuario: ${label}\nPlan: $${row.amount_usd} USD/mes\nSub: ${subId}`);
+        await notifyWhatsApp(`🎉 *Suscripción PayPal activa*\nUsuario: ${label}\nPlan: $${row.amount_uyu} USD/mes\nSub: ${subId}`);
       }
     }
 
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
         .eq("mp_preapproval_id", subId)
         .maybeSingle();
       if (row) {
-        if (row.last_credited_capture_id === String(captureId)) {
+        if (row.last_credited_payment_id === String(captureId)) {
           return new Response("ok", { status: 200, headers: corsHeaders });
         }
         await supabase.rpc("add_credits_system", {
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
           _reason: `Suscripción PayPal ${subId} - capture ${captureId}`,
         });
         await supabase.from("subscriptions").update({
-          last_credited_capture_id: String(captureId),
+          last_credited_payment_id: String(captureId),
           status: "active",
         }).eq("id", row.id);
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", row.user_id).maybeSingle();
