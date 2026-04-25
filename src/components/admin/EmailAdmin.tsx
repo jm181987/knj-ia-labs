@@ -14,8 +14,11 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Mail, Save, Send, Eye, Trash2, FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+// Cast until generated types include new email_* tables (migration just added).
+const supabase = supabaseClient as any;
 
 type Segment =
   | "paid"
