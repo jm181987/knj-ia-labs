@@ -58,6 +58,7 @@ interface PaymentRow {
   created_at: string;
   approved_at: string | null;
   user_email?: string;
+  mp_response?: any;
 }
 interface SubscriptionRow {
   id: string;
