@@ -161,10 +161,39 @@ Deno.serve(async (req) => {
         name: (user.user_metadata as any)?.display_name || testEmail.split("@")[0],
         credits: 0,
       };
-      const sg = await sendOne(testEmail, fake.name, applyPlaceholders(subject, fake), applyPlaceholders(html, fake));
-      return new Response(JSON.stringify({ ok: true, sent: 1, sg_message_id: sg }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const subj = applyPlaceholders(subject, fake);
+      const bodyHtml = applyPlaceholders(html, fake);
+      const campaignId = crypto.randomUUID();
+      try {
+        const sg = await sendOne(testEmail, fake.name, subj, bodyHtml);
+        await admin.from("email_sends").insert({
+          template_id: templateId,
+          segment: "test",
+          recipient_email: testEmail,
+          recipient_user_id: user.id,
+          subject: subj,
+          status: "sent",
+          sendgrid_message_id: sg,
+          sent_at: new Date().toISOString(),
+          metadata: { campaign_id: campaignId, test: true },
+        });
+        return new Response(JSON.stringify({ ok: true, sent: 1, sendgrid_message_id: sg }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await admin.from("email_sends").insert({
+          template_id: templateId,
+          segment: "test",
+          recipient_email: testEmail,
+          recipient_user_id: user.id,
+          subject: subj,
+          status: "failed",
+          error: msg.slice(0, 500),
+          metadata: { campaign_id: campaignId, test: true },
+        });
+        throw e;
+      }
     }
 
     const recipients = await getRecipients(admin, segment);
@@ -193,28 +222,28 @@ Deno.serve(async (req) => {
         try {
           const sg = await sendOne(r.email, r.name, subj, body);
           await admin.from("email_sends").insert({
-            campaign_id: campaignId,
             template_id: templateId,
             segment,
             recipient_email: r.email,
             recipient_user_id: r.user_id,
             subject: subj,
             status: "sent",
-            sg_message_id: sg,
+            sendgrid_message_id: sg,
             sent_at: new Date().toISOString(),
+            metadata: { campaign_id: campaignId },
           });
           sent++;
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           await admin.from("email_sends").insert({
-            campaign_id: campaignId,
             template_id: templateId,
             segment,
             recipient_email: r.email,
             recipient_user_id: r.user_id,
             subject: subj,
             status: "failed",
-            error_message: msg.slice(0, 500),
+            error: msg.slice(0, 500),
+            metadata: { campaign_id: campaignId },
           });
           failed++;
           results.push({ email: r.email, error: msg });
