@@ -121,6 +121,7 @@ export default function AdminPage() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
 
   const [cancellingSubId, setCancellingSubId] = useState<string | null>(null);
+  const [deletingSubId, setDeletingSubId] = useState<string | null>(null);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
   const [togglingAdminId, setTogglingAdminId] = useState<string | null>(null);
 
@@ -387,6 +388,24 @@ export default function AdminPage() {
       toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setDeletingPaymentId(null);
+    }
+  };
+
+  const handleDeleteSubscription = async (s: SubscriptionRow) => {
+    if (!confirm(`¿Eliminar la suscripción de ${s.user_email}?\n\nEsta acción es definitiva y solo elimina el registro local. Si la suscripción sigue activa en el proveedor de pago, cancélala primero.`)) return;
+    setDeletingSubId(s.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-subscription", {
+        body: { subscription_id: s.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Suscripción eliminada", description: s.user_email || "" });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setDeletingSubId(null);
     }
   };
 
@@ -990,22 +1009,36 @@ export default function AdminPage() {
                               {s.mp_preapproval_id ? s.mp_preapproval_id.slice(0, 12) + "…" : "—"}
                             </TableCell>
                             <TableCell className="text-right whitespace-nowrap">
-                              {s.status === "authorized" || s.status === "paused" ? (
+                              <div className="inline-flex items-center gap-1 justify-end">
+                                {(s.status === "authorized" || s.status === "paused") && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={cancellingSubId === s.id}
+                                    onClick={() => handleCancelSubscription(s)}
+                                  >
+                                    {cancellingSubId === s.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <>Cancelar</>
+                                    )}
+                                  </Button>
+                                )}
                                 <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  disabled={cancellingSubId === s.id}
-                                  onClick={() => handleCancelSubscription(s)}
+                                  size="icon"
+                                  variant="ghost"
+                                  disabled={deletingSubId === s.id}
+                                  onClick={() => handleDeleteSubscription(s)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  title="Eliminar suscripción"
                                 >
-                                  {cancellingSubId === s.id ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  {deletingSubId === s.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                   ) : (
-                                    <>Cancelar</>
+                                    <Trash2 className="h-4 w-4" />
                                   )}
                                 </Button>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">—</span>
-                              )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
