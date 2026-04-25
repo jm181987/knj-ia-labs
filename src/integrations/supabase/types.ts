@@ -98,6 +98,89 @@ export type Database = {
         }
         Relationships: []
       }
+      email_sends: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          metadata: Json | null
+          recipient_email: string
+          recipient_user_id: string | null
+          segment: string | null
+          sendgrid_message_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email: string
+          recipient_user_id?: string | null
+          segment?: string | null
+          sendgrid_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email?: string
+          recipient_user_id?: string | null
+          segment?: string | null
+          sendgrid_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          html: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          html: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          html?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           aspect_ratio: string | null
