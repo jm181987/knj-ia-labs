@@ -25,38 +25,27 @@ async function getClientId(): Promise<string> {
   }
 }
 
-// Cache de SDKs por configuración. PayPal NO permite cargar múltiples SDKs con
-// configs distintos al mismo tiempo en la misma página, así que mantenemos
-// una sola promesa por config y reutilizamos cuando coincide.
+// Cargamos múltiples SDKs en paralelo usando data-namespace distintos para que
+// puedan coexistir botones de "capture" (compras únicas) y "subscription"
+// (suscripciones con vault) en la misma página sin pisarse.
 const sdkPromises = new Map<string, Promise<any>>();
-let activeSdkKey: string | null = null;
+
+function namespaceFor(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
+  return opts.intent === "subscription" ? "paypal_sub" : "paypal_cap";
+}
 
 async function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
   if (typeof window === "undefined") return null;
-  const key = JSON.stringify(opts);
+  const ns = namespaceFor(opts);
+  const key = ns;
 
-  // Si ya hay un SDK con esta misma config cargado, reutilizar.
-  if (activeSdkKey === key && (window as any).paypal) {
-    return (window as any).paypal;
-  }
-  if (sdkPromises.has(key)) {
-    return sdkPromises.get(key)!;
-  }
+  const existing = (window as any)[ns];
+  if (existing) return existing;
+  if (sdkPromises.has(key)) return sdkPromises.get(key)!;
 
   const promise = (async () => {
     const clientId = await getClientId();
-
-    // Si hay un SDK previo con OTRA config, removerlo.
-    if (activeSdkKey && activeSdkKey !== key) {
-      document.querySelectorAll("script[data-paypal-sdk]").forEach((s) => s.remove());
-      delete (window as any).paypal;
-      activeSdkKey = null;
-    }
-
-    if ((window as any).paypal) {
-      activeSdkKey = key;
-      return (window as any).paypal;
-    }
+    if ((window as any)[ns]) return (window as any)[ns];
 
     return await new Promise<any>((resolve, reject) => {
       const params = new URLSearchParams({
@@ -67,11 +56,16 @@ async function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?:
       if (opts.vault) params.set("vault", "true");
       const s = document.createElement("script");
       s.src = `https://www.paypal.com/sdk/js?${params.toString()}`;
-      s.dataset.paypalSdk = "true";
       s.async = true;
+      s.dataset.paypalSdk = ns;
+      s.setAttribute("data-namespace", ns);
       s.onload = () => {
-        activeSdkKey = key;
-        resolve((window as any).paypal);
+        const sdk = (window as any)[ns];
+        if (!sdk) {
+          reject(new Error("PayPal SDK no expuso namespace " + ns));
+          return;
+        }
+        resolve(sdk);
       };
       s.onerror = () => {
         sdkPromises.delete(key);
