@@ -84,9 +84,9 @@ Deno.serve(async (req) => {
       }
 
       const { data: order } = await supabase
-        .from("paypal_orders")
+        .from("payments")
         .select("*")
-        .eq("paypal_order_id", paypalOrderId)
+        .eq("mp_preference_id", paypalOrderId)
         .maybeSingle();
 
       if (!order) {
@@ -104,15 +104,16 @@ Deno.serve(async (req) => {
           _amount: order.credits,
           _reason: `PayPal webhook ${paypalOrderId} (${order.credits} créditos)`,
         });
-        await supabase.from("paypal_orders").update({
+        await supabase.from("payments").update({
           status: "approved",
-          paypal_response: event,
+          mp_payment_id: String(resource.id ?? paypalOrderId),
+          mp_response: event,
           approved_at: new Date().toISOString(),
         }).eq("id", order.id);
 
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", order.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || order.user_id;
-        await notifyWhatsApp(`✅ *Venta PayPal aprobada*\nUsuario: ${label}\nMonto: $${order.amount_usd} USD\nCréditos: ${order.credits}`);
+        await notifyWhatsApp(`✅ *Venta PayPal aprobada*\nUsuario: ${label}\nMonto: $${order.amount_uyu} USD\nCréditos: ${order.credits}`);
       }
     }
 
@@ -120,19 +121,18 @@ Deno.serve(async (req) => {
     if (eventType === "BILLING.SUBSCRIPTION.ACTIVATED") {
       const subId = resource.id;
       const { data: row } = await supabase
-        .from("paypal_orders")
+        .from("subscriptions")
         .select("*")
-        .eq("paypal_subscription_id", subId)
+        .eq("mp_preapproval_id", subId)
         .maybeSingle();
       if (row) {
-        await supabase.from("paypal_orders").update({
+        await supabase.from("subscriptions").update({
           status: "active",
-          paypal_response: event,
-          approved_at: new Date().toISOString(),
+          mp_response: event,
         }).eq("id", row.id);
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", row.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || row.user_id;
-        await notifyWhatsApp(`🎉 *Suscripción PayPal activa*\nUsuario: ${label}\nPlan: $${row.amount_usd} USD/mes\nSub: ${subId}`);
+        await notifyWhatsApp(`🎉 *Suscripción PayPal activa*\nUsuario: ${label}\nPlan: $${row.amount_uyu} USD/mes\nSub: ${subId}`);
       }
     }
 
@@ -141,34 +141,34 @@ Deno.serve(async (req) => {
       const subId = resource.billing_agreement_id || resource.id;
       const captureId = resource.id;
       const { data: row } = await supabase
-        .from("paypal_orders")
+        .from("subscriptions")
         .select("*")
-        .eq("paypal_subscription_id", subId)
+        .eq("mp_preapproval_id", subId)
         .maybeSingle();
-      if (row && row.kind === "subscription") {
-        if (row.last_credited_capture_id === String(captureId)) {
+      if (row) {
+        if (row.last_credited_payment_id === String(captureId)) {
           return new Response("ok", { status: 200, headers: corsHeaders });
         }
         await supabase.rpc("add_credits_system", {
           _user_id: row.user_id,
-          _amount: row.credits,
+          _amount: row.monthly_credits,
           _reason: `Suscripción PayPal ${subId} - capture ${captureId}`,
         });
-        await supabase.from("paypal_orders").update({
-          last_credited_capture_id: String(captureId),
+        await supabase.from("subscriptions").update({
+          last_credited_payment_id: String(captureId),
           status: "active",
         }).eq("id", row.id);
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", row.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || row.user_id;
-        await notifyWhatsApp(`🔁 *Cobro PayPal*\nUsuario: ${label}\nMonto: $${row.amount_usd} USD\nCréditos: ${row.credits}`);
+        await notifyWhatsApp(`🔁 *Cobro PayPal*\nUsuario: ${label}\nMonto: $${row.amount_uyu} USD\nCréditos: ${row.monthly_credits}`);
       }
     }
 
     if (eventType === "BILLING.SUBSCRIPTION.CANCELLED" || eventType === "BILLING.SUBSCRIPTION.SUSPENDED" || eventType === "BILLING.SUBSCRIPTION.EXPIRED") {
       const subId = resource.id;
-      await supabase.from("paypal_orders")
-        .update({ status: "cancelled", paypal_response: event })
-        .eq("paypal_subscription_id", subId);
+      await supabase.from("subscriptions")
+        .update({ status: "cancelled", mp_response: event })
+        .eq("mp_preapproval_id", subId);
     }
 
     return new Response("ok", { status: 200, headers: corsHeaders });
