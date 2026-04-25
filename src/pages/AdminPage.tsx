@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -92,6 +92,7 @@ export default function AdminPage() {
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reconciling, setReconciling] = useState(false);
 
   const [rechargeUser, setRechargeUser] = useState<UserRow | null>(null);
   const [rechargeAmount, setRechargeAmount] = useState("10");
@@ -379,6 +380,31 @@ export default function AdminPage() {
       toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally {
       setDeletingPaymentId(null);
+    }
+  };
+
+  const handleReconcilePayments = async () => {
+    setReconciling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mp-reconcile-payments", {
+        body: { hours: 168 },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const results: any[] = (data as any)?.results || [];
+      const updated = results.filter((r) => r.action === "updated").length;
+      const credited = results.filter((r) => r.credited).length;
+      const notFound = results.filter((r) => r.action === "no_mp_payment_found").length;
+      const errors = results.filter((r) => r.action === "error").length;
+      toast({
+        title: "Reconciliación completa",
+        description: `Revisados: ${(data as any)?.checked ?? 0} · Actualizados: ${updated} · Acreditados: ${credited} · Sin pago en MP: ${notFound}${errors ? ` · Errores: ${errors}` : ""}`,
+      });
+      await loadAll();
+    } catch (e) {
+      toast({ title: t("common.error"), description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setReconciling(false);
     }
   };
 
@@ -819,9 +845,20 @@ export default function AdminPage() {
 
         <TabsContent value="payments">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> {t("admin.paymentsTitle")}</CardTitle>
-              <CardDescription>{t("admin.paymentsCount", { count: payments.length })}</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> {t("admin.paymentsTitle")}</CardTitle>
+                <CardDescription>{t("admin.paymentsCount", { count: payments.length })}</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReconcilePayments}
+                disabled={reconciling}
+              >
+                {reconciling ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Reconciliar pendientes con MP
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
