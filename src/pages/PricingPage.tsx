@@ -342,7 +342,7 @@ export default function PricingPage() {
                         <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
                       </>
                     ) : (
-                      t("pricing.buy") + " (MercadoPago)"
+                      t("pricing.buy")
                     )}
                   </Button>
                   <PayPalButton mode="order" packageId={pkg.id} />
