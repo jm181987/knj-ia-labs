@@ -58,6 +58,7 @@ interface PaymentRow {
   created_at: string;
   approved_at: string | null;
   user_email?: string;
+  mp_response?: any;
 }
 interface SubscriptionRow {
   id: string;
@@ -111,6 +112,7 @@ export default function AdminPage() {
   const [pricingMarkup, setPricingMarkup] = useState<string>("3");
   const [creditsPerUsd, setCreditsPerUsd] = useState<string>("37");
   const [mpFeePct, setMpFeePct] = useState<string>("7.99");
+  const [usdToUyu, setUsdToUyu] = useState<number>(40);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
 
@@ -141,7 +143,7 @@ export default function AdminPage() {
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("subscriptions").select("*").order("created_at", { ascending: false }),
-          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct"]),
+          (supabase as any).from("app_settings").select("key, value").in("key", ["welcome_credits", "pricing_markup", "pricing_credits_per_usd", "pricing_mp_fee_pct", "usd_to_uyu"]),
         ]);
 
       const balanceMap = new Map<string, number>(((credits as any[]) || []).map((c) => [c.user_id, c.balance]));
@@ -170,6 +172,10 @@ export default function AdminPage() {
       if (settingsMap.has("pricing_markup")) setPricingMarkup(String(settingsMap.get("pricing_markup")));
       if (settingsMap.has("pricing_credits_per_usd")) setCreditsPerUsd(String(settingsMap.get("pricing_credits_per_usd")));
       if (settingsMap.has("pricing_mp_fee_pct")) setMpFeePct(String(settingsMap.get("pricing_mp_fee_pct")));
+      if (settingsMap.has("usd_to_uyu")) {
+        const v = Number(settingsMap.get("usd_to_uyu"));
+        if (!Number.isNaN(v) && v > 0) setUsdToUyu(v);
+      }
     } catch (e) {
       toast({ title: t("common.error"), description: String(e), variant: "destructive" });
     } finally {
@@ -881,7 +887,16 @@ export default function AdminPage() {
                       <TableRow key={p.id}>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(p.created_at).toLocaleString()}</TableCell>
                         <TableCell className="text-sm whitespace-nowrap">{p.user_email}</TableCell>
-                        <TableCell className="text-right font-mono whitespace-nowrap">${Number(p.amount_uyu).toLocaleString("es-UY")}</TableCell>
+                        <TableCell className="text-right font-mono whitespace-nowrap">
+                          {p.mp_response?.provider === "paypal" ? (
+                            <div className="flex flex-col items-end leading-tight">
+                              <span>${(Number(p.amount_uyu) * usdToUyu).toLocaleString("es-UY", { maximumFractionDigits: 0 })} UYU</span>
+                              <span className="text-[10px] text-muted-foreground">USD {Number(p.amount_uyu).toFixed(2)} · PayPal</span>
+                            </div>
+                          ) : (
+                            <span>${Number(p.amount_uyu).toLocaleString("es-UY")}</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right font-mono">{p.credits}</TableCell>
                         <TableCell>
                           <Badge variant={statusColor(p.status) as any}>{p.status}</Badge>
