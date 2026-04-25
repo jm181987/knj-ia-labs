@@ -5,24 +5,30 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
-// IMPORTANTE: reemplazar por tu PAYPAL_CLIENT_ID público (el mismo que el secret del backend)
-// Lo expongo público porque PayPal SDK lo necesita en el browser. NO es secreto.
-const PAYPAL_CLIENT_ID = (import.meta as any).env.VITE_PAYPAL_CLIENT_ID || "";
+let cachedClientId: string | null = null;
+async function getClientId(): Promise<string> {
+  if (cachedClientId) return cachedClientId;
+  const { data, error } = await supabase.functions.invoke("paypal-config", { body: {} });
+  if (error) throw new Error(error.message);
+  const id = (data as any)?.client_id;
+  if (!id) throw new Error("PAYPAL_CLIENT_ID no configurado en el backend");
+  cachedClientId = id;
+  return id;
+}
 
 let sdkPromise: Promise<any> | null = null;
-function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
+async function loadPaypalSdk(opts: { intent: "capture" | "subscription"; vault?: boolean }) {
   if (typeof window === "undefined") return Promise.resolve(null);
-  // Si ya está cargado con la misma config, reusar
+  const clientId = await getClientId();
   if ((window as any).paypal && (window as any).__paypalSdkConfig === JSON.stringify(opts)) {
     return Promise.resolve((window as any).paypal);
   }
-  // Re-cargar si cambió la config
   document.querySelectorAll("script[data-paypal-sdk]").forEach((s) => s.remove());
   delete (window as any).paypal;
 
   sdkPromise = new Promise((resolve, reject) => {
     const params = new URLSearchParams({
-      "client-id": PAYPAL_CLIENT_ID,
+      "client-id": clientId,
       currency: "USD",
       intent: opts.intent,
     });
@@ -65,11 +71,6 @@ export function PayPalButton(props: Props) {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!PAYPAL_CLIENT_ID) {
-      setErr("VITE_PAYPAL_CLIENT_ID no configurado");
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     const isSub = props.mode === "subscription";
 

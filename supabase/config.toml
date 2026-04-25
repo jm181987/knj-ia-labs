@@ -15,3 +15,6 @@ verify_jwt = true
 [functions.paypal-webhook]
 verify_jwt = false
 
+[functions.paypal-config]
+verify_jwt = false
+
