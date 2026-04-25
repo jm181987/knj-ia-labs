@@ -99,16 +99,17 @@ Deno.serve(async (req) => {
     const token = await getPaypalAccessToken();
     const planId = await ensurePlan(supabase, token, priceUsd);
 
-    // Pre-row para tracking
+    // Pre-row para tracking: reutilizamos la tabla existente de suscripciones
+    // para no depender de una migración nueva en runtime.
     const { data: row, error: insErr } = await supabase
-      .from("paypal_orders")
+      .from("subscriptions")
       .insert({
         user_id: user.id,
-        kind: "subscription",
-        paypal_plan_id: planId,
-        amount_usd: priceUsd,
-        credits,
+        preapproval_plan_id: planId,
+        amount_uyu: priceUsd,
+        monthly_credits: credits,
         status: "pending",
+        mp_response: { provider: "paypal", currency: "USD" },
       })
       .select()
       .single();
@@ -132,16 +133,17 @@ Deno.serve(async (req) => {
     const subData = await subRes.json();
     if (!subRes.ok) {
       console.error("PayPal subscription error:", subData);
-      await supabase.from("paypal_orders").update({ status: "rejected", paypal_response: subData }).eq("id", row.id);
+      await supabase.from("subscriptions").update({ status: "rejected", mp_response: subData }).eq("id", row.id);
       return json({ error: subData.message || "PayPal error", details: subData }, 500);
     }
 
-    await supabase.from("paypal_orders").update({
-      paypal_subscription_id: subData.id,
-      paypal_response: subData,
+    const approve = (subData.links || []).find((l: any) => l.rel === "approve");
+    await supabase.from("subscriptions").update({
+      mp_preapproval_id: subData.id,
+      init_point: approve?.href ?? null,
+      mp_response: { provider: "paypal", currency: "USD", subscription: subData },
     }).eq("id", row.id);
 
-    const approve = (subData.links || []).find((l: any) => l.rel === "approve");
     return json({
       subscription_id: subData.id,
       approve_url: approve?.href,

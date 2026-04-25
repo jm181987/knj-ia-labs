@@ -70,14 +70,14 @@ Deno.serve(async (req) => {
     }
 
     const { data: order, error: insErr } = await supabase
-      .from("paypal_orders")
+      .from("payments")
       .insert({
         user_id: user.id,
-        kind: "order",
         package_id: pkgId,
-        amount_usd: amountUsd,
+        amount_uyu: amountUsd,
         credits,
         status: "pending",
+        mp_response: { provider: "paypal", currency: "USD" },
       })
       .select()
       .single();
@@ -102,12 +102,15 @@ Deno.serve(async (req) => {
     const ppData = await ppRes.json();
     if (!ppRes.ok) {
       console.error("PayPal create order error:", ppData);
-      await supabase.from("paypal_orders").update({ status: "rejected", paypal_response: ppData }).eq("id", order.id);
+      await supabase.from("payments").update({ status: "rejected", mp_response: ppData }).eq("id", order.id);
       return json({ error: ppData.message || "PayPal error", details: ppData }, 500);
     }
 
-    await supabase.from("paypal_orders")
-      .update({ paypal_order_id: ppData.id, paypal_response: ppData })
+    await supabase.from("payments")
+      .update({
+        mp_preference_id: ppData.id,
+        mp_response: { provider: "paypal", currency: "USD", order: ppData },
+      })
       .eq("id", order.id);
 
     return json({ id: ppData.id, internal_id: order.id });
