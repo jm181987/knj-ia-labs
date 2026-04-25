@@ -845,9 +845,20 @@ export default function AdminPage() {
 
         <TabsContent value="payments">
           <Card className="border-border/60 bg-card/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> {t("admin.paymentsTitle")}</CardTitle>
-              <CardDescription>{t("admin.paymentsCount", { count: payments.length })}</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2"><Receipt className="h-5 w-5" /> {t("admin.paymentsTitle")}</CardTitle>
+                <CardDescription>{t("admin.paymentsCount", { count: payments.length })}</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReconcilePayments}
+                disabled={reconciling}
+              >
+                {reconciling ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Reconciliar pendientes con MP
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto -mx-6 px-6">
