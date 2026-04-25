@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { PayPalButton } from "@/components/PayPalButton";
 
 interface Pkg {
   id: string;
@@ -25,6 +26,9 @@ const SUB_PRICE = 900;
 const SUB_CREDITS = 500;
 const MIN_CUSTOM = 80;
 const RATIO = 1.99;
+  const SUB_PRICE_USD = 22.5;
+  const MIN_CUSTOM_USD = 2;
+  const USD_PER_CREDIT = 0.05;
 
 export function LandingPricing() {
   const { t } = useTranslation();
@@ -37,6 +41,8 @@ export function LandingPricing() {
   const [customAmount, setCustomAmount] = useState<string>("200");
   const customAmountNum = Number(customAmount) || 0;
   const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
+  const [customUsd, setCustomUsd] = useState<string>("10");
+  const customUsdNum = Number(customUsd) || 0;
 
   useEffect(() => {
     (async () => {
@@ -188,6 +194,13 @@ export function LandingPricing() {
                 )}
               </Button>
             </div>
+            <div className="mt-4 pt-4 border-t border-border/40">
+              <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                <span>O pagá con PayPal</span>
+                <span className="font-semibold text-foreground">${SUB_PRICE_USD} USD/mes</span>
+              </div>
+              <PayPalButton mode="subscription" />
+            </div>
           </CardContent>
         </Card>
 
@@ -234,21 +247,24 @@ export function LandingPricing() {
                       <span className="text-2xl font-bold">{pkg.credits.toLocaleString("es-UY")}</span>
                       <span className="text-muted-foreground">{t("common.credits")}</span>
                     </div>
-                    <Button
-                      className="w-full mt-auto"
-                      variant={pkg.highlighted ? "default" : "outline"}
-                      size="lg"
-                      onClick={() => handleBuy(pkg)}
-                      disabled={busy === pkg.id}
-                    >
-                      {busy === pkg.id ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
-                        </>
-                      ) : (
-                        t("pricing.buy")
-                      )}
-                    </Button>
+                    <div className="mt-auto space-y-2">
+                      <Button
+                        className="w-full"
+                        variant={pkg.highlighted ? "default" : "outline"}
+                        size="lg"
+                        onClick={() => handleBuy(pkg)}
+                        disabled={busy === pkg.id}
+                      >
+                        {busy === pkg.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
+                          </>
+                        ) : (
+                          t("pricing.buy") + " (MercadoPago)"
+                        )}
+                      </Button>
+                      <PayPalButton mode="order" packageId={pkg.id} />
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -329,6 +345,40 @@ export function LandingPricing() {
                   ${v.toLocaleString("es-UY")}
                 </Button>
               ))}
+            </div>
+            <div className="pt-4 mt-2 border-t border-border/40 space-y-2">
+              <div className="text-xs text-muted-foreground">O pagá con PayPal en USD</div>
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                <div className="space-y-1">
+                  <Label htmlFor="landing-custom-usd" className="text-xs">Monto USD (mín ${MIN_CUSTOM_USD})</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="landing-custom-usd"
+                      type="number"
+                      min={MIN_CUSTOM_USD}
+                      step={1}
+                      value={customUsd}
+                      onChange={(e) => setCustomUsd(e.target.value)}
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="font-semibold">
+                    {customUsdNum >= MIN_CUSTOM_USD ? Math.floor(customUsdNum / USD_PER_CREDIT).toLocaleString("es-UY") : 0}
+                  </span>
+                  <span className="text-xs text-muted-foreground">créditos</span>
+                </div>
+                <div className="min-w-[200px]">
+                  <PayPalButton
+                    mode="order"
+                    customAmountUsd={customUsdNum}
+                    disabled={customUsdNum < MIN_CUSTOM_USD}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
