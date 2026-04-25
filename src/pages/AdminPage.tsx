@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle } from "lucide-react";
+import { Loader2, Shield, Coins, Plus, Minus, Pencil, Package, Receipt, Trash2, Key, Repeat, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
