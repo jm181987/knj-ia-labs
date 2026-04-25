@@ -41,6 +41,8 @@ export function LandingPricing() {
   const [customAmount, setCustomAmount] = useState<string>("200");
   const customAmountNum = Number(customAmount) || 0;
   const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
+  const [customUsd, setCustomUsd] = useState<string>("10");
+  const customUsdNum = Number(customUsd) || 0;
 
   useEffect(() => {
     (async () => {
@@ -343,6 +345,40 @@ export function LandingPricing() {
                   ${v.toLocaleString("es-UY")}
                 </Button>
               ))}
+            </div>
+            <div className="pt-4 mt-2 border-t border-border/40 space-y-2">
+              <div className="text-xs text-muted-foreground">O pagá con PayPal en USD</div>
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                <div className="space-y-1">
+                  <Label htmlFor="landing-custom-usd" className="text-xs">Monto USD (mín ${MIN_CUSTOM_USD})</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="landing-custom-usd"
+                      type="number"
+                      min={MIN_CUSTOM_USD}
+                      step={1}
+                      value={customUsd}
+                      onChange={(e) => setCustomUsd(e.target.value)}
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="font-semibold">
+                    {customUsdNum >= MIN_CUSTOM_USD ? Math.floor(customUsdNum / USD_PER_CREDIT).toLocaleString("es-UY") : 0}
+                  </span>
+                  <span className="text-xs text-muted-foreground">créditos</span>
+                </div>
+                <div className="min-w-[200px]">
+                  <PayPalButton
+                    mode="order"
+                    customAmountUsd={customUsdNum}
+                    disabled={customUsdNum < MIN_CUSTOM_USD}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
