@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Coins, Check, Sparkles, ImageIcon, Video, Wand2, Repeat, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { PayPalButton } from "@/components/PayPalButton";
 
 interface Pkg {
   id: string;
@@ -47,8 +48,13 @@ export default function PricingPage() {
   const SUB_CREDITS = 500;
   const MIN_CUSTOM = 80;
   const RATIO = 1.99;
+  const SUB_PRICE_USD = 22.5;
+  const MIN_CUSTOM_USD = 2;
+  const USD_PER_CREDIT = 0.05;
   const customAmountNum = Number(customAmount) || 0;
   const customCredits = customAmountNum >= MIN_CUSTOM ? Math.floor(customAmountNum / RATIO) : 0;
+  const [customUsd, setCustomUsd] = useState<string>("10");
+  const customUsdNum = Number(customUsd) || 0;
 
   useEffect(() => {
     (async () => {
@@ -255,6 +261,15 @@ export default function PricingPage() {
                 </Button>
               </div>
             )}
+            {activeSub?.status !== "authorized" && (
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                  <span>O pagá con PayPal</span>
+                  <span className="font-semibold text-foreground">${SUB_PRICE_USD} USD/mes</span>
+                </div>
+                <PayPalButton mode="subscription" />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -314,21 +329,24 @@ export default function PricingPage() {
                     <span>{t("pricing.feat3")}</span>
                   </li>
                 </ul>
-                <Button
-                  className="w-full"
-                  variant={pkg.highlighted ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => handleBuy(pkg)}
-                  disabled={buying === pkg.id}
-                >
-                  {buying === pkg.id ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
-                    </>
-                  ) : (
-                    t("pricing.buy")
-                  )}
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    variant={pkg.highlighted ? "default" : "outline"}
+                    size="lg"
+                    onClick={() => handleBuy(pkg)}
+                    disabled={buying === pkg.id}
+                  >
+                    {buying === pkg.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
+                      </>
+                    ) : (
+                      t("pricing.buy") + " (MercadoPago)"
+                    )}
+                  </Button>
+                  <PayPalButton mode="order" packageId={pkg.id} />
+                </div>
               </CardContent>
             </Card>
           ))}
