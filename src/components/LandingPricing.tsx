@@ -192,13 +192,13 @@ export function LandingPricing() {
                 )}
               </Button>
             </div>
-              <div className="mt-4 pt-4 border-t border-border/40">
-                <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-                  <span>O pagá con PayPal</span>
-                  <span className="font-semibold text-foreground">${SUB_PRICE_USD} USD/mes</span>
-                </div>
-                <PayPalButton mode="subscription" />
+            <div className="mt-4 pt-4 border-t border-border/40">
+              <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                <span>O pagá con PayPal</span>
+                <span className="font-semibold text-foreground">${SUB_PRICE_USD} USD/mes</span>
               </div>
+              <PayPalButton mode="subscription" />
+            </div>
           </CardContent>
         </Card>
 
@@ -245,21 +245,24 @@ export function LandingPricing() {
                       <span className="text-2xl font-bold">{pkg.credits.toLocaleString("es-UY")}</span>
                       <span className="text-muted-foreground">{t("common.credits")}</span>
                     </div>
-                    <Button
-                      className="w-full mt-auto"
-                      variant={pkg.highlighted ? "default" : "outline"}
-                      size="lg"
-                      onClick={() => handleBuy(pkg)}
-                      disabled={busy === pkg.id}
-                    >
-                      {busy === pkg.id ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
-                        </>
-                      ) : (
-                        t("pricing.buy")
-                      )}
-                    </Button>
+                    <div className="mt-auto space-y-2">
+                      <Button
+                        className="w-full"
+                        variant={pkg.highlighted ? "default" : "outline"}
+                        size="lg"
+                        onClick={() => handleBuy(pkg)}
+                        disabled={busy === pkg.id}
+                      >
+                        {busy === pkg.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" /> {t("pricing.redirecting")}
+                          </>
+                        ) : (
+                          t("pricing.buy") + " (MercadoPago)"
+                        )}
+                      </Button>
+                      <PayPalButton mode="order" packageId={pkg.id} />
+                    </div>
                   </CardContent>
                 </Card>
               ))}
