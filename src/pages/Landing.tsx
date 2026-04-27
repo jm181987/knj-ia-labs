@@ -238,42 +238,7 @@ export default function Landing() {
                 }`}
               >
                 {item.type === "youtube" ? (
-                  <>
-                    <iframe
-                      src={`https://www.youtube.com/embed/${item.src}?autoplay=1&mute=1&loop=1&playlist=${item.src}&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1`}
-                      title={item.code}
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full aspect-square object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
-                    />
-                    {/* Overlay to capture mouse events and control YT audio */}
-                    <div
-                      className="absolute inset-0 z-10"
-                      onMouseEnter={(e) => {
-                        if (!item.hasAudio) return;
-                        const iframe = e.currentTarget.parentElement?.querySelector("iframe");
-                        iframe?.contentWindow?.postMessage(
-                          JSON.stringify({ event: "command", func: "unMute", args: [] }),
-                          "*"
-                        );
-                        iframe?.contentWindow?.postMessage(
-                          JSON.stringify({ event: "command", func: "setVolume", args: [80] }),
-                          "*"
-                        );
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!item.hasAudio) return;
-                        const iframe = e.currentTarget.parentElement?.querySelector("iframe");
-                        iframe?.contentWindow?.postMessage(
-                          JSON.stringify({ event: "command", func: "mute", args: [] }),
-                          "*"
-                        );
-                      }}
-                    />
-                    <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10">
-                      ● REC
-                    </div>
-                  </>
+                  <YouTubeHoverCard src={item.src} code={item.code} />
                 ) : item.type === "video" ? (
                   <>
                     <video
