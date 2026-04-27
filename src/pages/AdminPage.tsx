@@ -1093,22 +1093,20 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {txs.map((tx) => (
-                       {(() => {
-                         const isDebit = tx.type === "debit";
-                         const signed = isDebit ? -Math.abs(tx.amount) : Math.abs(tx.amount);
-                         return (
-                           <TableRow key={tx.id}>
-                             <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(tx.created_at).toLocaleString()}</TableCell>
-                             <TableCell className="text-sm whitespace-nowrap">{tx.user_email}</TableCell>
-                             <TableCell className="text-sm">{tx.reason}</TableCell>
-                             <TableCell className={`text-right font-mono font-medium ${isDebit ? "text-destructive" : "text-green-500"}`}>
-                               {signed > 0 ? "+" : ""}{signed}
-                             </TableCell>
-                           </TableRow>
-                         );
-                       })()}
-                    ))}
+                    {txs.map((tx) => {
+                      const isDebit = tx.type === "debit";
+                      const signed = isDebit ? -Math.abs(tx.amount) : Math.abs(tx.amount);
+                      return (
+                        <TableRow key={tx.id}>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(tx.created_at).toLocaleString()}</TableCell>
+                          <TableCell className="text-sm whitespace-nowrap">{tx.user_email}</TableCell>
+                          <TableCell className="text-sm">{tx.reason}</TableCell>
+                          <TableCell className={`text-right font-mono font-medium ${isDebit ? "text-destructive" : "text-green-500"}`}>
+                            {signed > 0 ? "+" : ""}{signed}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     {txs.length === 0 && (
                       <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{t("admin.noTx")}</TableCell></TableRow>
                     )}
