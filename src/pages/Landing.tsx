@@ -16,6 +16,8 @@ import {
   Volume2,
 } from "lucide-react";
 import knjLogo from "@/assets/knj-logo.png";
+import aiFuturistic1 from "@/assets/ai-futuristic-1.jpg";
+import aiFuturistic2 from "@/assets/ai-futuristic-2.jpg";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
@@ -28,61 +30,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-// YouTube hover card: muestra thumbnail hasta hover, entonces monta iframe con audio.
-// Esto evita tener múltiples iframes reproduciendo en simultáneo (causa de trabas/lag).
-function YouTubeHoverCard({ src, code }: { src: string; code: string }) {
-  const [active, setActive] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  // Cuando el iframe carga, enviamos playVideo por si autoplay fue bloqueado
-  useEffect(() => {
-    if (!active) return;
-    const timer = setTimeout(() => {
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "playVideo", args: [] }),
-        "*"
-      );
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "unMute", args: [] }),
-        "*"
-      );
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "setVolume", args: [80] }),
-        "*"
-      );
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [active]);
-
-  return (
-    <div
-      className="relative w-full h-full aspect-square"
-      onMouseEnter={() => setActive(true)}
-      onMouseLeave={() => setActive(false)}
-    >
-      {/* Thumbnail base (siempre visible debajo) */}
-      <img
-        src={`https://i.ytimg.com/vi/${src}/hqdefault.jpg`}
-        alt={code}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-      />
-      {active && (
-        <iframe
-          ref={iframeRef}
-          src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=0&loop=1&playlist=${src}&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1`}
-          title={code}
-          allow="autoplay; encrypted-media; picture-in-picture"
-          className="absolute inset-0 w-full h-full pointer-events-none"
-        />
-      )}
-      <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10 z-10">
-        ● REC
-      </div>
-    </div>
-  );
-}
 
 const faqItems = [
   {
@@ -272,29 +219,27 @@ export default function Landing() {
             </span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {[
-              { type: "youtube", src: "g_DHv_pjyCk", code: "KNJ_PRO", hasAudio: true },
+            {([
+              { type: "image", src: aiFuturistic1, code: "KNJ_PRO" },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
               { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600", code: "VID_004" },
               { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600", code: "IMG_005" },
               { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600", code: "IMG_006" },
               { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600", code: "VID_007" },
-              { type: "youtube", src: "Ete7cmb7TLc", code: "VID_008", hasAudio: true },
+              { type: "image", src: aiFuturistic2, code: "VID_008" },
               { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600", code: "IMG_009" },
               { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
               { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600", code: "IMG_012" },
-            ].map((item, i) => (
+            ] as Array<{ type: string; src: string; code: string; poster?: string; hasAudio?: boolean }>).map((item, i) => (
               <div
                 key={i}
                 className={`relative rounded-sm overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-[1.4] hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
                   i === 0 ? "row-span-2 col-span-2" : i === 7 ? "row-span-2 col-span-2" : ""
                 }`}
               >
-                {item.type === "youtube" ? (
-                  <YouTubeHoverCard src={item.src} code={item.code} />
-                ) : item.type === "video" ? (
+                {item.type === "video" ? (
                   <>
                     <video
                       src={item.src}
