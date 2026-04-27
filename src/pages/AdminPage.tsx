@@ -59,6 +59,7 @@ interface PaymentRow {
   approved_at: string | null;
   user_email?: string;
   mp_response?: any;
+  mp_preference_id?: string | null;
 }
 interface SubscriptionRow {
   id: string;
@@ -439,6 +440,18 @@ export default function AdminPage() {
     if (s === "rejected") return "destructive";
     if (s === "refunded") return "outline";
     return "secondary";
+  };
+
+  // Detecta si un pago es de PayPal: marcado en mp_response, o el preference_id
+  // tiene formato de orden de PayPal (alfanumérico sin guiones, ≤20 chars).
+  // Mercado Pago usa IDs con guiones (UUID-like), ej: "81252460-a2461705-...".
+  const isPaypalPayment = (p: PaymentRow) => {
+    const r = p.mp_response;
+    if (r?.provider === "paypal") return true;
+    if (r?.capture || r?.order || r?.purchase_units) return true;
+    const pref = p.mp_preference_id || "";
+    if (pref && !pref.includes("-") && /^[A-Z0-9]+$/i.test(pref) && pref.length <= 20) return true;
+    return false;
   };
 
   const handleSaveWhatsapp = async () => {
@@ -907,13 +920,16 @@ export default function AdminPage() {
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(p.created_at).toLocaleString()}</TableCell>
                         <TableCell className="text-sm whitespace-nowrap">{p.user_email}</TableCell>
                         <TableCell className="text-right font-mono whitespace-nowrap">
-                          {p.mp_response?.provider === "paypal" ? (
+                          {isPaypalPayment(p) ? (
                             <div className="flex flex-col items-end leading-tight">
                               <span>${(Number(p.amount_uyu) * usdToUyu).toLocaleString("es-UY", { maximumFractionDigits: 0 })} UYU</span>
                               <span className="text-[10px] text-muted-foreground">USD {Number(p.amount_uyu).toFixed(2)} · PayPal</span>
                             </div>
                           ) : (
-                            <span>${Number(p.amount_uyu).toLocaleString("es-UY")}</span>
+                            <div className="flex flex-col items-end leading-tight">
+                              <span>${Number(p.amount_uyu).toLocaleString("es-UY")}</span>
+                              <span className="text-[10px] text-muted-foreground">UYU · Mercado Pago</span>
+                            </div>
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono">{p.credits}</TableCell>
