@@ -908,13 +908,16 @@ export default function AdminPage() {
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(p.created_at).toLocaleString()}</TableCell>
                         <TableCell className="text-sm whitespace-nowrap">{p.user_email}</TableCell>
                         <TableCell className="text-right font-mono whitespace-nowrap">
-                          {p.mp_response?.provider === "paypal" ? (
+                          {isPaypalPayment(p) ? (
                             <div className="flex flex-col items-end leading-tight">
                               <span>${(Number(p.amount_uyu) * usdToUyu).toLocaleString("es-UY", { maximumFractionDigits: 0 })} UYU</span>
                               <span className="text-[10px] text-muted-foreground">USD {Number(p.amount_uyu).toFixed(2)} · PayPal</span>
                             </div>
                           ) : (
-                            <span>${Number(p.amount_uyu).toLocaleString("es-UY")}</span>
+                            <div className="flex flex-col items-end leading-tight">
+                              <span>${Number(p.amount_uyu).toLocaleString("es-UY")}</span>
+                              <span className="text-[10px] text-muted-foreground">UYU · Mercado Pago</span>
+                            </div>
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono">{p.credits}</TableCell>
