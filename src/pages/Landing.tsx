@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,61 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+// YouTube hover card: muestra thumbnail hasta hover, entonces monta iframe con audio.
+// Esto evita tener múltiples iframes reproduciendo en simultáneo (causa de trabas/lag).
+function YouTubeHoverCard({ src, code }: { src: string; code: string }) {
+  const [active, setActive] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Cuando el iframe carga, enviamos playVideo por si autoplay fue bloqueado
+  useEffect(() => {
+    if (!active) return;
+    const timer = setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo", args: [] }),
+        "*"
+      );
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "unMute", args: [] }),
+        "*"
+      );
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "setVolume", args: [80] }),
+        "*"
+      );
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [active]);
+
+  return (
+    <div
+      className="relative w-full h-full aspect-square"
+      onMouseEnter={() => setActive(true)}
+      onMouseLeave={() => setActive(false)}
+    >
+      {/* Thumbnail base (siempre visible debajo) */}
+      <img
+        src={`https://i.ytimg.com/vi/${src}/hqdefault.jpg`}
+        alt={code}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+      />
+      {active && (
+        <iframe
+          ref={iframeRef}
+          src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=0&loop=1&playlist=${src}&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1`}
+          title={code}
+          allow="autoplay; encrypted-media; picture-in-picture"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        />
+      )}
+      <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10 z-10">
+        ● REC
+      </div>
+    </div>
+  );
+}
 
 const faqItems = [
   {
