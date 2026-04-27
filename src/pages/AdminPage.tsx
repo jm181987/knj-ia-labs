@@ -243,11 +243,18 @@ export default function AdminPage() {
     setSubmitting(true);
     try {
       const signed = rechargeSign === "+" ? amount : -amount;
-      const { error } = await (supabase as any).rpc("add_credits", {
-        _user_id: rechargeUser.id,
-        _amount: signed,
-        _reason: rechargeReason || t("admin.manualRecharge"),
-      });
+      const reason = rechargeReason || t("admin.manualRecharge");
+      const { error } = signed > 0
+        ? await (supabase as any).rpc("add_credits_system", {
+            _user_id: rechargeUser.id,
+            _amount: amount,
+            _reason: reason,
+          })
+        : await (supabase as any).rpc("debit_credits_for_user", {
+            _user_id: rechargeUser.id,
+            _amount: amount,
+            _reason: reason,
+          });
       if (error) throw error;
       toast({ title: `${signed > 0 ? "+" : ""}${signed} ${t("common.credits")} → ${rechargeUser.email}` });
       setRechargeUser(null);
