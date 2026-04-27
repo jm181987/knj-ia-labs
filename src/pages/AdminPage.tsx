@@ -37,6 +37,7 @@ interface TxRow {
   reason: string;
   created_at: string;
   user_email?: string;
+  type?: string;
 }
 interface PackageRow {
   id: string;
@@ -141,7 +142,7 @@ export default function AdminPage() {
           (supabase as any).from("user_roles").select("user_id, role"),
           (supabase as any).from("user_credits").select("user_id, balance"),
           (supabase as any).from("pricing").select("key, credits, description").order("key"),
-          (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at").order("created_at", { ascending: false }).limit(100),
+          (supabase as any).from("credit_transactions").select("id, user_id, amount, reason, created_at, type").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("credit_packages").select("*").order("sort_order"),
           (supabase as any).from("payments").select("*").order("created_at", { ascending: false }).limit(100),
           (supabase as any).from("subscriptions").select("*").order("created_at", { ascending: false }),
@@ -1092,16 +1093,20 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {txs.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(tx.created_at).toLocaleString()}</TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">{tx.user_email}</TableCell>
-                        <TableCell className="text-sm">{tx.reason}</TableCell>
-                        <TableCell className={`text-right font-mono font-medium ${tx.amount > 0 ? "text-green-500" : "text-destructive"}`}>
-                          {tx.amount > 0 ? "+" : ""}{tx.amount}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {txs.map((tx) => {
+                      const isDebit = tx.type === "debit";
+                      const signed = isDebit ? -Math.abs(tx.amount) : Math.abs(tx.amount);
+                      return (
+                        <TableRow key={tx.id}>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(tx.created_at).toLocaleString()}</TableCell>
+                          <TableCell className="text-sm whitespace-nowrap">{tx.user_email}</TableCell>
+                          <TableCell className="text-sm">{tx.reason}</TableCell>
+                          <TableCell className={`text-right font-mono font-medium ${isDebit ? "text-destructive" : "text-green-500"}`}>
+                            {signed > 0 ? "+" : ""}{signed}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     {txs.length === 0 && (
                       <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{t("admin.noTx")}</TableCell></TableRow>
                     )}
