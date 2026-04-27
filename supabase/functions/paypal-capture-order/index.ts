@@ -5,6 +5,31 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const NOTIFY_TO = "59893867429";
+async function notifyWhatsApp(text: string) {
+  try {
+    const baseUrl = Deno.env.get("EVOLUTION_API_URL");
+    const instance = Deno.env.get("EVOLUTION_INSTANCE");
+    const apiKey = Deno.env.get("EVOLUTION_API_KEY");
+    if (!baseUrl || !instance || !apiKey) {
+      console.warn("Evolution API no configurada, skip WhatsApp");
+      return;
+    }
+    const url = `${baseUrl.replace(/\/$/, "")}/message/sendText/${instance}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: NOTIFY_TO, text }),
+    });
+    if (!res.ok) {
+      console.error("Evolution send failed", res.status, await res.text());
+    }
+  } catch (err) {
+    console.error("notifyWhatsApp error:", err);
+  }
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -82,6 +107,25 @@ Deno.serve(async (req) => {
       mp_response: { provider: "paypal", currency: "USD", capture: capData },
       approved_at: new Date().toISOString(),
     }).eq("id", order.id);
+
+    // Notificar a WhatsApp del admin
+    try {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", order.user_id)
+        .maybeSingle();
+      const label = prof?.display_name || prof?.email || order.user_id;
+      await notifyWhatsApp(
+        `✅ *Venta PayPal aprobada*\n` +
+        `Usuario: ${label}\n` +
+        `Monto: $${order.amount_uyu} UYU (USD original)\n` +
+        `Créditos: ${order.credits}\n` +
+        `PayPal Order: ${paypal_order_id}`
+      );
+    } catch (notifyErr) {
+      console.error("Notify WhatsApp falló (no bloqueante):", notifyErr);
+    }
 
     return json({ status: "approved", credits: order.credits });
   } catch (e) {
