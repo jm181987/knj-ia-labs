@@ -219,7 +219,7 @@ export default function Landing() {
             </span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {[
+            {([
               { type: "image", src: aiFuturistic1, code: "KNJ_PRO" },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
@@ -232,7 +232,7 @@ export default function Landing() {
               { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
               { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600", code: "IMG_012" },
-            ].map((item, i) => (
+            ] as Array<{ type: string; src: string; code: string; poster?: string; hasAudio?: boolean }>).map((item, i) => (
               <div
                 key={i}
                 className={`relative rounded-sm overflow-hidden border border-border/60 bg-card group cursor-pointer transition-all duration-500 ease-out hover:scale-[1.4] hover:z-50 hover:shadow-2xl hover:border-primary/60 ${
