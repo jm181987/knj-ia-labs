@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       console.error("PayPal capture failed:", capData);
       await supabase.from("payments").update({
         status: "rejected",
-        mp_response: capData,
+        mp_response: { provider: "paypal", currency: "USD", capture: capData },
       }).eq("id", order.id);
       return json({ error: capData?.message || "Captura falló", details: capData }, 400);
     }
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     await supabase.from("payments").update({
       status: "approved",
       mp_payment_id: capData?.purchase_units?.[0]?.payments?.captures?.[0]?.id ?? null,
-      mp_response: capData,
+      mp_response: { provider: "paypal", currency: "USD", capture: capData },
       approved_at: new Date().toISOString(),
     }).eq("id", order.id);
 
