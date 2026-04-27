@@ -225,7 +225,7 @@ export default function Landing() {
               { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600", code: "IMG_005" },
               { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600", code: "IMG_006" },
               { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600", code: "VID_007" },
-              { type: "video", src: "/showcase/ai-video-4.mp4", poster: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600", code: "VID_008", hasAudio: true },
+              { type: "youtube", src: "Ete7cmb7TLc", code: "VID_008", hasAudio: true },
               { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600", code: "IMG_009" },
               { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
@@ -237,7 +237,20 @@ export default function Landing() {
                   i === 0 ? "row-span-2 col-span-2" : i === 7 ? "row-span-2 col-span-2" : ""
                 }`}
               >
-                {item.type === "video" ? (
+                {item.type === "youtube" ? (
+                  <>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${item.src}?autoplay=1&mute=1&loop=1&playlist=${item.src}&controls=0&modestbranding=1&playsinline=1&rel=0`}
+                      title={item.code}
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full aspect-square object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
+                    />
+                    <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 bg-black/70 backdrop-blur font-mono-tech text-[9px] tracking-wider text-white border border-white/10">
+                      ● REC
+                    </div>
+                  </>
+                ) : item.type === "video" ? (
                   <>
                     <video
                       src={item.src}
