@@ -225,7 +225,7 @@ export default function Landing() {
               { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600", code: "IMG_005" },
               { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600", code: "IMG_006" },
               { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600", code: "VID_007" },
-              { type: "image", src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600", code: "IMG_008" },
+              { type: "video", src: "/showcase/ai-video-4.mp4", poster: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600", code: "VID_008", hasAudio: true },
               { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600", code: "IMG_009" },
               { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
