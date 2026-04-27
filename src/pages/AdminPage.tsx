@@ -59,6 +59,7 @@ interface PaymentRow {
   approved_at: string | null;
   user_email?: string;
   mp_response?: any;
+  mp_preference_id?: string | null;
 }
 interface SubscriptionRow {
   id: string;
