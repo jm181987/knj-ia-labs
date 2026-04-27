@@ -218,7 +218,7 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {[
-              { type: "video", src: "/showcase/knj-pro-3-chicas.mp4", poster: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=600", code: "KNJ_PRO", hasAudio: true },
+              { type: "youtube", src: "g_DHv_pjyCk", code: "KNJ_PRO", hasAudio: true },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
               { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600", code: "VID_004" },
