@@ -442,6 +442,18 @@ export default function AdminPage() {
     return "secondary";
   };
 
+  // Detecta si un pago es de PayPal: marcado en mp_response, o el preference_id
+  // tiene formato de orden de PayPal (alfanumérico sin guiones, ≤20 chars).
+  // Mercado Pago usa IDs con guiones (UUID-like), ej: "81252460-a2461705-...".
+  const isPaypalPayment = (p: PaymentRow) => {
+    const r = p.mp_response;
+    if (r?.provider === "paypal") return true;
+    if (r?.capture || r?.order || r?.purchase_units) return true;
+    const pref = p.mp_preference_id || "";
+    if (pref && !pref.includes("-") && /^[A-Z0-9]+$/i.test(pref) && pref.length <= 20) return true;
+    return false;
+  };
+
   const handleSaveWhatsapp = async () => {
     if (!waUser) return;
     const cleaned = waValue.trim().replace(/[^\d+]/g, "");
