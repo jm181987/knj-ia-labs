@@ -5,13 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, Coins } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { trackMetaEvent } from "@/lib/metaPixel";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PaymentSuccessPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const paymentId = params.get("payment_id");
   const [status, setStatus] = useState<"loading" | "approved" | "pending">("loading");
   const [credits, setCredits] = useState<number | null>(null);
+  const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
     if (!paymentId) {
@@ -22,12 +26,29 @@ export default function PaymentSuccessPage() {
     const poll = async () => {
       const { data } = await (supabase as any)
         .from("payments")
-        .select("status, credits")
+        .select("status, credits, amount_uyu, amount, currency, package_id, type")
         .eq("id", paymentId)
         .maybeSingle();
       if (data?.status === "approved") {
         setStatus("approved");
         setCredits(data.credits);
+        if (!tracked) {
+          setTracked(true);
+          const value = Number(data.amount_uyu ?? data.amount ?? 0);
+          const currency = (data.currency as string) || "UYU";
+          const isSub = data.type === "subscription";
+          trackMetaEvent(
+            isSub ? "Subscribe" : "Purchase",
+            {
+              value,
+              currency,
+              content_ids: data.package_id ? [String(data.package_id)] : [String(paymentId)],
+              content_type: isSub ? "subscription" : "product",
+              num_items: 1,
+            },
+            { email: user?.email },
+          );
+        }
         return;
       }
       attempts++;
@@ -35,7 +56,7 @@ export default function PaymentSuccessPage() {
       else setStatus("pending");
     };
     poll();
-  }, [paymentId]);
+  }, [paymentId, tracked, user?.email]);
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
