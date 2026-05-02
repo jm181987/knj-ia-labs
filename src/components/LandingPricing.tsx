@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { PayPalButton } from "@/components/PayPalButton";
+import { trackMetaEvent } from "@/lib/metaPixel";
 
 interface Pkg {
   id: string;
@@ -68,6 +69,11 @@ export function LandingPricing() {
     if (!requireAuth()) return;
     setBusy("sub");
     try {
+      trackMetaEvent(
+        "InitiateCheckout",
+        { value: SUB_PRICE, currency: "UYU", content_name: "KNJ PRO Subscription", content_type: "subscription" },
+        { email: user?.email },
+      );
       const { data, error } = await supabase.functions.invoke("mp-create-subscription", {
         body: { return_origin: window.location.origin },
       });
@@ -89,6 +95,18 @@ export function LandingPricing() {
     if (!requireAuth()) return;
     setBusy(pkg.id);
     try {
+      trackMetaEvent(
+        "InitiateCheckout",
+        {
+          value: pkg.price_uyu,
+          currency: "UYU",
+          content_ids: [pkg.id],
+          content_name: pkg.name,
+          content_type: "product",
+          num_items: 1,
+        },
+        { email: user?.email },
+      );
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
         body: { package_id: pkg.id, return_origin: window.location.origin },
       });
@@ -114,6 +132,11 @@ export function LandingPricing() {
     }
     setBusy("custom");
     try {
+      trackMetaEvent(
+        "InitiateCheckout",
+        { value: customAmountNum, currency: "UYU", content_name: "Custom credits", content_type: "product" },
+        { email: user?.email },
+      );
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
         body: { custom_amount: customAmountNum, return_origin: window.location.origin },
       });
