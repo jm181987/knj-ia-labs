@@ -26,7 +26,7 @@ export default function PaymentSuccessPage() {
     const poll = async () => {
       const { data } = await (supabase as any)
         .from("payments")
-        .select("status, credits, amount_uyu, amount, currency, package_id, type")
+        .select("status, credits, amount_uyu, package_id")
         .eq("id", paymentId)
         .maybeSingle();
       if (data?.status === "approved") {
@@ -34,9 +34,9 @@ export default function PaymentSuccessPage() {
         setCredits(data.credits);
         if (!tracked) {
           setTracked(true);
-          const value = Number(data.amount_uyu ?? data.amount ?? 0);
-          const currency = (data.currency as string) || "UYU";
-          const isSub = data.type === "subscription";
+          const value = Number(data.amount_uyu ?? 0);
+          const currency = "UYU";
+          const isSub = false;
           trackMetaEvent(
             isSub ? "Subscribe" : "Purchase",
             {
