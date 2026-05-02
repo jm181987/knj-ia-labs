@@ -52,25 +52,31 @@ Deno.serve(async (req) => {
 
     // Crear preapproval en MP
     // Endpoint: POST /preapproval con preapproval_plan_id + payer_email + external_reference
+    const backUrl = `${req.headers.get("origin") || ""}/payment/success?subscription=1`;
+    const mpBody = {
+      preapproval_plan_id: PREAPPROVAL_PLAN_ID,
+      payer_email: user.email,
+      external_reference: user.id,
+      back_url: backUrl,
+    };
+    console.log("mp-create-subscription request:", JSON.stringify(mpBody));
     const mpRes = await fetch("https://api.mercadopago.com/preapproval", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${MP_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        preapproval_plan_id: PREAPPROVAL_PLAN_ID,
-        payer_email: user.email,
-        external_reference: user.id,
-        back_url: `${req.headers.get("origin") || ""}/payment/success?subscription=1`,
-        status: "pending",
-      }),
+      body: JSON.stringify(mpBody),
     });
 
     const mpData = await mpRes.json();
+    console.log("mp-create-subscription response status:", mpRes.status, "body:", JSON.stringify(mpData));
     if (!mpRes.ok) {
       console.error("MP preapproval error:", mpData);
-      throw new Error(`MP: ${mpData.message || JSON.stringify(mpData)}`);
+      const detail = mpData.message
+        || (Array.isArray(mpData.cause) && mpData.cause[0]?.description)
+        || JSON.stringify(mpData);
+      return jsonResponse({ error: `Mercado Pago: ${detail}`, mp: mpData }, 400);
     }
 
     const initPoint = mpData.init_point || mpData.sandbox_init_point;
