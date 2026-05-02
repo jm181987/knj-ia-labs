@@ -50,16 +50,22 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Ya tenés una suscripción activa", subscription: existing }, 409);
     }
 
-    // Crear preapproval en MP
-    // Endpoint: POST /preapproval con preapproval_plan_id + payer_email + external_reference
+    // Crear preapproval en MP como pago pendiente.
+    // Las suscripciones con plan asociado exigen card_token_id + status authorized,
+    // así que usamos modalidad sin plan para obtener un init_point de checkout.
     const backUrl = `${req.headers.get("origin") || ""}/payment/success?subscription=1`;
     const mpBody = {
-      preapproval_plan_id: PREAPPROVAL_PLAN_ID,
       reason: `${MONTHLY_CREDITS} créditos mensuales KNJ PRO`,
       payer_email: user.email,
       external_reference: user.id,
       back_url: backUrl,
       status: "pending",
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: AMOUNT_UYU,
+        currency_id: "UYU",
+      },
     };
     console.log("mp-create-subscription request:", JSON.stringify(mpBody));
     const mpRes = await fetch("https://api.mercadopago.com/preapproval", {
