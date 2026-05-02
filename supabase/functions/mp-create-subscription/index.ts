@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const body = await req.json().catch(() => ({}));
     const MP_TOKEN = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!MP_TOKEN) throw new Error("MERCADOPAGO_ACCESS_TOKEN no configurado");
 
@@ -53,7 +54,8 @@ Deno.serve(async (req) => {
     // Crear preapproval en MP como pago pendiente.
     // Las suscripciones con plan asociado exigen card_token_id + status authorized,
     // así que usamos modalidad sin plan para obtener un init_point de checkout.
-    const backUrl = `${req.headers.get("origin") || ""}/payment/success?subscription=1`;
+    const origin = req.headers.get("origin") || (typeof body.return_origin === "string" ? body.return_origin : "") || "https://kling-ui-manager.lovable.app";
+    const backUrl = `${origin.replace(/\/$/, "")}/payment/success?subscription=1`;
     const mpBody = {
       reason: `${MONTHLY_CREDITS} créditos mensuales KNJ PRO`,
       payer_email: user.email,
