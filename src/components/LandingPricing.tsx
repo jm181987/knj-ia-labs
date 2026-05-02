@@ -68,7 +68,9 @@ export function LandingPricing() {
     if (!requireAuth()) return;
     setBusy("sub");
     try {
-      const { data, error } = await supabase.functions.invoke("mp-create-subscription", { body: {} });
+      const { data, error } = await supabase.functions.invoke("mp-create-subscription", {
+        body: { return_origin: window.location.origin },
+      });
       if (error) throw error;
       const url = (data as any)?.init_point;
       if (!url) throw new Error((data as any)?.error || t("pricing.subErrorTitle"));
