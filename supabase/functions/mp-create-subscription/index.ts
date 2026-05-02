@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const backUrl = `${req.headers.get("origin") || ""}/payment/success?subscription=1`;
     const mpBody = {
       preapproval_plan_id: PREAPPROVAL_PLAN_ID,
-      reason: `${SUB_CREDITS} créditos mensuales KNJ PRO`,
+      reason: `${MONTHLY_CREDITS} créditos mensuales KNJ PRO`,
       payer_email: user.email,
       external_reference: user.id,
       back_url: backUrl,
