@@ -2,6 +2,27 @@ import { supabase } from "@/integrations/supabase/client";
 
 const META_PIXEL_ID = "2024535038133024";
 
+export type MetaEventName =
+  | "PageView"
+  | "ViewContent"
+  | "Lead"
+  | "CompleteRegistration"
+  | "InitiateCheckout"
+  | "AddPaymentInfo"
+  | "Subscribe"
+  | "Purchase";
+
+export interface MetaEventParams {
+  value?: number;
+  currency?: string;
+  content_name?: string;
+  content_ids?: string[];
+  content_type?: string;
+  num_items?: number;
+  predicted_ltv?: number;
+  [key: string]: unknown;
+}
+
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
@@ -43,12 +64,17 @@ const getCookie = (name: string) => {
   return match ? decodeURIComponent(match[1]) : undefined;
 };
 
-export const trackMetaEvent = async (eventName = "PageView") => {
+export const trackMetaEvent = async (
+  eventName: MetaEventName = "PageView",
+  params: MetaEventParams = {},
+  options: { email?: string | null } = {},
+) => {
   const eventSourceUrl = window.location.href;
   const eventId = crypto.randomUUID();
 
   initBrowserPixel();
-  window.fbq?.("track", eventName, {}, { eventID: eventId });
+  // Browser pixel: enviar params para que Meta reciba value/currency/etc.
+  window.fbq?.("track", eventName, params, { eventID: eventId });
 
   try {
     await supabase.functions.invoke("meta-capi-event", {
@@ -58,6 +84,8 @@ export const trackMetaEvent = async (eventName = "PageView") => {
         eventId,
         fbp: getCookie("_fbp"),
         fbc: getCookie("_fbc"),
+        email: options.email ?? undefined,
+        customData: params,
       },
     });
   } catch (error) {

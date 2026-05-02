@@ -9,6 +9,8 @@ type TrackingPayload = {
   eventId?: string;
   fbp?: string;
   fbc?: string;
+  email?: string;
+  customData?: Record<string, unknown>;
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -16,6 +18,14 @@ function jsonResponse(body: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input.trim().toLowerCase());
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 Deno.serve(async (req) => {
@@ -32,7 +42,16 @@ Deno.serve(async (req) => {
 
     const payload = (await req.json().catch(() => ({}))) as TrackingPayload;
     const eventName = payload.eventName || "PageView";
-    const allowedEvents = new Set(["PageView", "ViewContent", "Lead", "CompleteRegistration", "Purchase"]);
+    const allowedEvents = new Set([
+      "PageView",
+      "ViewContent",
+      "Lead",
+      "CompleteRegistration",
+      "InitiateCheckout",
+      "AddPaymentInfo",
+      "Subscribe",
+      "Purchase",
+    ]);
 
     if (!allowedEvents.has(eventName)) {
       return jsonResponse({ error: "Evento no permitido" }, 400);
@@ -45,6 +64,13 @@ Deno.serve(async (req) => {
     if (userAgent) userData.client_user_agent = userAgent;
     if (payload.fbp) userData.fbp = payload.fbp;
     if (payload.fbc) userData.fbc = payload.fbc;
+    if (payload.email) {
+      userData.em = await sha256Hex(payload.email);
+    }
+
+    const customData = payload.customData && typeof payload.customData === "object"
+      ? payload.customData
+      : undefined;
 
     const metaPayload = {
       data: [
@@ -55,6 +81,7 @@ Deno.serve(async (req) => {
           event_source_url: payload.eventSourceUrl,
           action_source: "website",
           user_data: userData,
+          ...(customData ? { custom_data: customData } : {}),
         },
       ],
     };
