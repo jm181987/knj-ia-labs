@@ -37,19 +37,7 @@
   <meta name="twitter:title" content="KNJ Pro — Genera videos e imágenes con IA">
   <meta property="og:description" content="KNJ Pro: plataforma todo-en-uno para crear videos cinemáticos e imágenes realistas con los mejores modelos de IA generativa.">
   <meta name="twitter:description" content="KNJ Pro: plataforma todo-en-uno para crear videos cinemáticos e imágenes realistas con los mejores modelos de IA generativa.">
- <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1871502010085842');
-    </script>
-    <!-- End Meta Pixel Code -->
+    <!-- Meta Pixel: el init y los eventos se gestionan en src/lib/metaPixel.ts para evitar IDs duplicados y deduplicar con CAPI -->
 </head>
 
   <body>
