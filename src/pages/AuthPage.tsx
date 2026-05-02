@@ -63,6 +63,13 @@ export default function AuthPage() {
             display_name: displayName || email.split("@")[0],
           },
         }).catch((err) => console.warn("notify-new-user failed", err));
+        // Meta Pixel: evento de registro completado
+        try {
+          const { trackMetaEvent } = await import("@/lib/metaPixel");
+          trackMetaEvent("CompleteRegistration", { content_name: "Signup" }, { email });
+        } catch (e) {
+          console.warn("Meta tracking failed", e);
+        }
         toast({ title: t("auth.accountCreated"), description: t("auth.sessionStarted") });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
