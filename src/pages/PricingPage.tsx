@@ -96,7 +96,7 @@ export default function PricingPage() {
     setSubscribing(true);
     try {
       const { data, error } = await supabase.functions.invoke("mp-create-subscription", {
-        body: {},
+        body: { return_origin: window.location.origin },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
