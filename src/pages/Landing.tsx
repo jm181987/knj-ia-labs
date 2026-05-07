@@ -16,6 +16,11 @@ import {
   Volume2,
 } from "lucide-react";
 import knjLogo from "@/assets/knj-logo.png";
+import showcaseCyber1 from "@/assets/showcase-cyber-1.jpg";
+import showcaseCyber2 from "@/assets/showcase-cyber-2.jpg";
+import showcaseCyber3 from "@/assets/showcase-cyber-3.jpg";
+import showcaseCyber4 from "@/assets/showcase-cyber-4.jpg";
+import showcaseCyber5 from "@/assets/showcase-cyber-5.jpg";
 import { ToolsCarousel } from "@/components/ToolsCarousel";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
@@ -218,16 +223,16 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {([
-              { type: "video", src: "/showcase/ai-futuristic-1.mp4", code: "KNJ_PRO" },
+              { type: "image", src: showcaseCyber1, code: "KNJ_PRO" },
               { type: "image", src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600", code: "IMG_002" },
               { type: "image", src: "https://images.unsplash.com/photo-1542596594-649edbc13630?w=600", code: "IMG_003" },
-              { type: "video", src: "https://www.w3schools.com/html/mov_bbb.mp4", poster: "https://images.unsplash.com/photo-1558898479-33c0057a5d12?w=600", code: "VID_004" },
+              { type: "image", src: showcaseCyber2, code: "IMG_004" },
               { type: "image", src: "https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=600", code: "IMG_005" },
               { type: "image", src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600", code: "IMG_006" },
-              { type: "video", src: "/showcase/ai-video-2.mp4", poster: "https://images.unsplash.com/photo-1488161628813-04466f872be2?w=600", code: "VID_007" },
-              { type: "video", src: "/showcase/ai-futuristic-2.mp4", code: "VID_008" },
+              { type: "image", src: showcaseCyber3, code: "IMG_007" },
+              { type: "image", src: showcaseCyber4, code: "IMG_008" },
               { type: "image", src: "https://images.unsplash.com/photo-1526510747491-58f928ec870f?w=600", code: "IMG_009" },
-              { type: "video", src: "/showcase/ai-video-3.mp4", poster: "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=600", code: "VID_010" },
+              { type: "image", src: showcaseCyber5, code: "IMG_010" },
               { type: "image", src: "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=600", code: "IMG_011" },
               { type: "image", src: "https://images.unsplash.com/photo-1492288991661-058aa541ff43?w=600", code: "IMG_012" },
             ] as Array<{ type: string; src: string; code: string; poster?: string; hasAudio?: boolean }>).map((item, i) => (
