@@ -209,6 +209,38 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/app/affiliate"
+                    end
+                    onClick={handleNavClick}
+                    className="hover:bg-accent/50"
+                    activeClassName="bg-accent text-accent-foreground font-medium"
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Afiliados</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin/affiliates"
+                      end
+                      onClick={handleNavClick}
+                      className="hover:bg-accent/50"
+                      activeClassName="bg-accent text-accent-foreground font-medium"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Afiliados (Admin)</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
