@@ -1,4 +1,4 @@
-import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen, Video, UserRound } from "lucide-react";
+import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen, Video, UserRound, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
@@ -205,6 +205,38 @@ export function AppSidebar() {
                     >
                       <Shield className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{t("nav.admin")}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/app/affiliate"
+                    end
+                    onClick={handleNavClick}
+                    className="hover:bg-accent/50"
+                    activeClassName="bg-accent text-accent-foreground font-medium"
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    {!collapsed && <span>Afiliados</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin/affiliates"
+                      end
+                      onClick={handleNavClick}
+                      className="hover:bg-accent/50"
+                      activeClassName="bg-accent text-accent-foreground font-medium"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Afiliados (Admin)</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

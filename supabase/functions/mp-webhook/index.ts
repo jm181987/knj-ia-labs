@@ -98,6 +98,14 @@ async function handlePayment(supabase: any, MP_TOKEN: string, mpPaymentId: strin
         `Créditos: ${sub.monthly_credits}\n` +
         `MP ID: ${mpPaymentId}`
       );
+      // Affiliate recurring commission
+      try {
+        await supabase.rpc("record_affiliate_commission_subscription", {
+          _subscription_id: sub.id,
+          _external_payment_id: String(mpPaymentId),
+          _amount: Number(sub.amount_uyu),
+        });
+      } catch (e) { console.warn("affiliate sub commission failed", e); }
     } else if (status === "rejected" || status === "cancelled") {
       await notifyWhatsApp(
         `⚠️ *Cobro de suscripción falló*\n` +
@@ -172,6 +180,9 @@ async function handlePayment(supabase: any, MP_TOKEN: string, mpPaymentId: strin
       `Créditos: ${payment.credits}\n` +
       `MP ID: ${mpPaymentId}`
     );
+    try {
+      await supabase.rpc("record_affiliate_commission_payment", { _payment_id: payment.id });
+    } catch (e) { console.warn("affiliate payment commission failed", e); }
   } else if (newStatus === "rejected" && payment.status !== "rejected") {
     await notifyWhatsApp(
       `❌ *Pago rechazado*\n` +
