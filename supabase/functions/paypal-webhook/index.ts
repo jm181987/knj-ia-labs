@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", order.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || order.user_id;
         await notifyWhatsApp(`✅ *Venta PayPal aprobada*\nUsuario: ${label}\nMonto: $${order.amount_uyu} USD\nCréditos: ${order.credits}`);
+        try {
+          await supabase.rpc("record_affiliate_commission_payment", { _payment_id: order.id });
+        } catch (e) { console.warn("affiliate paypal commission failed", e); }
       }
     }
 
@@ -161,6 +164,13 @@ Deno.serve(async (req) => {
         const { data: prof } = await supabase.from("profiles").select("email,display_name").eq("id", row.user_id).maybeSingle();
         const label = prof?.display_name || prof?.email || row.user_id;
         await notifyWhatsApp(`🔁 *Cobro PayPal*\nUsuario: ${label}\nMonto: $${row.amount_uyu} USD\nCréditos: ${row.monthly_credits}`);
+        try {
+          await supabase.rpc("record_affiliate_commission_subscription", {
+            _subscription_id: row.id,
+            _external_payment_id: String(captureId),
+            _amount: Number(row.amount_uyu),
+          });
+        } catch (e) { console.warn("affiliate paypal sub commission failed", e); }
       }
     }
 
