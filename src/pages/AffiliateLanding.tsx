@@ -45,13 +45,13 @@ export default function AffiliateLanding() {
       <section id="planes" className="max-w-6xl mx-auto px-4 pb-16">
         <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t("affiliate.landing.structure_title")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {tiers.map(t => (
-            <Card key={t.name} className="bg-card/60 border-border/60">
+          {tiers.map(tier => (
+            <Card key={tier.name} className="bg-card/60 border-border/60">
               <CardContent className="p-6 space-y-2 text-center">
-                <div className="text-sm text-muted-foreground">{t.name}</div>
-                <div className="text-2xl font-bold">{t.price}</div>
-                <div className="text-3xl font-bold text-primary">{t.commission}</div>
-                <div className="text-xs text-muted-foreground">{t.note}</div>
+                <div className="text-sm text-muted-foreground">{tier.name}</div>
+                <div className="text-2xl font-bold">{tier.price}</div>
+                <div className="text-3xl font-bold text-primary">{tier.commission}</div>
+                <div className="text-xs text-muted-foreground">{tier.note}</div>
               </CardContent>
             </Card>
           ))}
