@@ -58,6 +58,13 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === "delete") {
+      // Cascade deletes clicks/referrals/commissions/payouts via FK on delete cascade
+      const { error } = await svc.from("affiliates").delete().eq("id", body.affiliate_id);
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
     if (action === "update_rates") {
       await svc.from("app_settings").update({ value: body.rates, updated_at: new Date().toISOString() }).eq("key", "affiliate_rates");
       return json({ ok: true });
