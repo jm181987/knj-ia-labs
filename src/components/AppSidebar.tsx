@@ -1,4 +1,4 @@
-import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen, Video, UserRound } from "lucide-react";
+import { History, Image, Shield, Coins, Library, ChevronDown, BookOpen, Video, UserRound, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
