@@ -6,7 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AffiliateAdminPage() {
   const { toast } = useToast();
@@ -35,6 +39,15 @@ export default function AffiliateAdminPage() {
   const setStatus = async (id: string, status: string) => {
     await supabase.functions.invoke("affiliate-admin", { body: { action: "set_status", affiliate_id: id, status } });
     toast({ title: "Actualizado" });
+    load();
+  };
+  const deleteAffiliate = async (id: string) => {
+    const { data, error } = await supabase.functions.invoke("affiliate-admin", { body: { action: "delete", affiliate_id: id } });
+    if (error || (data as any)?.error) {
+      toast({ title: "Error", description: (data as any)?.error || error?.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Afiliado eliminado" });
     load();
   };
   const approvePending = async () => {
@@ -113,6 +126,23 @@ export default function AffiliateAdminPage() {
                       {a.status !== "approved" && <Button size="sm" variant="outline" onClick={() => setStatus(a.id, "approved")}>Aprobar</Button>}
                       {a.status !== "blocked" && <Button size="sm" variant="destructive" onClick={() => setStatus(a.id, "blocked")}>Bloquear</Button>}
                       {a.status === "blocked" && <Button size="sm" variant="outline" onClick={() => setStatus(a.id, "approved")}>Desbloquear</Button>}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive" title="Eliminar"><Trash2 className="h-3 w-3" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar afiliado {a.code}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Se eliminarán también sus clics, referidos, comisiones y pagos asociados. Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteAffiliate(a.id)}>Eliminar</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
