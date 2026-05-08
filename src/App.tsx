@@ -7,6 +7,7 @@ import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MetaPixelTracker } from "@/components/MetaPixelTracker";
+import { AffiliateRefCapture } from "@/components/AffiliateRefCapture";
 import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import AvatarsPage from "./pages/AvatarsPage";
@@ -25,6 +26,9 @@ import PaymentFailurePage from "./pages/PaymentFailurePage";
 import PaymentPendingPage from "./pages/PaymentPendingPage";
 import BasicGuidePage from "./pages/BasicGuidePage";
 import ModelsDirectoryPage from "./pages/ModelsDirectoryPage";
+import AffiliateLanding from "./pages/AffiliateLanding";
+import AffiliateDashboard from "./pages/AffiliateDashboard";
+import AffiliateAdminPage from "./pages/AffiliateAdminPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +40,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <MetaPixelTracker />
+          <AffiliateRefCapture />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/terms" element={<TermsPage />} />
@@ -44,6 +49,7 @@ const App = () => (
             <Route path="/upload-policy" element={<UploadPolicyPage />} />
             <Route path="/credits-policy" element={<CreditsPolicyPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/affiliates" element={<AffiliateLanding />} />
             <Route path="/payment/success" element={<PaymentSuccessPage />} />
             <Route path="/payment/failure" element={<PaymentFailurePage />} />
             <Route path="/payment/pending" element={<PaymentPendingPage />} />
@@ -62,6 +68,7 @@ const App = () => (
                       <Route path="guide/videos" element={<BasicGuidePage />} />
                       <Route path="guide/avatars" element={<BasicGuidePage />} />
                       <Route path="pricing" element={<PricingPage />} />
+                      <Route path="affiliate" element={<AffiliateDashboard />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
@@ -74,6 +81,16 @@ const App = () => (
                 <ProtectedRoute requireAdmin>
                   <Layout>
                     <AdminPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/affiliates"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Layout>
+                    <AffiliateAdminPage />
                   </Layout>
                 </ProtectedRoute>
               }

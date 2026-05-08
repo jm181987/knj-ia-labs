@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { attributeRefAfterSignup } from "@/lib/affiliate";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -63,6 +64,8 @@ export default function AuthPage() {
             display_name: displayName || email.split("@")[0],
           },
         }).catch((err) => console.warn("notify-new-user failed", err));
+        // Atribución de afiliado si hay cookie/storage
+        attributeRefAfterSignup().catch(() => {});
         // Meta Pixel: evento de registro completado
         try {
           const { trackMetaEvent } = await import("@/lib/metaPixel");
