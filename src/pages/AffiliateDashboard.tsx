@@ -38,7 +38,13 @@ export default function AffiliateDashboard() {
   const requestPayout = async () => {
     const { data, error } = await supabase.functions.invoke("affiliate-self", { body: { action: "request_payout" } });
     if (error || (data as any)?.error) {
-      toast({ title: "No se pudo solicitar el retiro", description: (data as any)?.error || error?.message, variant: "destructive" });
+      const raw = (data as any)?.error || error?.message || "";
+      const msg =
+        /below_minimum/i.test(raw) ? "Tu saldo aprobado no llega al mínimo de retiro ($500 UYU)." :
+        /not_approved/i.test(raw) ? "Tu cuenta de afiliado todavía no fue aprobada." :
+        /not authenticated/i.test(raw) ? "Iniciá sesión para solicitar el retiro." :
+        raw || "Intentá nuevamente más tarde.";
+      toast({ title: "No se pudo solicitar el retiro", description: msg, variant: "destructive" });
       return;
     }
     toast({ title: "Retiro solicitado" });
