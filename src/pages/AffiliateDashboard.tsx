@@ -8,11 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Loader2, TrendingUp, Wallet, Users, MousePointerClick, DollarSign, Award, Info } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useTranslation } from "react-i18next";
 
 type Stats = { clicks: number; referrals: number; conversions: number; gross_sales_uyu: number; pending_balance: number; approved_balance: number; total_paid: number; total_earned: number };
 
 export default function AffiliateDashboard() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [code, setCode] = useState("");
@@ -31,7 +33,7 @@ export default function AffiliateDashboard() {
       toast({ title: "Error", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Solicitud enviada", description: "Tu cuenta de afiliado quedó pendiente de aprobación." });
+    toast({ title: t("affiliate.dashboard.request_sent_title"), description: t("affiliate.dashboard.request_sent_desc") });
     load();
   };
 
@@ -40,14 +42,14 @@ export default function AffiliateDashboard() {
     if (error || (data as any)?.error) {
       const raw = (data as any)?.error || error?.message || "";
       const msg =
-        /below_minimum/i.test(raw) ? "Tu saldo aprobado no llega al mínimo de retiro ($500 UYU)." :
-        /not_approved/i.test(raw) ? "Tu cuenta de afiliado todavía no fue aprobada." :
-        /not authenticated/i.test(raw) ? "Iniciá sesión para solicitar el retiro." :
-        raw || "Intentá nuevamente más tarde.";
-      toast({ title: "No se pudo solicitar el retiro", description: msg, variant: "destructive" });
+        /below_minimum/i.test(raw) ? t("affiliate.dashboard.err_below_minimum") :
+        /not_approved/i.test(raw) ? t("affiliate.dashboard.err_not_approved") :
+        /not authenticated/i.test(raw) ? t("affiliate.dashboard.err_not_authenticated") :
+        raw || t("affiliate.dashboard.err_retry");
+      toast({ title: t("affiliate.dashboard.payout_error_title"), description: msg, variant: "destructive" });
       return;
     }
-    toast({ title: "Retiro solicitado" });
+    toast({ title: t("affiliate.dashboard.payout_requested") });
     load();
   };
 
@@ -58,11 +60,11 @@ export default function AffiliateDashboard() {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4">
         <Card className="bg-card/60 border-border/60">
-          <CardHeader><CardTitle>Únete al programa de afiliados</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("affiliate.dashboard.join_title")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">Elegí un código único (3-32 caracteres, letras/números/guiones).</p>
-            <Input placeholder="tu-codigo" value={code} onChange={e => setCode(e.target.value)} maxLength={32} />
-            <Button onClick={register} disabled={code.length < 3}>Solicitar</Button>
+            <p className="text-sm text-muted-foreground">{t("affiliate.dashboard.join_desc")}</p>
+            <Input placeholder={t("affiliate.dashboard.code_placeholder")} value={code} onChange={e => setCode(e.target.value)} maxLength={32} />
+            <Button onClick={register} disabled={code.length < 3}>{t("affiliate.dashboard.request")}</Button>
           </CardContent>
         </Card>
         <HowItWorks className="mt-6" />
@@ -90,57 +92,57 @@ export default function AffiliateDashboard() {
     <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Panel de afiliado</h1>
+          <h1 className="text-2xl font-bold">{t("affiliate.dashboard.panel_title")}</h1>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant={aff.status === "approved" ? "default" : "secondary"}>{aff.status}</Badge>
             <Badge variant="outline" className="capitalize"><Award className="h-3 w-3 mr-1" /> {aff.tier}</Badge>
           </div>
         </div>
         <Button onClick={requestPayout} disabled={aff.status !== "approved"}>
-          <Wallet className="h-4 w-4 mr-2" /> Solicitar retiro
+          <Wallet className="h-4 w-4 mr-2" /> {t("affiliate.dashboard.request_payout")}
         </Button>
       </div>
 
       <Card className="bg-gradient-to-br from-primary/15 to-transparent border-primary/30">
         <CardContent className="p-6 space-y-3">
-          <div className="text-sm text-muted-foreground">Tu link de referido</div>
+          <div className="text-sm text-muted-foreground">{t("affiliate.dashboard.your_link")}</div>
           <div className="flex flex-wrap gap-2">
             <Input readOnly value={link} className="flex-1 min-w-[260px] bg-background" />
-            <Button onClick={() => { navigator.clipboard.writeText(link); toast({ title: "Copiado" }); }}>
-              <Copy className="h-4 w-4 mr-2" /> Copiar
+            <Button onClick={() => { navigator.clipboard.writeText(link); toast({ title: t("affiliate.dashboard.copied") }); }}>
+              <Copy className="h-4 w-4 mr-2" /> {t("affiliate.dashboard.copy")}
             </Button>
           </div>
-          <div className="text-xs text-muted-foreground">Código: <span className="font-mono">{aff.code}</span></div>
+          <div className="text-xs text-muted-foreground">{t("affiliate.dashboard.code_label")}: <span className="font-mono">{aff.code}</span></div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={MousePointerClick} label="Clics" value={stats.clicks} />
-        <StatCard icon={Users} label="Referidos" value={stats.referrals} />
-        <StatCard icon={TrendingUp} label="Conversiones" value={stats.conversions} />
-        <StatCard icon={DollarSign} label="Ventas generadas" value={`$${Math.round(stats.gross_sales_uyu)}`} hint="UYU" />
-        <StatCard icon={Wallet} label="Saldo pendiente" value={`$${stats.pending_balance.toFixed(0)}`} hint="aprobándose" />
-        <StatCard icon={Wallet} label="Saldo aprobado" value={`$${stats.approved_balance.toFixed(0)}`} hint="listo a retirar" />
-        <StatCard icon={Wallet} label="Total pagado" value={`$${stats.total_paid.toFixed(0)}`} />
-        <StatCard icon={TrendingUp} label="Total ganado" value={`$${stats.total_earned.toFixed(0)}`} />
+        <StatCard icon={MousePointerClick} label={t("affiliate.dashboard.stat_clicks")} value={stats.clicks} />
+        <StatCard icon={Users} label={t("affiliate.dashboard.stat_referrals")} value={stats.referrals} />
+        <StatCard icon={TrendingUp} label={t("affiliate.dashboard.stat_conversions")} value={stats.conversions} />
+        <StatCard icon={DollarSign} label={t("affiliate.dashboard.stat_sales")} value={`$${Math.round(stats.gross_sales_uyu)}`} hint="UYU" />
+        <StatCard icon={Wallet} label={t("affiliate.dashboard.stat_pending")} value={`$${stats.pending_balance.toFixed(0)}`} hint={t("affiliate.dashboard.stat_pending_hint")} />
+        <StatCard icon={Wallet} label={t("affiliate.dashboard.stat_approved")} value={`$${stats.approved_balance.toFixed(0)}`} hint={t("affiliate.dashboard.stat_approved_hint")} />
+        <StatCard icon={Wallet} label={t("affiliate.dashboard.stat_paid")} value={`$${stats.total_paid.toFixed(0)}`} />
+        <StatCard icon={TrendingUp} label={t("affiliate.dashboard.stat_earned")} value={`$${stats.total_earned.toFixed(0)}`} />
       </div>
 
       <HowItWorks />
 
       <Card className="bg-card/60 border-border/60">
-        <CardHeader><CardTitle>Comisiones recientes</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("affiliate.dashboard.recent_commissions")}</CardTitle></CardHeader>
         <CardContent>
           {(data.commissions || []).length === 0 ? (
-            <div className="text-sm text-muted-foreground py-4">Aún no tenés comisiones.</div>
+            <div className="text-sm text-muted-foreground py-4">{t("affiliate.dashboard.no_commissions")}</div>
           ) : (
             <Table>
-              <TableHeader><TableRow><TableHead>Fecha</TableHead><TableHead>Plan</TableHead><TableHead>Tipo</TableHead><TableHead>Bruto</TableHead><TableHead>%</TableHead><TableHead>Comisión</TableHead><TableHead>Estado</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>{t("affiliate.dashboard.col_date")}</TableHead><TableHead>{t("affiliate.dashboard.col_plan")}</TableHead><TableHead>{t("affiliate.dashboard.col_type")}</TableHead><TableHead>{t("affiliate.dashboard.col_gross")}</TableHead><TableHead>{t("affiliate.dashboard.col_rate")}</TableHead><TableHead>{t("affiliate.dashboard.col_commission")}</TableHead><TableHead>{t("affiliate.dashboard.col_status")}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {data.commissions.slice(0, 20).map((c: any) => (
                   <TableRow key={c.id}>
                     <TableCell>{new Date(c.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="capitalize">{c.plan}</TableCell>
-                    <TableCell>{c.type === "recurring" ? "Recurrente" : "Único"}</TableCell>
+                    <TableCell>{c.type === "recurring" ? t("affiliate.dashboard.type_recurring") : t("affiliate.dashboard.type_one_time")}</TableCell>
                     <TableCell>${Number(c.gross_amount_uyu).toFixed(0)}</TableCell>
                     <TableCell>{(Number(c.rate) * 100).toFixed(0)}%</TableCell>
                     <TableCell className="font-semibold text-primary">${Number(c.commission_uyu).toFixed(2)}</TableCell>
@@ -154,13 +156,13 @@ export default function AffiliateDashboard() {
       </Card>
 
       <Card className="bg-card/60 border-border/60">
-        <CardHeader><CardTitle>Historial de pagos</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("affiliate.dashboard.payout_history")}</CardTitle></CardHeader>
         <CardContent>
           {(data.payouts || []).length === 0 ? (
-            <div className="text-sm text-muted-foreground py-4">Sin pagos todavía.</div>
+            <div className="text-sm text-muted-foreground py-4">{t("affiliate.dashboard.no_payouts")}</div>
           ) : (
             <Table>
-              <TableHeader><TableRow><TableHead>Fecha</TableHead><TableHead>Monto</TableHead><TableHead>Estado</TableHead><TableHead>Referencia</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>{t("affiliate.dashboard.col_date")}</TableHead><TableHead>{t("affiliate.dashboard.col_amount")}</TableHead><TableHead>{t("affiliate.dashboard.col_status")}</TableHead><TableHead>{t("affiliate.dashboard.col_ref")}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {data.payouts.map((p: any) => (
                   <TableRow key={p.id}>
@@ -180,16 +182,17 @@ export default function AffiliateDashboard() {
 }
 
 function HowItWorks({ className = "" }: { className?: string }) {
+  const { t } = useTranslation();
   return (
     <Card className={`bg-card/60 border-border/60 ${className}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Info className="h-4 w-4 text-primary" /> Cómo funciona el programa de afiliados
+          <Info className="h-4 w-4 text-primary" /> {t("affiliate.dashboard.how_title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 text-sm">
         <div>
-          <div className="font-semibold mb-2">Comisiones por venta</div>
+          <div className="font-semibold mb-2">{t("affiliate.dashboard.how_commissions")}</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="rounded-md border border-border/60 p-3">
               <div className="text-xs text-muted-foreground">Starter ($199)</div>
@@ -207,7 +210,7 @@ function HowItWorks({ className = "" }: { className?: string }) {
               <div className="text-xs text-muted-foreground">≈ $626 UYU</div>
             </div>
             <div className="rounded-md border border-border/60 p-3">
-              <div className="text-xs text-muted-foreground">Suscripción ($900/mes)</div>
+              <div className="text-xs text-muted-foreground">{t("affiliate.landing.tier_subscription")} ($900/mes)</div>
               <div className="text-lg font-bold text-primary">30%</div>
               <div className="text-xs text-muted-foreground">recurrente, $270/mes</div>
             </div>
@@ -216,42 +219,35 @@ function HowItWorks({ className = "" }: { className?: string }) {
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <div className="font-semibold mb-1">Cómo se atribuye una venta</div>
+            <div className="font-semibold mb-1">{t("affiliate.dashboard.how_attribution_title")}</div>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>Compartís tu link único (<span className="font-mono">?ref=tu-codigo</span>).</li>
-              <li>Cuando alguien hace clic, guardamos una <strong>cookie de 90 días</strong>.</li>
-              <li>Si esa persona se registra y compra dentro de ese plazo, la venta queda asociada a vos.</li>
-              <li>Las suscripciones generan comisión <strong>cada mes</strong> mientras estén activas.</li>
+              <li>{t("affiliate.dashboard.how_attribution_1")}</li>
+              <li>{t("affiliate.dashboard.how_attribution_2")}</li>
+              <li>{t("affiliate.dashboard.how_attribution_3")}</li>
+              <li>{t("affiliate.dashboard.how_attribution_4")}</li>
             </ul>
           </div>
           <div>
-            <div className="font-semibold mb-1">Ciclo de la comisión</div>
+            <div className="font-semibold mb-1">{t("affiliate.dashboard.how_cycle_title")}</div>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              <li><Badge variant="outline">Pendiente</Badge> apenas se registra el pago.</li>
-              <li><Badge variant="outline">Aprobada</Badge> a los 7 días, si no hay reembolso.</li>
-              <li><Badge variant="outline">Pagada</Badge> luego de solicitar el retiro.</li>
-              <li>Mínimo de retiro: <strong>$500 UYU</strong>.</li>
+              <li>{t("affiliate.dashboard.how_cycle_pending")}</li>
+              <li>{t("affiliate.dashboard.how_cycle_approved")}</li>
+              <li>{t("affiliate.dashboard.how_cycle_paid")}</li>
+              <li>{t("affiliate.dashboard.how_cycle_min")}</li>
             </ul>
           </div>
         </div>
 
         <div>
-          <div className="font-semibold mb-1">Niveles</div>
-          <div className="text-muted-foreground">
-            <span className="text-amber-700">Bronze</span> (inicial) · <span className="text-slate-400">Silver</span> a partir de $5.000 UYU ganados · <span className="text-yellow-500">Gold</span> a partir de $25.000 UYU ganados.
-          </div>
+          <div className="font-semibold mb-1">{t("affiliate.dashboard.tiers_title")}</div>
+          <div className="text-muted-foreground">{t("affiliate.dashboard.tiers_text")}</div>
         </div>
 
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertTitle>Disclaimer</AlertTitle>
+          <AlertTitle>{t("affiliate.dashboard.disclaimer_title")}</AlertTitle>
           <AlertDescription className="text-xs leading-relaxed">
-            Las comisiones se calculan sobre el monto neto efectivamente cobrado en UYU, descontando reembolsos, contracargos y devoluciones.
-            No se paga comisión por auto-referidos, cuentas duplicadas, fraude, tráfico incentivado o spam.
-            Los porcentajes, mínimos de retiro y niveles pueden ajustarse con previo aviso.
-            La aprobación de cuentas de afiliado y los pagos son revisados manualmente; nos reservamos el derecho de rechazar
-            o suspender cuentas que infrinjan estos términos. Los pagos se realizan en UYU al medio declarado por el afiliado;
-            las demoras bancarias o de procesador no son responsabilidad de la plataforma.
+            {t("affiliate.dashboard.disclaimer_text")}
           </AlertDescription>
         </Alert>
       </CardContent>
