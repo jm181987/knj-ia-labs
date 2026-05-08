@@ -73,7 +73,11 @@ Deno.serve(async (req) => {
 
     if (action === "request_payout") {
       const { data, error } = await userClient.rpc("request_affiliate_payout");
-      if (error) return json({ error: error.message }, 400);
+      if (error) {
+        const message = error.message || "request_failed";
+        const isExpectedRule = /below_minimum|not_approved|not authenticated/i.test(message);
+        return json({ error: message }, isExpectedRule ? 200 : 400);
+      }
       return json({ payout: data });
     }
 
