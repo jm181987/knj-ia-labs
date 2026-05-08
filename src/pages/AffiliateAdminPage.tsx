@@ -15,6 +15,7 @@ import {
 
 export default function AffiliateAdminPage() {
   const { toast } = useToast();
+  const { isAdmin, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [affiliates, setAffiliates] = useState<any[]>([]);
@@ -79,6 +80,20 @@ export default function AffiliateAdminPage() {
     a.download = `commissions-${Date.now()}.csv`;
     a.click();
   };
+
+  if (authLoading) return <div className="grid place-items-center min-h-[60vh]"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+
+  if (!isAdmin) {
+    return (
+      <div className="grid place-items-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <ShieldAlert className="h-10 w-10 mx-auto text-destructive" />
+          <h2 className="text-lg font-semibold">Acceso restringido</h2>
+          <p className="text-sm text-muted-foreground">Necesitás permisos de administrador para ver esta sección.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <div className="grid place-items-center min-h-[60vh]"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
