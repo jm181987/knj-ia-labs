@@ -14,6 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_clicks: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          landing_path: string | null
+          referrer: string | null
+          ua_hash: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          ua_hash?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          ua_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          approved_at: string | null
+          commission_uyu: number
+          created_at: string
+          gross_amount_uyu: number
+          id: string
+          paid_at: string | null
+          payment_id: string | null
+          payout_id: string | null
+          plan: string
+          rate: number
+          referred_user_id: string
+          source_ref: string | null
+          status: Database["public"]["Enums"]["commission_status"]
+          subscription_id: string | null
+          type: Database["public"]["Enums"]["commission_type"]
+        }
+        Insert: {
+          affiliate_id: string
+          approved_at?: string | null
+          commission_uyu: number
+          created_at?: string
+          gross_amount_uyu: number
+          id?: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payout_id?: string | null
+          plan: string
+          rate: number
+          referred_user_id: string
+          source_ref?: string | null
+          status?: Database["public"]["Enums"]["commission_status"]
+          subscription_id?: string | null
+          type: Database["public"]["Enums"]["commission_type"]
+        }
+        Update: {
+          affiliate_id?: string
+          approved_at?: string | null
+          commission_uyu?: number
+          created_at?: string
+          gross_amount_uyu?: number
+          id?: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payout_id?: string | null
+          plan?: string
+          rate?: number
+          referred_user_id?: string
+          source_ref?: string | null
+          status?: Database["public"]["Enums"]["commission_status"]
+          subscription_id?: string | null
+          type?: Database["public"]["Enums"]["commission_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_payouts: {
+        Row: {
+          affiliate_id: string
+          amount_uyu: number
+          approved_at: string | null
+          created_at: string
+          external_ref: string | null
+          id: string
+          method: string | null
+          notes: string | null
+          paid_at: string | null
+          status: Database["public"]["Enums"]["payout_status"]
+        }
+        Insert: {
+          affiliate_id: string
+          amount_uyu: number
+          approved_at?: string | null
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Update: {
+          affiliate_id?: string
+          amount_uyu?: number
+          approved_at?: string | null
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          active: boolean
+          affiliate_id: string
+          attributed_at: string
+          expires_at: string
+          id: string
+          ip_hash: string | null
+          referred_user_id: string
+        }
+        Insert: {
+          active?: boolean
+          affiliate_id: string
+          attributed_at?: string
+          expires_at?: string
+          id?: string
+          ip_hash?: string | null
+          referred_user_id: string
+        }
+        Update: {
+          active?: boolean
+          affiliate_id?: string
+          attributed_at?: string
+          expires_at?: string
+          id?: string
+          ip_hash?: string | null
+          referred_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          approved_at: string | null
+          code: string
+          created_at: string
+          id: string
+          min_payout_uyu: number | null
+          notes: string | null
+          payout_details: Json | null
+          payout_method: string | null
+          pending_balance: number
+          public_profile: boolean
+          status: Database["public"]["Enums"]["affiliate_status"]
+          tier: Database["public"]["Enums"]["affiliate_tier"]
+          total_earned: number
+          total_paid: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          min_payout_uyu?: number | null
+          notes?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          pending_balance?: number
+          public_profile?: boolean
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          tier?: Database["public"]["Enums"]["affiliate_tier"]
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          min_payout_uyu?: number | null
+          notes?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          pending_balance?: number
+          public_profile?: boolean
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          tier?: Database["public"]["Enums"]["affiliate_tier"]
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -527,9 +779,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _affiliate_rate: { Args: { _plan: string }; Returns: number }
       add_credits_system: {
         Args: { _amount: number; _reason: string; _user_id: string }
         Returns: number
+      }
+      admin_mark_payout_paid: {
+        Args: { _external_ref?: string; _notes?: string; _payout_id: string }
+        Returns: undefined
+      }
+      approve_pending_commissions: { Args: never; Returns: number }
+      attribute_referral: {
+        Args: {
+          _ip_hash?: string
+          _ref_code: string
+          _referred_user_id: string
+        }
+        Returns: boolean
       }
       check_and_increment_rate_limit: {
         Args: { _max_per_minute?: number; _user_id: string }
@@ -551,6 +817,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_affiliate_commission_payment: {
+        Args: { _payment_id: string }
+        Returns: string
+      }
+      record_affiliate_commission_subscription: {
+        Args: {
+          _amount: number
+          _external_payment_id: string
+          _subscription_id: string
+        }
+        Returns: string
+      }
       refund_credits_for_user: {
         Args: {
           _amount: number
@@ -560,11 +838,69 @@ export type Database = {
         }
         Returns: number
       }
+      register_affiliate: {
+        Args: { _code: string }
+        Returns: {
+          approved_at: string | null
+          code: string
+          created_at: string
+          id: string
+          min_payout_uyu: number | null
+          notes: string | null
+          payout_details: Json | null
+          payout_method: string | null
+          pending_balance: number
+          public_profile: boolean
+          status: Database["public"]["Enums"]["affiliate_status"]
+          tier: Database["public"]["Enums"]["affiliate_tier"]
+          total_earned: number
+          total_paid: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_affiliate_payout: {
+        Args: never
+        Returns: {
+          affiliate_id: string
+          amount_uyu: number
+          approved_at: string | null
+          created_at: string
+          external_ref: string | null
+          id: string
+          method: string | null
+          notes: string | null
+          paid_at: string | null
+          status: Database["public"]["Enums"]["payout_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "affiliate_payouts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
+      affiliate_status: "pending" | "approved" | "rejected" | "blocked"
+      affiliate_tier: "bronze" | "silver" | "gold"
       app_role: "admin" | "user"
+      commission_status:
+        | "pending"
+        | "approved"
+        | "paid"
+        | "reversed"
+        | "rejected"
+      commission_type: "one_time" | "recurring"
       generation_status: "pending" | "processing" | "completed" | "failed"
       generation_type: "video" | "image"
+      payout_status: "pending" | "approved" | "paid" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -692,9 +1028,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      affiliate_status: ["pending", "approved", "rejected", "blocked"],
+      affiliate_tier: ["bronze", "silver", "gold"],
       app_role: ["admin", "user"],
+      commission_status: [
+        "pending",
+        "approved",
+        "paid",
+        "reversed",
+        "rejected",
+      ],
+      commission_type: ["one_time", "recurring"],
       generation_status: ["pending", "processing", "completed", "failed"],
       generation_type: ["video", "image"],
+      payout_status: ["pending", "approved", "paid", "rejected"],
     },
   },
 } as const

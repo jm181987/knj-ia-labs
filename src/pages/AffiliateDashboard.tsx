@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Loader2, TrendingUp, Wallet, Users, MousePointerClick, DollarSign, Award } from "lucide-react";
+import { Copy, Loader2, TrendingUp, Wallet, Users, MousePointerClick, DollarSign, Award, Info } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Stats = { clicks: number; referrals: number; conversions: number; gross_sales_uyu: number; pending_balance: number; approved_balance: number; total_paid: number; total_earned: number };
 
@@ -58,6 +59,7 @@ export default function AffiliateDashboard() {
             <Button onClick={register} disabled={code.length < 3}>Solicitar</Button>
           </CardContent>
         </Card>
+        <HowItWorks className="mt-6" />
       </div>
     );
   }
@@ -117,6 +119,8 @@ export default function AffiliateDashboard() {
         <StatCard icon={TrendingUp} label="Total ganado" value={`$${stats.total_earned.toFixed(0)}`} />
       </div>
 
+      <HowItWorks />
+
       <Card className="bg-card/60 border-border/60">
         <CardHeader><CardTitle>Comisiones recientes</CardTitle></CardHeader>
         <CardContent>
@@ -166,5 +170,85 @@ export default function AffiliateDashboard() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function HowItWorks({ className = "" }: { className?: string }) {
+  return (
+    <Card className={`bg-card/60 border-border/60 ${className}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Info className="h-4 w-4 text-primary" /> Cómo funciona el programa de afiliados
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5 text-sm">
+        <div>
+          <div className="font-semibold mb-2">Comisiones por venta</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="rounded-md border border-border/60 p-3">
+              <div className="text-xs text-muted-foreground">Starter ($199)</div>
+              <div className="text-lg font-bold text-primary">15%</div>
+              <div className="text-xs text-muted-foreground">≈ $29 UYU</div>
+            </div>
+            <div className="rounded-md border border-border/60 p-3">
+              <div className="text-xs text-muted-foreground">Pro ($949)</div>
+              <div className="text-lg font-bold text-primary">30%</div>
+              <div className="text-xs text-muted-foreground">≈ $284 UYU</div>
+            </div>
+            <div className="rounded-md border border-border/60 p-3">
+              <div className="text-xs text-muted-foreground">Premium ($1.790)</div>
+              <div className="text-lg font-bold text-primary">35%</div>
+              <div className="text-xs text-muted-foreground">≈ $626 UYU</div>
+            </div>
+            <div className="rounded-md border border-border/60 p-3">
+              <div className="text-xs text-muted-foreground">Suscripción ($900/mes)</div>
+              <div className="text-lg font-bold text-primary">30%</div>
+              <div className="text-xs text-muted-foreground">recurrente, $270/mes</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <div className="font-semibold mb-1">Cómo se atribuye una venta</div>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>Compartís tu link único (<span className="font-mono">?ref=tu-codigo</span>).</li>
+              <li>Cuando alguien hace clic, guardamos una <strong>cookie de 90 días</strong>.</li>
+              <li>Si esa persona se registra y compra dentro de ese plazo, la venta queda asociada a vos.</li>
+              <li>Las suscripciones generan comisión <strong>cada mes</strong> mientras estén activas.</li>
+            </ul>
+          </div>
+          <div>
+            <div className="font-semibold mb-1">Ciclo de la comisión</div>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li><Badge variant="outline">Pendiente</Badge> apenas se registra el pago.</li>
+              <li><Badge variant="outline">Aprobada</Badge> a los 7 días, si no hay reembolso.</li>
+              <li><Badge variant="outline">Pagada</Badge> luego de solicitar el retiro.</li>
+              <li>Mínimo de retiro: <strong>$500 UYU</strong>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div className="font-semibold mb-1">Niveles</div>
+          <div className="text-muted-foreground">
+            <span className="text-amber-700">Bronze</span> (inicial) · <span className="text-slate-400">Silver</span> a partir de $5.000 UYU ganados · <span className="text-yellow-500">Gold</span> a partir de $25.000 UYU ganados.
+          </div>
+        </div>
+
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>Disclaimer</AlertTitle>
+          <AlertDescription className="text-xs leading-relaxed">
+            Las comisiones se calculan sobre el monto neto efectivamente cobrado en UYU, descontando reembolsos, contracargos y devoluciones.
+            No se paga comisión por auto-referidos, cuentas duplicadas, fraude, tráfico incentivado o spam.
+            Los porcentajes, mínimos de retiro y niveles pueden ajustarse con previo aviso.
+            La aprobación de cuentas de afiliado y los pagos son revisados manualmente; nos reservamos el derecho de rechazar
+            o suspender cuentas que infrinjan estos términos. Los pagos se realizan en UYU al medio declarado por el afiliado;
+            las demoras bancarias o de procesador no son responsabilidad de la plataforma.
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
   );
 }
