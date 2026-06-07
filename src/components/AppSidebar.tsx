@@ -220,7 +220,7 @@ export function AppSidebar() {
                     activeClassName="bg-accent text-accent-foreground font-medium"
                   >
                     <Wallet className="mr-2 h-4 w-4" />
-                    {!collapsed && <span>Afiliados</span>}
+                    {!collapsed && <span>{t("affiliate.dashboard.panel_title")}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -236,7 +236,7 @@ export function AppSidebar() {
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
                       <Shield className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>Afiliados (Admin)</span>}
+                      {!collapsed && <span>{t("affiliate.admin.title")}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
