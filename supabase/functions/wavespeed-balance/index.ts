@@ -27,22 +27,24 @@ function decodeJwtSub(token: string): string | null {
 }
 
 Deno.serve(async (req) => {
+  console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     // Auth: solo admins
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
-      console.error("Missing Bearer token");
+      console.error("Missing Bearer token in headers:", Object.fromEntries(req.headers.entries()));
       return jsonResponse({ error: "No autenticado" }, 401);
     }
     const token = authHeader.replace("Bearer ", "");
     const userId = decodeJwtSub(token);
     if (!userId) {
-      console.error("Invalid JWT or sub claim missing");
+      console.error("Invalid JWT or sub claim missing from token:", token.substring(0, 20) + "...");
       return jsonResponse({ error: "No autenticado" }, 401);
     }
 
+    console.log("Checking admin permissions for user:", userId);
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
