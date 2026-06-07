@@ -23,7 +23,11 @@ export function WavespeedBalanceCard() {
         return;
       }
       console.log("WavespeedBalanceCard: Invoking edge function wavespeed-balance...");
-      const { data, error: invokeError } = await supabase.functions.invoke("wavespeed-balance");
+      const { data, error: invokeError } = await supabase.functions.invoke("wavespeed-balance", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+      });
       
       if (invokeError) {
         console.error("WavespeedBalanceCard: Invoke error:", invokeError);
