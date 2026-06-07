@@ -27,6 +27,7 @@ function decodeJwtSub(token: string): string | null {
 }
 
 Deno.serve(async (req) => {
+  console.log(`Request received: ${req.method} ${new URL(req.url).pathname}`);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
