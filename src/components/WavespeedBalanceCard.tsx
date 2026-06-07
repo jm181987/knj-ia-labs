@@ -15,19 +15,29 @@ export function WavespeedBalanceCard() {
     setLoading(true);
     setError(null);
     try {
+      console.log("WavespeedBalanceCard: Initializing load...");
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
+        console.error("WavespeedBalanceCard: No session/token found");
         setError("Sesión no disponible");
         return;
       }
-      const { data, error } = await supabase.functions.invoke("wavespeed-balance", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      console.log("WavespeedBalanceCard: Invoking edge function wavespeed-balance...");
+      const { data, error: invokeError } = await supabase.functions.invoke("wavespeed-balance");
+      
+      if (invokeError) {
+        console.error("WavespeedBalanceCard: Invoke error:", invokeError);
+        throw invokeError;
+      }
+      if ((data as any)?.error) {
+        console.error("WavespeedBalanceCard: Error from function body:", (data as any).error);
+        throw new Error((data as any).error);
+      }
+      console.log("WavespeedBalanceCard: Success, balance:", (data as any)?.balance_usd);
       setBalance((data as any)?.balance_usd ?? null);
       setUpdatedAt(new Date());
     } catch (e) {
+      console.error("WavespeedBalanceCard: Catch error:", e);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
