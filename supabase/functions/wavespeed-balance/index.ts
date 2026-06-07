@@ -31,26 +31,31 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    // Auth: solo admins
     const authHeader = req.headers.get("Authorization") || "";
-    if (!authHeader.startsWith("Bearer ")) {
-      console.error("Missing Bearer token in headers:", Object.fromEntries(req.headers.entries()));
-      return jsonResponse({ error: "No autenticado" }, 401);
-    }
     const token = authHeader.replace("Bearer ", "");
-    const userId = decodeJwtSub(token);
+    
+    // Si no hay token en el header, intentamos sacarlo de apikey (caso de invocación directa desde el cliente de Supabase)
+    const apiKeyHeader = req.headers.get("apikey") || "";
+    
+    let userId: string | null = decodeJwtSub(token);
+    
+    // Si sigue siendo null, intentamos decodificar el apikey si parece un JWT
+    if (!userId && apiKeyHeader.includes(".")) {
+      userId = decodeJwtSub(apiKeyHeader);
+    }
+
     if (!userId) {
-      console.error("Invalid JWT or sub claim missing from token:", token.substring(0, 20) + "...");
+      console.error("Auth failed. Headers keys:", Object.keys(Object.fromEntries(req.headers.entries())));
       return jsonResponse({ error: "No autenticado" }, 401);
     }
 
-    console.log("Checking admin permissions for user:", userId);
+    console.log("Checking admin status for:", userId);
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
-    
-    // Simplificamos la verificación de admin a una query directa por si rpc falla
+
     const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
@@ -58,27 +63,37 @@ Deno.serve(async (req) => {
       .eq("role", "admin")
       .maybeSingle();
 
-    if (roleError || !roleData) {
-      console.error("Admin check failed for user:", userId, "Error:", roleError);
+    if (roleError) {
+      console.error("Database error checking role:", roleError);
+      return jsonResponse({ error: "Error de base de datos" }, 500);
+    }
+
+    if (!roleData) {
+      console.error("User is NOT an admin:", userId);
       return jsonResponse({ error: "No autorizado" }, 403);
     }
 
-    const apiKey = Deno.env.get("WAVESPEED_API_KEY");
-    if (!apiKey) {
-      console.error("WAVESPEED_API_KEY is not defined in env");
-      return jsonResponse({ error: "WAVESPEED_API_KEY no configurada" }, 500);
+    const wsKey = Deno.env.get("WAVESPEED_API_KEY");
+    if (!wsKey) {
+      console.error("WAVESPEED_API_KEY missing");
+      return jsonResponse({ error: "Configuración incompleta" }, 500);
     }
 
+    console.log("Fetching balance from WaveSpeed...");
     const res = await fetch("https://api.wavespeed.ai/api/v3/balance", {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: { Authorization: `Bearer ${wsKey}` },
     });
+    
     const data = await res.json();
+    console.log("WaveSpeed response status:", res.status);
+
     if (!res.ok) {
-      return jsonResponse({ error: data?.message || `WaveSpeed error ${res.status}` }, res.status);
+      return jsonResponse({ error: data?.message || `Error de WaveSpeed: ${res.status}` }, res.status);
     }
-    return jsonResponse({ balance_usd: data?.data?.balance ?? null, raw: data });
+
+    return jsonResponse({ balance_usd: data?.data?.balance ?? 0 });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    return jsonResponse({ error: msg }, 500);
+    console.error("Unexpected error:", e);
+    return jsonResponse({ error: "Error interno" }, 500);
   }
 });
