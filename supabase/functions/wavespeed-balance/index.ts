@@ -31,13 +31,21 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "");
-    const userId = decodeJwtSub(token);
+    
+    // Si no hay token en el header, intentamos sacarlo de apikey (caso de invocación directa desde el cliente de Supabase)
+    const apiKeyHeader = req.headers.get("apikey") || "";
+    
+    let userId: string | null = decodeJwtSub(token);
+    
+    // Si sigue siendo null, intentamos decodificar el apikey si parece un JWT
+    if (!userId && apiKeyHeader.includes(".")) {
+      userId = decodeJwtSub(apiKeyHeader);
+    }
 
     if (!userId) {
-      console.error("Missing or invalid token. Authorization header present:", !!authHeader);
+      console.error("Auth failed. Headers keys:", Object.keys(Object.fromEntries(req.headers.entries())));
       return jsonResponse({ error: "No autenticado" }, 401);
     }
 
@@ -65,15 +73,15 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "No autorizado" }, 403);
     }
 
-    const apiKey = Deno.env.get("WAVESPEED_API_KEY");
-    if (!apiKey) {
+    const wsKey = Deno.env.get("WAVESPEED_API_KEY");
+    if (!wsKey) {
       console.error("WAVESPEED_API_KEY missing");
       return jsonResponse({ error: "Configuración incompleta" }, 500);
     }
 
     console.log("Fetching balance from WaveSpeed...");
     const res = await fetch("https://api.wavespeed.ai/api/v3/balance", {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: { Authorization: `Bearer ${wsKey}` },
     });
     
     const data = await res.json();
