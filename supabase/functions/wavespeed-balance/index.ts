@@ -33,24 +33,39 @@ Deno.serve(async (req) => {
     // Auth: solo admins
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
+      console.error("Missing Bearer token");
       return jsonResponse({ error: "No autenticado" }, 401);
     }
     const token = authHeader.replace("Bearer ", "");
     const userId = decodeJwtSub(token);
-    if (!userId) return jsonResponse({ error: "No autenticado" }, 401);
+    if (!userId) {
+      console.error("Invalid JWT or sub claim missing");
+      return jsonResponse({ error: "No autenticado" }, 401);
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
-    const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (roleError || !isAdmin) return jsonResponse({ error: "No autorizado" }, 403);
+    
+    // Simplificamos la verificación de admin a una query directa por si rpc falla
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      console.error("Admin check failed for user:", userId, "Error:", roleError);
+      return jsonResponse({ error: "No autorizado" }, 403);
+    }
 
     const apiKey = Deno.env.get("WAVESPEED_API_KEY");
-    if (!apiKey) return jsonResponse({ error: "WAVESPEED_API_KEY no configurada" }, 500);
+    if (!apiKey) {
+      console.error("WAVESPEED_API_KEY is not defined in env");
+      return jsonResponse({ error: "WAVESPEED_API_KEY no configurada" }, 500);
+    }
 
     const res = await fetch("https://api.wavespeed.ai/api/v3/balance", {
       headers: { Authorization: `Bearer ${apiKey}` },
