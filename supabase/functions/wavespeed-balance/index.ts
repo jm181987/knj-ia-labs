@@ -43,11 +43,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
-    const { data: isAdmin } = await supabase.rpc("has_role", {
+    const { data: isAdmin, error: roleError } = await supabase.rpc("has_role", {
       _user_id: userId,
       _role: "admin",
     });
-    if (!isAdmin) return jsonResponse({ error: "No autorizado" }, 403);
+    if (roleError || !isAdmin) return jsonResponse({ error: "No autorizado" }, 403);
 
     const apiKey = Deno.env.get("WAVESPEED_API_KEY");
     if (!apiKey) return jsonResponse({ error: "WAVESPEED_API_KEY no configurada" }, 500);
