@@ -20,43 +20,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    // Setup listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+    let checkId = 0;
+
+    const applySession = async (sess: Session | null) => {
+      const currentCheck = ++checkId;
       if (!mounted) return;
+      setLoading(true);
       setSession(sess);
       setUser(sess?.user ?? null);
-      setLoading(false);
-      if (sess?.user) {
-        // Defer role check to avoid deadlock
-        setTimeout(async () => {
-          try {
-            const { data } = await (supabase as any)
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", sess.user.id)
-              .eq("role", "admin")
-              .maybeSingle();
-            if (mounted) setIsAdmin(!!data);
-          } catch (e) {
-            console.warn("role check failed", e);
-            if (mounted) setIsAdmin(false);
-          }
-        }, 0);
-      } else {
+
+      if (!sess?.user) {
         setIsAdmin(false);
+        setLoading(false);
+        return;
       }
+
+      try {
+        const { data, error } = await (supabase as any)
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", sess.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (error) throw error;
+        if (mounted && currentCheck === checkId) setIsAdmin(!!data);
+      } catch (e) {
+        console.warn("role check failed", e);
+        if (mounted && currentCheck === checkId) setIsAdmin(false);
+      } finally {
+        if (mounted && currentCheck === checkId) setLoading(false);
+      }
+    };
+
+    // Setup listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setTimeout(() => { void applySession(sess); }, 0);
     });
 
     // THEN check existing session
     supabase.auth.getSession()
       .then(({ data: { session: sess } }) => {
-        if (!mounted) return;
-        setSession(sess);
-        setUser(sess?.user ?? null);
+        void applySession(sess);
       })
       .catch((e) => console.warn("getSession failed", e))
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted && !session) setLoading(false);
       });
 
     // Safety net: never stay loading more than 5s
