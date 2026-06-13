@@ -4,24 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, Wallet, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export function WavespeedBalanceCard() {
+  const { session, loading: authLoading, isAdmin } = useAuth();
   const [balance, setBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   const load = async () => {
+    if (authLoading) return;
+    if (!isAdmin) {
+      setError("No autorizado");
+      return;
+    }
+    if (!session?.access_token) {
+      setError("Sesión no disponible");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       console.log("WavespeedBalanceCard: Initializing load...");
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        console.error("WavespeedBalanceCard: No session/token found");
-        setError("Sesión no disponible");
-        return;
-      }
       console.log("WavespeedBalanceCard: Invoking edge function wavespeed-balance...");
       const { data, error: invokeError } = await supabase.functions.invoke("wavespeed-balance", {
         headers: {
@@ -49,8 +54,8 @@ export function WavespeedBalanceCard() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    if (!authLoading && isAdmin && session?.access_token) load();
+  }, [authLoading, isAdmin, session?.access_token]);
 
   const lowBalance = balance !== null && balance < 5;
 
