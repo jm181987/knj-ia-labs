@@ -59,11 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check existing session
     supabase.auth.getSession()
-      .then(({ data: { session: sess } }) => {
-        return applySession(sess);
-      })
-      .catch((e) => console.warn("getSession failed", e))
-      .finally(() => {
+      .then(({ data: { session: sess } }) => applySession(sess))
+      .catch((e) => {
+        console.warn("getSession failed", e);
         if (mounted) setLoading(false);
       });
 
