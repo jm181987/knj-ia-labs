@@ -18,19 +18,20 @@ import { useCredits } from "@/hooks/useCredits";
 import { supabase } from "@/integrations/supabase/client";
 
 export function UserMenu({ collapsed }: { collapsed?: boolean }) {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, session, isAdmin, signOut } = useAuth();
   const { balance } = useCredits();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [wsBalance, setWsBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin || !session?.access_token) {
+      setWsBalance(null);
+      return;
+    }
     let cancelled = false;
     const load = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
         const { data, error } = await supabase.functions.invoke("wavespeed-balance", {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
@@ -41,7 +42,7 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
     load();
     const id = setInterval(load, 60_000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [isAdmin]);
+  }, [isAdmin, session?.access_token]);
 
   if (!user) return null;
   const initials = (user.user_metadata?.display_name || user.email || "?").slice(0, 2).toUpperCase();
