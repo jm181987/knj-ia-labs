@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { trackMetaEvent } from "@/lib/metaPixel";
 
 let cachedClientId: string | null = null;
 let clientIdPromise: Promise<string> | null = null;
@@ -134,6 +135,11 @@ export function PayPalButton(props: Props) {
         if (isSub) {
           buttonsCfg.createSubscription = async () => {
             if (!requireAuth()) throw new Error("Debes iniciar sesión");
+            trackMetaEvent(
+              "InitiateCheckout",
+              { currency: "USD", content_name: "KNJ PRO Subscription", content_type: "subscription" },
+              { email: user?.email },
+            );
             const { data, error } = await supabase.functions.invoke("paypal-create-subscription", {
               body: { return_origin: window.location.origin },
             });
@@ -150,6 +156,17 @@ export function PayPalButton(props: Props) {
           buttonsCfg.createOrder = async () => {
             if (!requireAuth()) throw new Error("Debes iniciar sesión");
             const p = props as OneTimeProps;
+            trackMetaEvent(
+              "InitiateCheckout",
+              {
+                currency: "USD",
+                ...(p.customAmountUsd ? { value: p.customAmountUsd } : {}),
+                ...(p.packageId ? { content_ids: [p.packageId] } : {}),
+                content_name: p.packageId ? "Credit package" : "Custom credits",
+                content_type: "product",
+              },
+              { email: user?.email },
+            );
             const { data, error } = await supabase.functions.invoke("paypal-create-order", {
               body: p.packageId
                 ? { package_id: p.packageId }
