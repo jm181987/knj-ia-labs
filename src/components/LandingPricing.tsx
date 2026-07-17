@@ -75,7 +75,7 @@ export function LandingPricing() {
         { email: user?.email },
       );
       const { data, error } = await supabase.functions.invoke("mp-create-subscription", {
-        body: { return_origin: window.location.origin },
+        body: { return_origin: window.location.origin, device_id: (window as any).MP_DEVICE_SESSION_ID },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
@@ -108,7 +108,7 @@ export function LandingPricing() {
         { email: user?.email },
       );
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
-        body: { package_id: pkg.id, return_origin: window.location.origin },
+        body: { package_id: pkg.id, return_origin: window.location.origin, device_id: (window as any).MP_DEVICE_SESSION_ID },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
@@ -138,7 +138,7 @@ export function LandingPricing() {
         { email: user?.email },
       );
       const { data, error } = await supabase.functions.invoke("mp-create-preference", {
-        body: { custom_amount: customAmountNum, return_origin: window.location.origin },
+        body: { custom_amount: customAmountNum, return_origin: window.location.origin, device_id: (window as any).MP_DEVICE_SESSION_ID },
       });
       if (error) throw error;
       const url = (data as any)?.init_point;
