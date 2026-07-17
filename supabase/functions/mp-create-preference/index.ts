@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return jsonResponse({ error: "No autenticado" }, 401);
     const user = userData.user;
 
-    const { package_id, custom_amount, return_origin } = await req.json();
+    const { package_id, custom_amount, return_origin, device_id } = await req.json();
 
     // Service role para leer/escribir
     const supabase = createClient(
@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
       headers: {
         Authorization: `Bearer ${MP_TOKEN}`,
         "Content-Type": "application/json",
+        ...(device_id ? { "X-meli-session-id": String(device_id) } : {}),
       },
       body: JSON.stringify({
         items: [{
