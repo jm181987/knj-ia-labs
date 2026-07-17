@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
       headers: {
         Authorization: `Bearer ${MP_TOKEN}`,
         "Content-Type": "application/json",
+        ...(body?.device_id ? { "X-meli-session-id": String(body.device_id) } : {}),
       },
       body: JSON.stringify(mpBody),
     });
