@@ -140,6 +140,10 @@ export function PayPalButton(props: Props) {
     setLoading(true);
     setErr(null);
 
+    // Cargar Fraudnet apenas se monta el botón para que PayPal disponga de
+    // suficiente fingerprint antes del clic. Fuente distinta según flow.
+    ensureFraudnet(isSub ? "KNJPRO_Subscription" : "KNJPRO_Checkout");
+
     loadPaypalSdk({ intent: isSub ? "subscription" : "capture", vault: isSub })
       .then((paypal) => {
         if (cancelled || !paypal || !ref.current) return;
@@ -170,7 +174,7 @@ export function PayPalButton(props: Props) {
               { email: user?.email },
             );
             const { data, error } = await supabase.functions.invoke("paypal-create-subscription", {
-              body: { return_origin: window.location.origin },
+              body: { return_origin: window.location.origin, cmid: getCmid() },
             });
             if (error) throw error;
             const subId = (data as any)?.subscription_id;
@@ -198,8 +202,8 @@ export function PayPalButton(props: Props) {
             );
             const { data, error } = await supabase.functions.invoke("paypal-create-order", {
               body: p.packageId
-                ? { package_id: p.packageId }
-                : { custom_amount_usd: p.customAmountUsd },
+                ? { package_id: p.packageId, cmid: getCmid() }
+                : { custom_amount_usd: p.customAmountUsd, cmid: getCmid() },
             });
             if (error) throw error;
             const id = (data as any)?.id;
@@ -208,7 +212,7 @@ export function PayPalButton(props: Props) {
           };
           buttonsCfg.onApprove = async (data: any) => {
             const { data: cap, error } = await supabase.functions.invoke("paypal-capture-order", {
-              body: { paypal_order_id: data.orderID },
+              body: { paypal_order_id: data.orderID, cmid: getCmid() },
             });
             if (error) {
               toast({ title: "Error capturando pago", description: error.message, variant: "destructive" });
