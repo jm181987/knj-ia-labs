@@ -6,6 +6,35 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { trackMetaEvent } from "@/lib/metaPixel";
 
+// PayPal Fraudnet: genera un Client Metadata ID (CMID) por sesión y carga
+// el script de fingerprint de PayPal. Ese CMID luego viaja al backend y se
+// reenvía como header `PayPal-Client-Metadata-Id` en las llamadas a la API
+// de PayPal, lo que reduce marcaciones por riesgo/fraude.
+let cachedCmid: string | null = null;
+function getCmid(): string {
+  if (cachedCmid) return cachedCmid;
+  const rnd = (globalThis.crypto as any)?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  cachedCmid = `knjpro-${rnd}`.replace(/[^a-zA-Z0-9-_]/g, "").slice(0, 32);
+  return cachedCmid;
+}
+
+let fraudnetLoaded = false;
+function ensureFraudnet(sourceIdentifier: string) {
+  if (typeof document === "undefined" || fraudnetLoaded) return;
+  const cmid = getCmid();
+  const cfg = document.createElement("script");
+  cfg.type = "application/json";
+  cfg.setAttribute("fncls", "fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99");
+  cfg.text = JSON.stringify({ f: cmid, s: sourceIdentifier, sandbox: false });
+  document.head.appendChild(cfg);
+  const s = document.createElement("script");
+  s.src = "https://c.paypal.com/da/r/fb.js";
+  s.async = true;
+  document.head.appendChild(s);
+  fraudnetLoaded = true;
+}
+
 let cachedClientId: string | null = null;
 let clientIdPromise: Promise<string> | null = null;
 async function getClientId(): Promise<string> {
