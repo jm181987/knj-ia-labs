@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json({ error: "No autenticado" }, 401);
     const user = userData.user;
 
-    const { package_id, custom_amount_usd } = await req.json();
+    const { package_id, custom_amount_usd, cmid } = await req.json();
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        ...(cmid ? { "PayPal-Client-Metadata-Id": String(cmid) } : {}),
       },
       body: JSON.stringify({
         intent: "CAPTURE",
