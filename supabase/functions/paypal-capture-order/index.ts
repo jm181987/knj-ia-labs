@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json({ error: "No autenticado" }, 401);
     const user = userData.user;
 
-    const { paypal_order_id } = await req.json();
+    const { paypal_order_id, cmid } = await req.json();
     if (!paypal_order_id) return json({ error: "Falta paypal_order_id" }, 400);
 
     const supabase = createClient(
@@ -76,6 +76,7 @@ Deno.serve(async (req) => {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        ...(cmid ? { "PayPal-Client-Metadata-Id": String(cmid) } : {}),
       },
     });
     const capData = await capRes.json();

@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json({ error: "No autenticado" }, 401);
     const user = userData.user;
 
-    const { return_origin } = await req.json().catch(() => ({}));
+    const { return_origin, cmid } = await req.json().catch(() => ({}));
     const origin = return_origin || req.headers.get("origin") || "";
 
     const supabase = createClient(
@@ -117,7 +117,11 @@ Deno.serve(async (req) => {
 
     const subRes = await fetch(`${PAYPAL_BASE}/v1/billing/subscriptions`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(cmid ? { "PayPal-Client-Metadata-Id": String(cmid) } : {}),
+      },
       body: JSON.stringify({
         plan_id: planId,
         custom_id: row.id,
