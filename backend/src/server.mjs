@@ -12,7 +12,24 @@ import { deletePayment, deleteSubscription, deleteUser, setPassword } from './fu
 import { notifyNewUser, whatsappTest, sendBulkEmail, metaCapiEvent, translateTestimonials } from './functions/comms.mjs';
 
 const MAX_JSON_BYTES = 60 * 1024 * 1024;
+const PRODUCTION_ORIGIN = 'https://knjpro.site';
 let readyPromise;
+
+// Vercel production is canonicalized to the public KNJ Pro domain so payment
+// callbacks, notifications and CORS never depend on a *.vercel.app alias.
+if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+  process.env.PUBLIC_API_URL = PRODUCTION_ORIGIN;
+  process.env.FRONTEND_URL = PRODUCTION_ORIGIN;
+  process.env.CORS_ORIGINS = PRODUCTION_ORIGIN;
+}
+
+function paymentBody(body) {
+  return { ...(body || {}), return_origin: PRODUCTION_ORIGIN };
+}
+
+function paymentContext(ctx) {
+  return { ...(ctx || {}), origin: PRODUCTION_ORIGIN, apiBase: PRODUCTION_ORIGIN };
+}
 
 function ensureReady() {
   if (!readyPromise) {
@@ -96,8 +113,8 @@ const functionHandlers = {
   'wavespeed-generate': async (body, auth) => wavespeedGenerate(body, auth),
   'translate-model': async (body) => translateModel(body),
   'translate-testimonials': async (body, auth) => translateTestimonials(body, auth),
-  'mp-create-preference': async (body, auth, ctx) => createPreference(body, auth, ctx),
-  'mp-create-subscription': async (body, auth, ctx) => createMpSubscription(body, auth, ctx),
+  'mp-create-preference': async (body, auth, ctx) => createPreference(paymentBody(body), auth, paymentContext(ctx)),
+  'mp-create-subscription': async (body, auth, ctx) => createMpSubscription(paymentBody(body), auth, paymentContext(ctx)),
   'mp-cancel-subscription': async (body, auth) => cancelSubscription(body, auth),
   'mp-reconcile-payments': async (body, auth) => reconcile(body, auth),
   'mp-webhook': async (body, _auth, ctx) => mpWebhook(body, ctx),
@@ -105,7 +122,7 @@ const functionHandlers = {
   'paypal-config': async () => paypalConfig(),
   'paypal-create-order': async (body, auth) => createOrder(body, auth),
   'paypal-capture-order': async (body, auth) => captureOrder(body, auth),
-  'paypal-create-subscription': async (body, auth, ctx) => createPaypalSubscription(body, auth, ctx),
+  'paypal-create-subscription': async (body, auth, ctx) => createPaypalSubscription(paymentBody(body), auth, paymentContext(ctx)),
   'paypal-webhook': async (body, _auth, ctx) => paypalWebhook(body, ctx),
   'affiliate-public': async (body, _auth, ctx) => publicAffiliate(body, ctx),
   'affiliate-self': async (body, auth, ctx) => selfAffiliate(body, auth, ctx),
