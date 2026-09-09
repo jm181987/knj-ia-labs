@@ -24,6 +24,19 @@ async function readJson(req) {
   return raw ? JSON.parse(raw) : {};
 }
 
+function stripUsdPriceText(value) {
+  if (typeof value !== 'string') return value;
+  return value
+    // Parenthesized/bracketed provider prices: (USD 0.003), [US$ 0.015], ($0.01 USD)
+    .replace(/\s*[\(\[]\s*(?:(?:USD|US\$)\s*\$?\s*\d+(?:[.,]\d+)?|\$\s*\d+(?:[.,]\d+)?\s*(?:USD|US\$))\s*[\)\]]/gi, '')
+    // Inline prices: " - USD 0.003", " USD $0.003", "$0.003 USD"
+    .replace(/\s*(?:[-–—:]\s*)?(?:USD|US\$)\s*\$?\s*\d+(?:[.,]\d+)?\b/gi, '')
+    .replace(/\s*\$\s*\d+(?:[.,]\d+)?\s*(?:USD|US\$)\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:)\]])/g, '$1')
+    .trim();
+}
+
 function sanitizeGeneration(row) {
   if (!row || typeof row !== 'object') return row;
   const next = { ...row };
@@ -37,6 +50,13 @@ function sanitizeGeneration(row) {
     delete parameters.cost_usd;
     next.parameters = parameters;
   }
+  return next;
+}
+
+function sanitizePricingRow(row) {
+  if (!row || typeof row !== 'object') return row;
+  const next = { ...row };
+  if ('description' in next) next.description = stripUsdPriceText(next.description);
   return next;
 }
 
@@ -72,6 +92,9 @@ export default async function handler(req, res) {
       }
       if (body.table === 'generations') {
         result.data = result.data.map(sanitizeGeneration);
+      }
+      if (body.table === 'pricing') {
+        result.data = result.data.map(sanitizePricingRow);
       }
     }
 
