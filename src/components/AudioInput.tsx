@@ -16,6 +16,16 @@ type Props = {
   maxMB?: number;
 };
 
+function normalizePublicUrl(url: string): string {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  if (/^(https?:\/\/|data:)/i.test(value)) return value;
+  if (value.startsWith("/") && typeof window !== "undefined") {
+    return new URL(value, window.location.origin).toString();
+  }
+  return value;
+}
+
 export function AudioInput({
   value,
   onChange,
@@ -45,7 +55,7 @@ export function AudioInput({
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(data.publicUrl);
+      onChange(normalizePublicUrl(data.publicUrl));
       toast({ title: "Archivo subido" });
     } catch (e) {
       toast({ title: "Error al subir", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
@@ -111,7 +121,7 @@ export function AudioInput({
             <Input
               placeholder="...o pega una URL pública (https://...)"
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => onChange(normalizePublicUrl(e.target.value))}
               className="text-sm"
             />
           </div>
