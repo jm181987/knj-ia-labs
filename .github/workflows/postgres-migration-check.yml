@@ -1,0 +1,113 @@
+name: PostgreSQL migration check
+
+on:
+  push:
+    branches:
+      - migration/remove-supabase-postgres-implementation
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: knj_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d knj_ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Sync npm lockfile on migration branch
+        if: github.event_name == 'push'
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "Sync npm lockfile for PostgreSQL backend"
+            git push
+          fi
+      - name: Ensure frontend/backend do not depend on Supabase runtime
+        run: |
+          if grep -R -n -E '@supabase|supabase\.co' src backend package.json .env; then
+            echo 'Supabase runtime reference found'
+            exit 1
+          fi
+      - name: Check backend syntax
+        run: |
+          node --check backend/src/server.mjs
+          node --check backend/src/standalone.mjs
+          node --check backend/src/bootstrap.mjs
+          node --check backend/src/data.mjs
+          node --check backend/src/rpc.mjs
+          node --check backend/src/storage.mjs
+          node --check backend/src/functions/providers.mjs
+          node --check backend/src/functions/mercadopago.mjs
+          node --check backend/src/functions/paypal.mjs
+          node --check backend/src/functions/affiliate.mjs
+          node --check backend/src/functions/admin.mjs
+          node --check backend/src/functions/comms.mjs
+      - name: Build frontend
+        run: npm run build
+      - name: Run tests
+        run: npm test
+      - name: Bootstrap standalone PostgreSQL
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/knj_ci
+          APP_JWT_SECRET: ci-only-secret-ci-only-secret-1234567890
+          ADMIN_EMAIL: ci-admin@example.test
+          ADMIN_PASSWORD: ci-admin-password
+          CLEAN_START: "true"
+          CONFIRM_CLEAN_START: DELETE_BUSINESS_DATA
+        run: npm run db:bootstrap
+      - name: Smoke test API and standalone auth
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/knj_ci
+          APP_JWT_SECRET: ci-only-secret-ci-only-secret-1234567890
+          ADMIN_EMAIL: ci-admin@example.test
+          ADMIN_PASSWORD: ci-admin-password
+          PORT: "3001"
+        run: |
+          node backend/src/server.mjs > /tmp/knj-api.log 2>&1 &
+          API_PID=$!
+          trap 'kill $API_PID || true; cat /tmp/knj-api.log' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3001/api/health >/tmp/health.json; then break; fi
+            sleep 1
+          done
+          grep -q '"supabase":false' /tmp/health.json
+          node --input-type=module <<'NODE'
+          const login = await fetch('http://127.0.0.1:3001/api/auth/login', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'ci-admin@example.test', password: 'ci-admin-password' }),
+          });
+          if (!login.ok) throw new Error(`login failed ${login.status}: ${await login.text()}`);
+          const session = await login.json();
+          if (!session.token || session.user?.email !== 'ci-admin@example.test') throw new Error('invalid login payload');
+          const me = await fetch('http://127.0.0.1:3001/api/auth/me', {
+            headers: { authorization: `Bearer ${session.token}` },
+          });
+          if (!me.ok) throw new Error(`me failed ${me.status}: ${await me.text()}`);
+          const data = await me.json();
+          if (!data.isAdmin) throw new Error('bootstrap user is not admin');
+          NODE

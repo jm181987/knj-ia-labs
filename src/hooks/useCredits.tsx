@@ -26,30 +26,24 @@ export function useCredits() {
         setLoading(false);
       }
     };
-    load();
 
-    const channel = supabase.channel(`credits:${user.id}:${Math.random().toString(36).slice(2)}`);
-    channel
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_credits", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          const newBal = (payload.new as { balance?: number } | null)?.balance;
-          if (typeof newBal === "number") setBalance(newBal);
-        }
-      )
-      .subscribe();
+    void load();
+    const interval = window.setInterval(() => { void load(); }, 5000);
+    const refresh = () => { if (document.visibilityState === "visible") void load(); };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
 
     return () => {
       mounted = false;
-      supabase.removeChannel(channel);
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [user]);
 
   return { balance, loading };
 }
 
-// Calcula la key de pricing según tipo + parámetros
 export function getPricingKey(params: {
   type: "image" | "video";
   model: string;
