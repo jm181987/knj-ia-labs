@@ -1,0 +1,21 @@
+name: Verify Vercel health
+
+on:
+  push:
+    branches:
+      - verify/vercel-health
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check root
+        run: |
+          curl -sS -D /tmp/root-headers.txt -o /tmp/root-body.txt -w 'ROOT_STATUS=%{http_code}\n' https://knj-ia-labs.vercel.app/
+          cat /tmp/root-headers.txt
+          head -c 500 /tmp/root-body.txt || true
+      - name: Check API health
+        run: |
+          curl -sS -D /tmp/health-headers.txt -o /tmp/health-body.txt -w 'HEALTH_STATUS=%{http_code}\n' https://knj-ia-labs.vercel.app/api/health
+          cat /tmp/health-headers.txt
+          cat /tmp/health-body.txt
