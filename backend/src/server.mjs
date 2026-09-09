@@ -5,7 +5,7 @@ import { executeData } from './data.mjs';
 import { executeRpc } from './rpc.mjs';
 import { startUpload, uploadPart, finishUpload, removeObjects, getObject } from './storage.mjs';
 import { wavespeedModels, wavespeedBalance, wavespeedGenerate, translateModel } from './functions/providers.mjs';
-import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile } from './functions/mercadopago.mjs';
+import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, health as mpHealth } from './functions/mercadopago.mjs';
 import { config as paypalConfig, createOrder, captureOrder, createSubscription as createPaypalSubscription, webhook as paypalWebhook } from './functions/paypal.mjs';
 import { publicAffiliate, selfAffiliate, adminAffiliate } from './functions/affiliate.mjs';
 import { deletePayment, deleteSubscription, deleteUser, setPassword } from './functions/admin.mjs';
@@ -31,7 +31,7 @@ function corsHeaders() {
   const configured = String(process.env.CORS_ORIGINS || '').split(',').map((v) => v.trim()).filter(Boolean);
   return {
     'Access-Control-Allow-Origin': configured.length === 1 ? configured[0] : '*',
-    'Access-Control-Allow-Headers': 'authorization, content-type, x-client-info, apikey, paypal-transmission-id, paypal-transmission-time, paypal-transmission-sig, paypal-cert-url, paypal-auth-algo',
+    'Access-Control-Allow-Headers': 'authorization, content-type, x-client-info, apikey, paypal-transmission-id, paypal-transmission-time, paypal-transmission-sig, paypal-cert-url, paypal-auth-algo, x-signature, x-request-id',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     'Access-Control-Max-Age': '86400',
   };
@@ -101,6 +101,7 @@ const functionHandlers = {
   'mp-cancel-subscription': async (body, auth) => cancelSubscription(body, auth),
   'mp-reconcile-payments': async (body, auth) => reconcile(body, auth),
   'mp-webhook': async (body, _auth, ctx) => mpWebhook(body, ctx),
+  'mp-health': async () => mpHealth(),
   'paypal-config': async () => paypalConfig(),
   'paypal-create-order': async (body, auth) => createOrder(body, auth),
   'paypal-capture-order': async (body, auth) => captureOrder(body, auth),
