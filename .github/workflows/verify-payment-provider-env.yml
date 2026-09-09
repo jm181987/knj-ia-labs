@@ -9,12 +9,18 @@ jobs:
       - name: Check production provider configuration
         run: |
           set -euo pipefail
-          curl -fsS -X POST https://knjpro.site/api/functions/paypal-config -H 'content-type: application/json' -d '{}' -o /tmp/paypal.json
-          curl -fsS -X POST https://knjpro.site/api/functions/mp-health -H 'content-type: application/json' -d '{}' -o /tmp/mp.json
+          echo '--- paypal ---'
+          curl -sS -L -X POST https://knjpro.site/api/functions/paypal-config -H 'content-type: application/json' -d '{}' -D /tmp/paypal.headers -o /tmp/paypal.body
+          tail -n 20 /tmp/paypal.headers
+          echo 'paypal_body_prefix='$(head -c 120 /tmp/paypal.body | tr '\n' ' ')
+          echo '--- mp ---'
+          curl -sS -L -X POST https://knjpro.site/api/functions/mp-health -H 'content-type: application/json' -d '{}' -D /tmp/mp.headers -o /tmp/mp.body
+          tail -n 20 /tmp/mp.headers
+          echo 'mp_body_prefix='$(head -c 120 /tmp/mp.body | tr '\n' ' ')
           python - <<'PY'
           import json
-          p=json.load(open('/tmp/paypal.json'))
-          m=json.load(open('/tmp/mp.json'))
+          p=json.load(open('/tmp/paypal.body'))
+          m=json.load(open('/tmp/mp.body'))
           print('paypal_mode=', p.get('mode'))
           print('paypal_oauth_ok=', p.get('oauth_ok'))
           print('paypal_oauth_code=', p.get('oauth_code'))
