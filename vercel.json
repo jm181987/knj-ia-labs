@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/internal-selftest", "destination": "/api/internal-selftest" },
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
