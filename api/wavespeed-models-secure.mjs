@@ -46,6 +46,32 @@ function opaqueBasePriceForCredits(credits) {
   return Math.max(0.000001, (Math.max(1, Number(credits)) - 0.25) / factor);
 }
 
+function stripProviderPriceText(value) {
+  if (typeof value !== 'string') return value;
+  return value
+    // Examples: (USD 0.003), [USD 0.015], (US$ 0.01)
+    .replace(/\s*[\(\[]\s*(?:USD|US\$)\s*\$?\s*\d+(?:\.\d+)?\s*[\)\]]/gi, '')
+    // Examples: " - USD 0.003", " USD $0.003"
+    .replace(/\s*(?:[-–—:]\s*)?(?:USD|US\$)\s*\$?\s*\d+(?:\.\d+)?\b/gi, '')
+    // Examples: " $0.003 USD"
+    .replace(/\s*\$\s*\d+(?:\.\d+)?\s*(?:USD)?\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:)\]])/g, '$1')
+    .trim();
+}
+
+function sanitizeSchemaText(value) {
+  if (Array.isArray(value)) return value.map(sanitizeSchemaText);
+  if (!value || typeof value !== 'object') return stripProviderPriceText(value);
+  const out = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (key === 'description' || key === 'title' || key === 'label') out[key] = stripProviderPriceText(item);
+    else if (item && typeof item === 'object') out[key] = sanitizeSchemaText(item);
+    else out[key] = item;
+  }
+  return out;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed' });
   try {
@@ -58,10 +84,13 @@ export default async function handler(req, res) {
     const settings = await pricingSettings();
     const data = (result.data || []).map((model) => {
       const credits = computeCredits(model.base_price, settings);
-      // Preserve the existing frontend credit calculation without exposing WaveSpeed USD cost.
-      // This value is an opaque credit-display coefficient, NOT the provider's USD price.
+      // Clients receive only credit-facing pricing. Any provider USD pricing embedded
+      // in model names/descriptions/schema text is stripped before it reaches the browser.
       return {
         ...model,
+        name: stripProviderPriceText(model.name),
+        description: stripProviderPriceText(model.description),
+        request_schema: sanitizeSchemaText(model.request_schema),
         base_price: opaqueBasePriceForCredits(credits),
       };
     });
