@@ -11,13 +11,16 @@ jobs:
           set -euo pipefail
           curl -sS -X POST -H 'content-type: application/json' -d '{}' https://knj-ia-labs.vercel.app/api/functions/paypal-config -o /tmp/paypal.json
           python - <<'PY'
-          import json
+          import json,re
           d=json.load(open('/tmp/paypal.json'))
           cid=str(d.get('client_id') or '')
           mode=str(d.get('mode') or '')
           print('client_id_present=', bool(cid))
           print('client_id_length=', len(cid))
           print('mode=', mode)
+          print('leading_or_trailing_space=', cid != cid.strip())
+          print('wrapped_in_quotes=', len(cid)>=2 and cid[0] in "\"'" and cid[-1]==cid[0])
+          print('safe_charset=', bool(re.fullmatch(r'[A-Za-z0-9._~-]+', cid)))
           assert cid, d
           assert mode in ('sandbox','production'), d
           open('/tmp/client_id','w').write(cid)
@@ -30,16 +33,6 @@ jobs:
           import re
           cid=open('/tmp/client_id').read()
           text=open('/tmp/sdk.js',errors='replace').read().replace(cid,'[REDACTED_CLIENT_ID]')
-          pats=[r'SDK Validation error',r'authentication failed',r'invalid[_ -]?client',r'client[_ -]?id[^\n]{0,120}invalid']
-          found=[]
-          for pat in pats:
-            for m in re.finditer(pat,text,re.I):
-              a=max(0,m.start()-180); b=min(len(text),m.end()+320)
-              snippet=text[a:b].replace('\n',' ')
-              if snippet not in found: found.append(snippet)
-          print('validation_matches=',len(found))
-          for i,s in enumerate(found[:5],1): print(f'match_{i}=',s[:700])
-          if re.search(r'SDK Validation error',text,re.I):
-            raise SystemExit(1)
-          print('sdk_validation_error=false')
+          print('sdk_validation_error=', bool(re.search(r'SDK Validation error',text,re.I)))
+          assert not re.search(r'SDK Validation error',text,re.I)
           PY
