@@ -1,4 +1,15 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/api/functions/wavespeed-models", "destination": "/api/wavespeed-models-secure" },
     { "source": "/api/functions/wavespeed-generate", "destination": "/api/wavespeed-generate-secure" },
