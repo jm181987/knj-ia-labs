@@ -1,0 +1,33 @@
+name: Verify PayPal production config
+on:
+  push:
+    branches: [verify/vercel-health]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PayPal public config and JS SDK
+        run: |
+          set -euo pipefail
+          curl -sS -X POST -H 'content-type: application/json' -d '{}' https://knj-ia-labs.vercel.app/api/functions/paypal-config -o /tmp/paypal.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/paypal.json'))
+          cid=str(d.get('client_id') or '')
+          mode=str(d.get('mode') or '')
+          print('client_id_present=', bool(cid))
+          print('client_id_length=', len(cid))
+          print('mode=', mode)
+          assert cid, d
+          assert mode in ('sandbox','production'), d
+          open('/tmp/client_id','w').write(cid)
+          PY
+          CID=$(cat /tmp/client_id)
+          CODE=$(curl -sS -o /tmp/sdk.js -w '%{http_code}' "https://www.paypal.com/sdk/js?client-id=${CID}&currency=USD&intent=capture")
+          echo "sdk_http=$CODE"
+          test "$CODE" = "200"
+          if grep -Eqi 'invalid[_ -]?client|authentication failed|client[_ -]?id.*invalid' /tmp/sdk.js; then
+            echo 'sdk_client_id_error=true'
+            exit 1
+          fi
+          echo 'sdk_client_id_error=false'
