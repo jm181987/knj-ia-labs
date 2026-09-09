@@ -1,16 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getMercadoPagoDeviceId } from "@/lib/paymentRisk";
 
+const PAYMENT_ORIGIN = "https://knjpro.site";
 let installed = false;
 
 /**
- * Guarantees that Mercado Pago checkout calls wait briefly for the official
- * security.js Device ID and carry it to the backend. The backend forwards
- * this value as X-meli-session-id, as recommended by Mercado Pago.
- *
- * If the security script is blocked by a browser/privacy extension, checkout
- * is not blocked indefinitely: the request continues without the fingerprint
- * after the bounded wait.
+ * Ensures payment-provider checkout calls use the canonical production domain.
+ * Mercado Pago calls also wait briefly for the official security.js Device ID
+ * so the backend can forward it as X-meli-session-id.
  */
 export function installPaymentSecurity() {
   if (installed || typeof window === "undefined") return;
@@ -27,7 +24,16 @@ export function installPaymentSecurity() {
         ...options,
         body: {
           ...(options?.body || {}),
+          return_origin: PAYMENT_ORIGIN,
           ...(deviceId ? { device_id: deviceId } : {}),
+        },
+      };
+    } else if (name === "paypal-create-subscription") {
+      options = {
+        ...options,
+        body: {
+          ...(options?.body || {}),
+          return_origin: PAYMENT_ORIGIN,
         },
       };
     }
