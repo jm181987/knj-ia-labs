@@ -1,0 +1,45 @@
+name: PostgreSQL migration check
+
+on:
+  push:
+    branches:
+      - migration/remove-supabase-postgres-implementation
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Ensure frontend/backend do not depend on Supabase runtime
+        run: |
+          if grep -R -n -E '@supabase|supabase\.co' src backend package.json .env; then
+            echo 'Supabase runtime reference found'
+            exit 1
+          fi
+      - name: Check backend syntax
+        run: |
+          node --check backend/src/server.mjs
+          node --check backend/src/standalone.mjs
+          node --check backend/src/bootstrap.mjs
+          node --check backend/src/data.mjs
+          node --check backend/src/rpc.mjs
+          node --check backend/src/storage.mjs
+          node --check backend/src/functions/providers.mjs
+          node --check backend/src/functions/mercadopago.mjs
+          node --check backend/src/functions/paypal.mjs
+          node --check backend/src/functions/affiliate.mjs
+          node --check backend/src/functions/admin.mjs
+          node --check backend/src/functions/comms.mjs
+      - name: Build frontend
+        run: npm run build
+      - name: Run tests
+        run: npm test
