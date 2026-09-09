@@ -1,0 +1,27 @@
+name: Verify payment provider env
+on:
+  push:
+    branches: [verify/vercel-health]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production provider configuration
+        run: |
+          set -euo pipefail
+          curl -sS -L -X POST https://knjpro.site/api/functions/paypal-config -H 'content-type: application/json' -d '{}' -o /tmp/paypal.json
+          curl -sS -L -X POST https://knjpro.site/api/functions/mp-health -H 'content-type: application/json' -d '{}' -o /tmp/mp.json
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/paypal.json'))
+          m=json.load(open('/tmp/mp.json'))
+          print('paypal_mode=', p.get('mode'))
+          print('paypal_oauth_ok=', p.get('oauth_ok'))
+          print('paypal_oauth_code=', p.get('oauth_code'))
+          print('paypal_alternate_mode_match=', p.get('alternate_mode_match'))
+          print('paypal_webhook_configured=', p.get('webhook_configured'))
+          print('mp_configured=', m.get('configured'))
+          print('mp_token_ok=', m.get('token_ok'))
+          print('mp_webhook_secret_configured=', m.get('webhook_secret_configured'))
+          print('mp_checkout_api=', m.get('checkout_api'))
+          PY
