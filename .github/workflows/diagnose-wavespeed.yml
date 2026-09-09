@@ -1,0 +1,32 @@
+name: Diagnose WaveSpeed production
+
+on:
+  push:
+    branches:
+      - verify/vercel-health
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read WaveSpeed diagnostics
+        run: |
+          set -euo pipefail
+          curl -sS https://knj-ia-labs.vercel.app/api/diagnose-wavespeed | tee /tmp/diag.json
+          echo
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/diag.json'))
+          print('ok=', d.get('ok'))
+          print('jwt_configured=', d.get('jwt_configured'))
+          print('wavespeed_key_configured=', d.get('wavespeed_key_configured'))
+          print('wavespeed_models_ok=', d.get('wavespeed_models_ok'))
+          print('wavespeed_balance_ok=', d.get('wavespeed_balance_ok'))
+          print('provider_health=', json.dumps(d.get('provider_health'), ensure_ascii=False))
+          print('model_schema_check=', json.dumps(d.get('model_schema_check'), ensure_ascii=False))
+          print('live_task_check=', json.dumps(d.get('live_task_check'), ensure_ascii=False))
+          print('recent_generations=', json.dumps(d.get('recent_generations'), ensure_ascii=False))
+          print('error=', d.get('error'))
+          print('models_error=', d.get('models_error'))
+          print('balance_error=', d.get('balance_error'))
+          PY
