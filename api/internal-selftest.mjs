@@ -1,5 +1,5 @@
 import { ensureSchema, query, transaction } from '../backend/src/db.mjs';
-import { login, getAuthContext } from '../backend/src/auth.mjs';
+import { verifyPassword } from '../backend/src/auth.mjs';
 import { executeData } from '../backend/src/data.mjs';
 import { wavespeedModels, wavespeedGenerate } from '../backend/src/functions/providers.mjs';
 import { accessToken as paypalAccessToken, config as paypalConfig } from '../backend/src/functions/paypal.mjs';
@@ -15,7 +15,9 @@ export default async function handler(req, res) {
   const result = {
     ok: false,
     database: false,
+    jwt_configured: false,
     admin_password_configured: false,
+    admin_password_match: false,
     admin_login: false,
     admin_role: false,
     credits_read: false,
@@ -37,13 +39,21 @@ export default async function handler(req, res) {
     const email = String(process.env.ADMIN_EMAIL || 'jorgitom18@gmail.com').trim().toLowerCase();
     const password = process.env.ADMIN_PASSWORD;
     result.admin_password_configured = Boolean(password);
+    result.jwt_configured = String(process.env.APP_JWT_SECRET || '').length >= 32;
+
+    const adminRow = await query(
+      `select id,email,password_hash,token_version,created_at from app_users where lower(email)=$1 limit 1`,
+      [email],
+    );
+    const user = adminRow.rows[0] || null;
+    result.admin_password_match = Boolean(user && password && verifyPassword(password, user.password_hash));
 
     let auth = { user: null, isAdmin: false };
-    if (password) {
-      const session = await login(email, password);
-      auth = await getAuthContext(`Bearer ${session.token}`);
-      result.admin_login = Boolean(auth?.user && String(auth.user.email).toLowerCase() === email);
-      result.admin_role = Boolean(auth?.isAdmin);
+    if (user && result.admin_password_match) {
+      const role = await query(`select 1 from user_roles where user_id=$1 and role='admin' limit 1`, [user.id]);
+      auth = { user, isAdmin: role.rowCount > 0 };
+      result.admin_role = auth.isAdmin;
+      result.admin_login = result.admin_password_match && result.jwt_configured && result.admin_role;
 
       const credits = await executeData({
         table: 'user_credits',
@@ -119,7 +129,9 @@ export default async function handler(req, res) {
 
     result.ok = Boolean(
       result.database &&
+      result.jwt_configured &&
       result.admin_password_configured &&
+      result.admin_password_match &&
       result.admin_login &&
       result.admin_role &&
       result.credits_read &&
