@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "start": "node backend/src/standalone.mjs",
     "server": "node backend/src/server.mjs",
     "db:bootstrap": "node backend/src/bootstrap.mjs"
   },
