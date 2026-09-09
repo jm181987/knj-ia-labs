@@ -11,6 +11,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/api/payment-health", "destination": "/api/payment-health" },
     { "source": "/api/functions/wavespeed-models", "destination": "/api/wavespeed-models-secure" },
     { "source": "/api/functions/wavespeed-generate", "destination": "/api/wavespeed-generate-secure" },
     { "source": "/api/data", "destination": "/api/data-secure" },
