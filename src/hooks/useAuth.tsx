@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppSession, AppUser } from "@/integrations/backend/client";
 
 interface AuthContextValue {
-  user: User | null;
-  session: Session | null;
+  user: AppUser | null;
+  session: AppSession | null;
   loading: boolean;
   isAdmin: boolean;
   signOut: () => Promise<void>;
@@ -13,8 +13,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [session, setSession] = useState<AppSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     let checkId = 0;
 
-    const applySession = async (sess: Session | null) => {
+    const applySession = async (sess: AppSession | null) => {
       const currentCheck = ++checkId;
       if (!mounted) return;
       setLoading(true);
@@ -52,12 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Setup listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       setTimeout(() => { void applySession(sess); }, 0);
     });
 
-    // THEN check existing session
     supabase.auth.getSession()
       .then(({ data: { session: sess } }) => applySession(sess))
       .catch((e) => {
@@ -65,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mounted) setLoading(false);
       });
 
-    // Safety net: never stay loading more than 5s
     const timeout = setTimeout(() => {
       if (mounted) setLoading(false);
     }, 5000);
