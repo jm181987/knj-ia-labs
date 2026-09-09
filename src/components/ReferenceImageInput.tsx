@@ -15,6 +15,16 @@ type Props = {
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPT = "image/png,image/jpeg,image/webp";
 
+function normalizePublicUrl(url: string): string {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  if (/^(https?:\/\/|data:)/i.test(value)) return value;
+  if (value.startsWith("/") && typeof window !== "undefined") {
+    return new URL(value, window.location.origin).toString();
+  }
+  return value;
+}
+
 export function ReferenceImageInput({ value, onChange, label = "Imagen de referencia (opcional)" }: Props) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,7 +50,7 @@ export function ReferenceImageInput({ value, onChange, label = "Imagen de refere
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("reference-images").getPublicUrl(path);
-      onChange(data.publicUrl);
+      onChange(normalizePublicUrl(data.publicUrl));
       toast({ title: "Imagen subida" });
     } catch (e) {
       toast({ title: "Error al subir", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
@@ -104,7 +114,7 @@ export function ReferenceImageInput({ value, onChange, label = "Imagen de refere
             <Input
               placeholder="...o pega una URL pública (https://...)"
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => onChange(normalizePublicUrl(e.target.value))}
               className="text-sm"
             />
           </div>
