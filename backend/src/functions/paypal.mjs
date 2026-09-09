@@ -3,7 +3,17 @@ import { uuid } from '../auth.mjs';
 import { recordAffiliateCommissionPayment, recordAffiliateCommissionSubscription } from '../rpc.mjs';
 
 const NOTIFY_TO = process.env.ADMIN_WHATSAPP || '59893867429';
-function base() { return String(process.env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com'; }
+
+function cleanEnv(name) {
+  let value = String(process.env[name] ?? '').trim();
+  if (value.length >= 2) {
+    const first = value[0], last = value[value.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) value = value.slice(1, -1).trim();
+  }
+  return value;
+}
+function paypalMode() { return cleanEnv('PAYPAL_MODE').toLowerCase() === 'sandbox' ? 'sandbox' : 'live'; }
+function base() { return paypalMode() === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com'; }
 function requireUser(auth) { if (!auth?.user) throw Object.assign(new Error('No autenticado'), {status:401}); return auth.user; }
 async function notify(text) {
   const url=process.env.EVOLUTION_API_URL, instance=process.env.EVOLUTION_INSTANCE, key=process.env.EVOLUTION_API_KEY;
@@ -13,13 +23,50 @@ async function notify(text) {
 async function profileLabel(userId) {
   const r=await query(`select email,display_name from profiles where id=$1`,[userId]); const p=r.rows[0]; return p?.display_name||p?.email||userId;
 }
+
+let cachedAccessToken = '';
+let cachedAccessTokenUntil = 0;
+let accessTokenPromise = null;
+
 export async function accessToken() {
-  const id=process.env.PAYPAL_CLIENT_ID, secret=process.env.PAYPAL_CLIENT_SECRET;
-  if(!id||!secret) throw new Error('PayPal no configurado');
-  const res=await fetch(`${base()}/v1/oauth2/token`,{method:'POST',headers:{Authorization:`Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`,'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials'});
-  const data=await res.json().catch(()=>({})); if(!res.ok||!data.access_token) throw new Error(data?.error_description||`PayPal auth ${res.status}`); return data.access_token;
+  const id=cleanEnv('PAYPAL_CLIENT_ID'), secret=cleanEnv('PAYPAL_CLIENT_SECRET');
+  if(!id||!secret) throw Object.assign(new Error('PayPal no configurado: faltan PAYPAL_CLIENT_ID o PAYPAL_CLIENT_SECRET'), {status:503, details:{provider:'paypal',stage:'oauth',code:'MISSING_CREDENTIALS'}});
+  if (cachedAccessToken && Date.now() < cachedAccessTokenUntil) return cachedAccessToken;
+  if (accessTokenPromise) return accessTokenPromise;
+
+  accessTokenPromise = (async () => {
+    const mode=paypalMode();
+    const res=await fetch(`${base()}/v1/oauth2/token`,{
+      method:'POST',
+      headers:{
+        Authorization:`Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`,
+        'Content-Type':'application/x-www-form-urlencoded',
+        Accept:'application/json',
+        'Accept-Language':'en_US',
+      },
+      body:'grant_type=client_credentials',
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.access_token) {
+      const code=String(data?.error||`HTTP_${res.status}`);
+      const modeLabel=mode==='sandbox'?'Sandbox':'Live';
+      console.error('[paypal oauth]', { status:res.status, code, mode });
+      throw Object.assign(
+        new Error(`PayPal rechazó la autenticación (${modeLabel}). Verifica que PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET sean de la misma app ${modeLabel} y que PAYPAL_MODE sea correcto.`),
+        {status:502, details:{provider:'paypal',stage:'oauth',code,httpStatus:res.status,mode}},
+      );
+    }
+    const expiresIn=Math.max(60,Number(data.expires_in)||300);
+    cachedAccessToken=String(data.access_token);
+    cachedAccessTokenUntil=Date.now()+Math.max(30,expiresIn-60)*1000;
+    return cachedAccessToken;
+  })();
+
+  try { return await accessTokenPromise; }
+  finally { accessTokenPromise=null; }
 }
-export function config() { return { client_id:process.env.PAYPAL_CLIENT_ID||'', mode:String(process.env.PAYPAL_MODE||'live').toLowerCase()==='sandbox'?'sandbox':'production' }; }
+
+export function config() { return { client_id:cleanEnv('PAYPAL_CLIENT_ID'), mode:paypalMode()==='sandbox'?'sandbox':'production' }; }
 async function getSetting(key,fallback) { const r=await query(`select value from app_settings where key=$1`,[key]); return r.rows[0]?.value??fallback; }
 
 async function approvePayment(internalId, providerId, providerData, reason) {
