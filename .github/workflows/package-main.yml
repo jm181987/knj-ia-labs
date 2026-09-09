@@ -1,0 +1,21 @@
+name: Package main
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/package-main.yml'
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create deploy bundle
+        run: |
+          tar --exclude='.git' --exclude='node_modules' --exclude='dist' -czf knj-ia-labs-main.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: knj-ia-labs-main
+          path: knj-ia-labs-main.tar.gz
+          retention-days: 1
