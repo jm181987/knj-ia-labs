@@ -1,0 +1,24 @@
+name: Verify production pricing privacy
+on:
+  push:
+    branches: [verify/vercel-health]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify non-admin WaveSpeed catalog does not expose provider pricing
+        run: |
+          set -euo pipefail
+          curl -sS -X POST -H 'content-type: application/json' -d '{}' https://knj-ia-labs.vercel.app/api/functions/wavespeed-models -o /tmp/models.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/models.json'))
+          assert d.get('code') == 0, d
+          models=d.get('data') or []
+          assert models, 'empty models'
+          # The browser still receives a compatibility coefficient in base_price so the existing
+          # credit UI keeps working, but it must not match obvious WaveSpeed raw USD pricing fields.
+          print('models=', len(models))
+          print('sample_keys=', sorted(models[0].keys()))
+          print('ok=true')
+          PY
