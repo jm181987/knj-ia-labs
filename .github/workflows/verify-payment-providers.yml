@@ -1,0 +1,22 @@
+name: Verify production payment providers
+on:
+  push:
+    branches: [verify/vercel-health]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check provider readiness without exposing credentials
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST -H 'content-type: application/json' -d '{}' https://knj-ia-labs.vercel.app/api/functions/paypal-config -o /tmp/paypal.json
+          curl -fsS -X POST -H 'content-type: application/json' -d '{}' https://knj-ia-labs.vercel.app/api/functions/mp-health -o /tmp/mp.json
+          python - <<'PY'
+          import json
+          pp=json.load(open('/tmp/paypal.json'))
+          mp=json.load(open('/tmp/mp.json'))
+          safe_pp={k:pp.get(k) for k in ('mode','oauth_ok','oauth_code','alternate_mode_match','webhook_configured')}
+          safe_mp={k:mp.get(k) for k in ('configured','token_ok','webhook_secret_configured','checkout_api','code')}
+          print('PAYPAL=',json.dumps(safe_pp,sort_keys=True))
+          print('MERCADOPAGO=',json.dumps(safe_mp,sort_keys=True))
+          PY
