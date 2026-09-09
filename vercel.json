@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/api/functions/wavespeed-models", "destination": "/api/wavespeed-models-secure" },
+    { "source": "/api/functions/wavespeed-generate", "destination": "/api/wavespeed-generate-secure" },
+    { "source": "/api/data", "destination": "/api/data-secure" },
     { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
