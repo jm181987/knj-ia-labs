@@ -1,0 +1,33 @@
+name: Read production self-test
+
+on:
+  push:
+    branches:
+      - verify/vercel-health
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read production self-test
+        run: |
+          set -euo pipefail
+          curl -fsS https://knj-ia-labs.vercel.app/api/internal-selftest | tee /tmp/selftest.json
+          echo
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/selftest.json'))
+          required=[
+            'database','admin_password_configured','admin_login','admin_role',
+            'credits_read','credits_transaction_rollback','wavespeed_models',
+            'wavespeed_image_models','wavespeed_video_models','generation_pipeline_health',
+            'paypal_auth','mercadopago_auth','credit_packages_available'
+          ]
+          print('SELFTEST_OK=', d.get('ok'))
+          for k in required:
+              print(f'{k}={d.get(k)}')
+          print('paypal_mode=', d.get('paypal_mode'))
+          if not d.get('ok'):
+              print('FULL=', json.dumps(d, ensure_ascii=False))
+              raise SystemExit(1)
+          PY
