@@ -14,6 +14,20 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: knj_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d knj_ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -56,3 +70,44 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm test
+      - name: Bootstrap standalone PostgreSQL
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/knj_ci
+          APP_JWT_SECRET: ci-only-secret-ci-only-secret-1234567890
+          ADMIN_EMAIL: ci-admin@example.test
+          ADMIN_PASSWORD: ci-admin-password
+          CLEAN_START: "true"
+          CONFIRM_CLEAN_START: DELETE_BUSINESS_DATA
+        run: npm run db:bootstrap
+      - name: Smoke test API and standalone auth
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/knj_ci
+          APP_JWT_SECRET: ci-only-secret-ci-only-secret-1234567890
+          ADMIN_EMAIL: ci-admin@example.test
+          ADMIN_PASSWORD: ci-admin-password
+          PORT: "3001"
+        run: |
+          node backend/src/server.mjs > /tmp/knj-api.log 2>&1 &
+          API_PID=$!
+          trap 'kill $API_PID || true; cat /tmp/knj-api.log' EXIT
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3001/api/health >/tmp/health.json; then break; fi
+            sleep 1
+          done
+          grep -q '"supabase":false' /tmp/health.json
+          node --input-type=module <<'NODE'
+          const login = await fetch('http://127.0.0.1:3001/api/auth/login', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'ci-admin@example.test', password: 'ci-admin-password' }),
+          });
+          if (!login.ok) throw new Error(`login failed ${login.status}: ${await login.text()}`);
+          const session = await login.json();
+          if (!session.token || session.user?.email !== 'ci-admin@example.test') throw new Error('invalid login payload');
+          const me = await fetch('http://127.0.0.1:3001/api/auth/me', {
+            headers: { authorization: `Bearer ${session.token}` },
+          });
+          if (!me.ok) throw new Error(`me failed ${me.status}: ${await me.text()}`);
+          const data = await me.json();
+          if (!data.isAdmin) throw new Error('bootstrap user is not admin');
+          NODE
