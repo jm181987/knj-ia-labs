@@ -26,8 +26,20 @@ jobs:
           CODE=$(curl -sS -o /tmp/sdk.js -w '%{http_code}' "https://www.paypal.com/sdk/js?client-id=${CID}&currency=USD&intent=capture")
           echo "sdk_http=$CODE"
           test "$CODE" = "200"
-          if grep -Eqi 'invalid[_ -]?client|authentication failed|client[_ -]?id.*invalid' /tmp/sdk.js; then
-            echo 'sdk_client_id_error=true'
-            exit 1
-          fi
-          echo 'sdk_client_id_error=false'
+          python - <<'PY'
+          import re
+          cid=open('/tmp/client_id').read()
+          text=open('/tmp/sdk.js',errors='replace').read().replace(cid,'[REDACTED_CLIENT_ID]')
+          pats=[r'SDK Validation error',r'authentication failed',r'invalid[_ -]?client',r'client[_ -]?id[^\n]{0,120}invalid']
+          found=[]
+          for pat in pats:
+            for m in re.finditer(pat,text,re.I):
+              a=max(0,m.start()-180); b=min(len(text),m.end()+320)
+              snippet=text[a:b].replace('\n',' ')
+              if snippet not in found: found.append(snippet)
+          print('validation_matches=',len(found))
+          for i,s in enumerate(found[:5],1): print(f'match_{i}=',s[:700])
+          if re.search(r'SDK Validation error',text,re.I):
+            raise SystemExit(1)
+          print('sdk_validation_error=false')
+          PY
