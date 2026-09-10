@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getMercadoPagoDeviceId } from "@/lib/paymentRisk";
 
-const PAYMENT_ORIGIN = "https://knjpro.site";
+const PAYMENT_ORIGIN = "https://www.knjpro.site";
 let installed = false;
 
 /**
