@@ -6,18 +6,24 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect canonical webhook URLs
+      - name: Verify production payment endpoints
         run: |
           set -euo pipefail
-          for url in \
-            https://knjpro.site/api/functions/mp-webhook \
-            https://www.knjpro.site/api/functions/mp-webhook \
-            https://knjpro.site/api/functions/paypal-webhook \
-            https://www.knjpro.site/api/functions/paypal-webhook
-          do
-            echo "URL=$url"
-            curl -sS -o /tmp/body -D /tmp/headers -X POST "$url" -H 'content-type: application/json' -d '{}' || true
-            code=$(awk 'toupper($1) ~ /^HTTP\// {c=$2} END{print c}' /tmp/headers)
-            location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {print $2}' /tmp/headers | tr -d '\r' | tail -1)
-            echo "status=${code:-none} location=${location:-none}"
-          done
+
+          check() {
+            name="$1"; expected="$2"; shift 2
+            code=$(curl -sS -o /tmp/body -w '%{http_code}' "$@")
+            echo "$name=$code"
+            test "$code" = "$expected"
+          }
+
+          check mp_webhook_direct 200 -X POST https://www.knjpro.site/api/functions/mp-webhook -H 'content-type: application/json' -d '{}'
+          check mp_sync_requires_auth 401 -X POST https://www.knjpro.site/api/functions/mp-sync-payment -H 'content-type: application/json' -d '{"payment_id":"00000000-0000-0000-0000-000000000000"}'
+          check paypal_webhook_signature_required 401 -X POST https://www.knjpro.site/api/functions/paypal-webhook -H 'content-type: application/json' -d '{}'
+          check api_health 200 https://www.knjpro.site/api/health
+
+          code=$(curl -sS -o /tmp/apex -D /tmp/apex_headers -w '%{http_code}' -X POST https://knjpro.site/api/functions/mp-webhook -H 'content-type: application/json' -d '{}')
+          location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {print $2}' /tmp/apex_headers | tr -d '\r' | tail -1)
+          echo "apex_mp_webhook=$code location=$location"
+          test "$code" = "307"
+          test "$location" = "https://www.knjpro.site/api/functions/mp-webhook"
