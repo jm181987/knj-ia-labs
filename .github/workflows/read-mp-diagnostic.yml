@@ -9,9 +9,9 @@ jobs:
       - name: Read diagnostic
         run: |
           set -euo pipefail
-          for i in 1 2 3 4 5 6 7 8 9 10; do
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
             body=$(curl -sS -L --max-time 20 https://knjpro.site/api/mp-diagnostic || true)
-            if echo "$body" | grep -q '"attempts"'; then
+            if echo "$body" | grep -q '"httpStatus"'; then
               echo "$body"
               exit 0
             fi
