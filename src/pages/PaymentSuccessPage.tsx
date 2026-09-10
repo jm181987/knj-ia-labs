@@ -23,12 +23,23 @@ export default function PaymentSuccessPage() {
       return;
     }
     let attempts = 0;
+    let cancelled = false;
     const poll = async () => {
+      if (cancelled) return;
+
+      // The webhook is the primary path. If it is delayed, ask the backend to
+      // verify this authenticated user's payment directly with Mercado Pago.
+      // The server remains idempotent, so this cannot duplicate credits.
+      if (user?.id) {
+        await supabase.functions.invoke("mp-sync-payment", { body: { payment_id: paymentId } }).catch(() => null);
+      }
+
       const { data } = await (supabase as any)
         .from("payments")
         .select("status, credits, amount_uyu, package_id")
         .eq("id", paymentId)
         .maybeSingle();
+      if (cancelled) return;
       if (data?.status === "approved") {
         setStatus("approved");
         setCredits(data.credits);
@@ -56,7 +67,8 @@ export default function PaymentSuccessPage() {
       else setStatus("pending");
     };
     poll();
-  }, [paymentId, tracked, user?.email]);
+    return () => { cancelled = true; };
+  }, [paymentId, tracked, user?.email, user?.id]);
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
