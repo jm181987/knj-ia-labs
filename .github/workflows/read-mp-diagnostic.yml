@@ -6,7 +6,7 @@ jobs:
   read:
     runs-on: ubuntu-latest
     steps:
-      - name: Read diagnostic
+      - name: Verify minimal checkout payload
         run: |
           set -euo pipefail
           body=$(curl -sS -L --max-time 30 https://knjpro.site/api/mp-diagnostic)
