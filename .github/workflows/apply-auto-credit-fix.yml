@@ -1,0 +1,111 @@
+name: Apply automatic crediting fix
+on:
+  push:
+    branches: [verify/vercel-health]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply automatic payment synchronization fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          server = Path('backend/src/server.mjs')
+          s = server.read_text()
+          s = s.replace("const PRODUCTION_ORIGIN = 'https://knjpro.site';", "const PRODUCTION_ORIGIN = 'https://www.knjpro.site';")
+          s = s.replace(
+              "import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, health as mpHealth } from './functions/mercadopago.mjs';",
+              "import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, syncPayment as syncMpPayment, health as mpHealth } from './functions/mercadopago.mjs';"
+          )
+          s = s.replace(
+              "  'mp-reconcile-payments': async (body, auth) => reconcile(body, auth),\n",
+              "  'mp-reconcile-payments': async (body, auth) => reconcile(body, auth),\n  'mp-sync-payment': async (body, auth) => syncMpPayment(body, auth),\n"
+          )
+          server.write_text(s)
+
+          mp = Path('backend/src/functions/mercadopago.mjs')
+          m = mp.read_text()
+          old = "config:{online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},"
+          new = "config:{notification_url:`${origin}/api/functions/mp-webhook`,online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},"
+          if old not in m:
+              raise SystemExit('Mercado Pago config target not found')
+          m = m.replace(old, new, 1)
+          marker = "export async function reconcile(body, auth) {"
+          if marker not in m:
+              raise SystemExit('reconcile marker not found')
+          sync = r'''export async function syncPayment(body, auth) {
+  const user = requireUser(auth);
+  const paymentId = String(body?.payment_id || '').trim();
+  if (!paymentId) throw Object.assign(new Error('payment_id requerido'), { status: 400 });
+  const r = await query(`select * from payments where id=$1 limit 1`, [paymentId]);
+  const payment = r.rows[0];
+  if (!payment) throw Object.assign(new Error('Pago no encontrado'), { status: 404 });
+  if (payment.user_id !== user.id && !auth.isAdmin) throw Object.assign(new Error('No autorizado'), { status: 403 });
+  if (payment.status === 'approved') return { status: 'approved', credits: Number(payment.credits || 0), already: true };
+
+  const provider = String(payment.mp_response?.provider || 'mercadopago').toLowerCase();
+  if (provider === 'paypal') return { status: payment.status, credits: Number(payment.credits || 0), provider: 'paypal', ignored: true };
+
+  let syncResult = null;
+  if (payment.mp_preference_id) {
+    syncResult = await processOrder(String(payment.mp_preference_id));
+  } else if (payment.mp_payment_id) {
+    syncResult = await processPayment(String(payment.mp_payment_id));
+  } else {
+    const orders = await searchOrdersByExternalReference(payment.id);
+    if (orders.length) {
+      const chosen = orders.find((x) => mapOrderStatus(x) === 'approved') || orders[0];
+      syncResult = await processOrder(String(chosen.id));
+    } else {
+      const matches = await searchByExternalReference(payment.id);
+      if (matches.length) {
+        const chosen = matches.find((x) => x.status === 'approved') || matches[0];
+        syncResult = await processPayment(String(chosen.id));
+      }
+    }
+  }
+
+  const refreshed = await query(`select status,credits,approved_at from payments where id=$1 limit 1`, [payment.id]);
+  const current = refreshed.rows[0] || payment;
+  return { status: current.status, credits: Number(current.credits || payment.credits || 0), approved_at: current.approved_at || null, synced: syncResult };
+}
+
+'''
+          m = m.replace(marker, sync + marker, 1)
+          mp.write_text(m)
+
+          page = Path('src/pages/PaymentSuccessPage.tsx')
+          p = page.read_text()
+          old_poll = '''    const poll = async () => {
+      const { data } = await (supabase as any)
+'''
+          new_poll = '''    const poll = async () => {
+      // Webhook is the primary path. This authenticated sync is a self-healing
+      // fallback so an approved Mercado Pago order never needs an admin click.
+      if (user?.id) {
+        await supabase.functions.invoke("mp-sync-payment", { body: { payment_id: paymentId } }).catch(() => null);
+      }
+      const { data } = await (supabase as any)
+'''
+          if old_poll not in p:
+              raise SystemExit('PaymentSuccess poll target not found')
+          p = p.replace(old_poll, new_poll, 1)
+          p = p.replace('  }, [paymentId, tracked, user?.email]);', '  }, [paymentId, tracked, user?.email, user?.id]);')
+          page.write_text(p)
+          PY
+          git diff --check
+          git diff -- backend/src/server.mjs backend/src/functions/mercadopago.mjs src/pages/PaymentSuccessPage.tsx
+      - name: Commit and push main
+        run: |
+          git config user.name "KNJ Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add backend/src/server.mjs backend/src/functions/mercadopago.mjs src/pages/PaymentSuccessPage.tsx
+          git commit -m "Make payment crediting automatic and self-healing"
+          git push origin HEAD:main
