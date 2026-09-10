@@ -23,11 +23,13 @@ export default async function handler(req, res) {
     const last=r.rows[0]; if(!last) throw new Error('no_recent_attempt');
     const amount=Number(last.amount_uyu).toFixed(2);
     const body={
-      type:'online',processing_mode:'manual',capture_mode:'automatic_async',total_amount:amount,
+      type:'online',
+      processing_mode:'manual',
+      total_amount:amount,
       external_reference:`diag-${crypto.randomUUID()}`,
-      payer:{email:String(last.email||'').trim()},description:'KNJ Pro credits',
-      items:[{external_code:'credits',title:'KNJ Pro credits',description:'Creditos para KNJ Pro',quantity:1,unit_price:amount}],
-      config:{statement_descriptor:'KNJ PRO',notification_url:'https://knjpro.site/api/functions/mp-webhook',online:{success_url:'https://knjpro.site/payment/success',failure_url:'https://knjpro.site/payment/failure',pending_url:'https://knjpro.site/payment/pending',auto_return:'approved'}},
+      payer:{email:String(last.email||'').trim()},
+      items:[{title:'KNJ Pro credits',quantity:1,unit_price:amount}],
+      config:{online:{success_url:'https://knjpro.site/payment/success',failure_url:'https://knjpro.site/payment/failure',pending_url:'https://knjpro.site/payment/pending',auto_return:'approved'}},
     };
     const response=await fetch('https://api.mercadopago.com/v1/orders',{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json',Accept:'application/json','X-Idempotency-Key':crypto.randomUUID()},body:JSON.stringify(body)});
     const data=await response.json().catch(()=>({}));
