@@ -1,0 +1,23 @@
+name: Verify webhook delivery
+on:
+  push:
+    branches: [verify/vercel-health]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect canonical webhook URLs
+        run: |
+          set -euo pipefail
+          for url in \
+            https://knjpro.site/api/functions/mp-webhook \
+            https://www.knjpro.site/api/functions/mp-webhook \
+            https://knjpro.site/api/functions/paypal-webhook \
+            https://www.knjpro.site/api/functions/paypal-webhook
+          do
+            echo "URL=$url"
+            curl -sS -o /tmp/body -D /tmp/headers -X POST "$url" -H 'content-type: application/json' -d '{}' || true
+            code=$(awk 'toupper($1) ~ /^HTTP\// {c=$2} END{print c}' /tmp/headers)
+            location=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {print $2}' /tmp/headers | tr -d '\r' | tail -1)
+            echo "status=${code:-none} location=${location:-none}"
+          done
