@@ -109,7 +109,7 @@ export async function createPreference(body, auth, ctx = {}) {
         external_reference:paymentId,
         payer:{email:String(user.email||'').trim()},
         items:[{title:String(title).slice(0,120),quantity:1,unit_price:amount}],
-        config:{online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
+        config:{notification_url:`${origin}/api/functions/mp-webhook`,online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
       },
     });
     await query(`update payments set mp_preference_id=$2,mp_response=$3::jsonb where id=$1`, [paymentId, data.id, JSON.stringify({provider:'mercadopago',api:'orders',order:data})]);
@@ -232,6 +232,58 @@ async function searchOrdersByExternalReference(externalRef) {
   const qs=new URLSearchParams({begin_date:begin.toISOString(),end_date:end.toISOString(),external_reference:externalRef,limit:'10'});
   try { const data=await mpFetch(`/v1/orders?${qs.toString()}`); return data?.data||[]; } catch { return []; }
 }
+
+// Authenticated self-healing path used by the payment success page. Webhooks
+// remain the primary source of truth, but a delayed/missed notification no
+// longer requires an administrator to press Reconciliar.
+export async function syncPayment(body, auth) {
+  const user = requireUser(auth);
+  const paymentId = String(body?.payment_id || '').trim();
+  if (!paymentId) throw Object.assign(new Error('payment_id requerido'), { status: 400 });
+  const r = await query(`select * from payments where id=$1 limit 1`, [paymentId]);
+  const payment = r.rows[0];
+  if (!payment) throw Object.assign(new Error('Pago no encontrado'), { status: 404 });
+  if (payment.user_id !== user.id && !auth.isAdmin) throw Object.assign(new Error('No autorizado'), { status: 403 });
+  if (payment.status === 'approved') return { status:'approved',credits:Number(payment.credits||0),already:true };
+
+  const provider = String(payment.mp_response?.provider || 'mercadopago').toLowerCase();
+  if (provider !== 'mercadopago') return { status:payment.status,credits:Number(payment.credits||0),provider,ignored:true };
+
+  let synced = false;
+  if (payment.mp_preference_id) {
+    try {
+      await processOrder(String(payment.mp_preference_id));
+      synced = true;
+    } catch (error) {
+      console.warn('[mp sync order]', error?.message || error);
+    }
+  }
+  if (!synced) {
+    const orders = await searchOrdersByExternalReference(payment.id);
+    if (orders.length) {
+      const chosen = orders.find((x) => mapOrderStatus(x) === 'approved') || orders[0];
+      await processOrder(String(chosen.id));
+      synced = true;
+    }
+  }
+  if (!synced && payment.mp_payment_id) {
+    await processPayment(String(payment.mp_payment_id));
+    synced = true;
+  }
+  if (!synced) {
+    const matches = await searchByExternalReference(payment.id);
+    if (matches.length) {
+      const chosen = matches.find((x) => x.status === 'approved') || matches[0];
+      await processPayment(String(chosen.id));
+      synced = true;
+    }
+  }
+
+  const refreshed = await query(`select status,credits,approved_at from payments where id=$1 limit 1`, [payment.id]);
+  const current = refreshed.rows[0] || payment;
+  return { status:current.status,credits:Number(current.credits||payment.credits||0),approved_at:current.approved_at||null,synced };
+}
+
 export async function reconcile(body, auth) {
   requireAdmin(auth); const target = body?.payment_id; const hours = Math.min(Math.max(Number(body?.hours)||72,1),720);
   const result = target ? await query(`select * from payments where id=$1 limit 1`, [target]) : await query(`select * from payments where status='pending' and created_at >= now()-($1::text || ' hours')::interval order by created_at desc limit 100`, [hours]);
