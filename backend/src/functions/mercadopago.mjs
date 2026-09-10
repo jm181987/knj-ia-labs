@@ -20,9 +20,10 @@ function deviceId(value) { return String(value||'').trim().replace(/[^A-Za-z0-9.
 function requireUser(auth) { if (!auth?.user) throw Object.assign(new Error('No autenticado'), { status: 401 }); return auth.user; }
 function requireAdmin(auth) { if (!auth?.isAdmin) throw Object.assign(new Error('No autorizado'), { status: 403 }); }
 function mpError(data,status,stage='api') {
-  const code=data?.code||data?.error||data?.cause?.[0]?.code||null;
-  const message=data?.message||data?.error_message||data?.cause?.[0]?.description||`Mercado Pago HTTP ${status}`;
-  return Object.assign(new Error(`Mercado Pago: ${message}`),{status:status>=500?502:400,details:{provider:'mercadopago',stage,httpStatus:status,code}});
+  const firstError=Array.isArray(data?.errors)?data.errors[0]:null;
+  const code=data?.code||data?.error||firstError?.code||data?.cause?.[0]?.code||null;
+  const message=data?.message||data?.error_message||firstError?.message||firstError?.description||data?.cause?.[0]?.description||`Mercado Pago HTTP ${status}`;
+  return Object.assign(new Error(`Mercado Pago: ${message}`),{status:status>=500?502:400,details:{provider:'mercadopago',stage,httpStatus:status,code,message}});
 }
 async function notifyWhatsApp(text) {
   const base = process.env.EVOLUTION_API_URL, instance = process.env.EVOLUTION_INSTANCE, apiKey = process.env.EVOLUTION_API_KEY;
@@ -83,30 +84,32 @@ async function creditApprovedPayment(paymentId, mpPaymentId, mpData, reasonPrefi
 export async function createPreference(body, auth, ctx = {}) {
   const user = requireUser(auth);
   const { package_id, custom_amount, return_origin } = body || {};
-  let title, description, itemId, amountUYU, credits, packageId = null;
+  let title, amountUYU, credits, packageId = null;
   if (custom_amount !== undefined && custom_amount !== null) {
-    const amount = Number(custom_amount);
-    if (!Number.isFinite(amount) || amount < 80) throw Object.assign(new Error('El monto mínimo es $80 UYU'), { status: 400 });
-    amountUYU = Math.round(amount); credits = Math.floor(amount / 1.99); itemId = 'custom'; title = 'Recarga personalizada'; description = `${credits} créditos para KNJ Pro`;
+    const customAmount = Number(custom_amount);
+    if (!Number.isFinite(customAmount) || customAmount < 80) throw Object.assign(new Error('El monto mínimo es $80 UYU'), { status: 400 });
+    amountUYU = Math.round(customAmount); credits = Math.floor(customAmount / 1.99); title = 'Recarga personalizada';
   } else {
     if (!package_id) throw Object.assign(new Error('Falta package_id o custom_amount'), { status: 400 });
     const pkgResult = await query(`select * from credit_packages where id=$1 and active=true`, [package_id]); const pkg = pkgResult.rows[0];
     if (!pkg) throw Object.assign(new Error('Paquete no disponible'), { status: 404 });
-    packageId = pkg.id; amountUYU = Number(pkg.price_uyu); credits = Number(pkg.credits); itemId = pkg.id; title = pkg.name; description = `${pkg.credits} créditos para KNJ Pro`;
+    packageId = pkg.id; amountUYU = Number(pkg.price_uyu); credits = Number(pkg.credits); title = pkg.name;
   }
   const paymentId = uuid(), amount=Number(amountUYU).toFixed(2), did=deviceId(body?.device_id);
   await query(`insert into payments(id,user_id,package_id,amount_uyu,credits,status,mp_response) values ($1,$2,$3,$4,$5,'pending',$6::jsonb)`,[paymentId, user.id, packageId, amountUYU, credits, JSON.stringify({provider:'mercadopago',api:'orders'})]);
   const origin = String(return_origin || ctx.origin || process.env.FRONTEND_URL || '').replace(/\/$/, '');
-  const apiBase = String(process.env.PUBLIC_API_URL || ctx.apiBase || origin).replace(/\/$/, '');
   try {
     const data=await mpFetch('/v1/orders',{
       method:'POST',
       headers:{'X-Idempotency-Key':paymentId,...(did?{'X-meli-session-id':did}:{})},
       body:{
-        type:'online', processing_mode:'manual', capture_mode:'automatic_async', total_amount:amount,
-        external_reference:paymentId, payer:await payerInfo(user), description,
-        items:[{external_code:String(itemId).slice(0,64),title:String(title).slice(0,120),description:String(description).slice(0,256),quantity:1,unit_price:amount,unit_measure:'unit',total_amount:amount}],
-        config:{statement_descriptor:'KNJ PRO',notification_url:`${apiBase}/api/functions/mp-webhook`,online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
+        type:'online',
+        processing_mode:'manual',
+        total_amount:amount,
+        external_reference:paymentId,
+        payer:{email:String(user.email||'').trim()},
+        items:[{title:String(title).slice(0,120),quantity:1,unit_price:amount}],
+        config:{online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
       },
     });
     await query(`update payments set mp_preference_id=$2,mp_response=$3::jsonb where id=$1`, [paymentId, data.id, JSON.stringify({provider:'mercadopago',api:'orders',order:data})]);
