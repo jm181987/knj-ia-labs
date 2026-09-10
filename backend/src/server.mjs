@@ -5,18 +5,18 @@ import { executeData } from './data.mjs';
 import { executeRpc } from './rpc.mjs';
 import { startUpload, uploadPart, finishUpload, removeObjects, getObject } from './storage.mjs';
 import { wavespeedModels, wavespeedBalance, wavespeedGenerate, translateModel } from './functions/providers.mjs';
-import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, health as mpHealth } from './functions/mercadopago.mjs';
+import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, syncPayment as syncMpPayment, health as mpHealth } from './functions/mercadopago.mjs';
 import { config as paypalConfig, createOrder, captureOrder, createSubscription as createPaypalSubscription, webhook as paypalWebhook } from './functions/paypal.mjs';
 import { publicAffiliate, selfAffiliate, adminAffiliate } from './functions/affiliate.mjs';
 import { deletePayment, deleteSubscription, deleteUser, setPassword } from './functions/admin.mjs';
 import { notifyNewUser, whatsappTest, sendBulkEmail, metaCapiEvent, translateTestimonials } from './functions/comms.mjs';
 
 const MAX_JSON_BYTES = 60 * 1024 * 1024;
-const PRODUCTION_ORIGIN = 'https://knjpro.site';
+const PRODUCTION_ORIGIN = 'https://www.knjpro.site';
 let readyPromise;
 
 // Vercel production is canonicalized to the public KNJ Pro domain so payment
-// callbacks, notifications and CORS never depend on a *.vercel.app alias.
+// callbacks, notifications and CORS never depend on a redirect or *.vercel.app alias.
 if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
   process.env.PUBLIC_API_URL = PRODUCTION_ORIGIN;
   process.env.FRONTEND_URL = PRODUCTION_ORIGIN;
@@ -117,6 +117,7 @@ const functionHandlers = {
   'mp-create-subscription': async (body, auth, ctx) => createMpSubscription(paymentBody(body), auth, paymentContext(ctx)),
   'mp-cancel-subscription': async (body, auth) => cancelSubscription(body, auth),
   'mp-reconcile-payments': async (body, auth) => reconcile(body, auth),
+  'mp-sync-payment': async (body, auth) => syncMpPayment(body, auth),
   'mp-webhook': async (body, _auth, ctx) => mpWebhook(body, ctx),
   'mp-health': async () => mpHealth(),
   'paypal-config': async () => paypalConfig(),
