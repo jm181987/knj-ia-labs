@@ -109,7 +109,7 @@ export async function createPreference(body, auth, ctx = {}) {
         external_reference:paymentId,
         payer:{email:String(user.email||'').trim()},
         items:[{title:String(title).slice(0,120),quantity:1,unit_price:amount}],
-        config:{notification_url:`${origin}/api/functions/mp-webhook`,online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
+        config:{online:{success_url:`${origin}/payment/success?payment_id=${paymentId}`,failure_url:`${origin}/payment/failure?payment_id=${paymentId}`,pending_url:`${origin}/payment/pending?payment_id=${paymentId}`,auto_return:'approved'}},
       },
     });
     await query(`update payments set mp_preference_id=$2,mp_response=$3::jsonb where id=$1`, [paymentId, data.id, JSON.stringify({provider:'mercadopago',api:'orders',order:data})]);
