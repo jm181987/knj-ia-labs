@@ -189,8 +189,10 @@ export function PromptEnhancerAdmin() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard icon={DollarSign} label={t("admin.promptCosts.cost24h")} value={money(metrics.summary.cost24h)} />
             <MetricCard icon={DollarSign} label={t("admin.promptCosts.costMonth")} value={money(metrics.summary.costMonth)} />
+            <MetricCard icon={DollarSign} label={t("admin.promptCosts.costTotal")} value={money(metrics.summary.costTotal)} />
             <MetricCard icon={Sparkles} label={t("admin.promptCosts.improvementsMonth")} value={String(metrics.summary.successMonth)} />
             <MetricCard icon={DollarSign} label={t("admin.promptCosts.avgCost")} value={money(metrics.summary.avgCostMonth, 6)} />
             <MetricCard icon={Coins} label={t("admin.promptCosts.creditsCharged")} value={String(metrics.summary.chargedCreditsMonth)} />
