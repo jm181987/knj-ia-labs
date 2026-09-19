@@ -207,7 +207,6 @@ export default function CatalogPage() {
           recentIds={recentIds}
           onOpen={onOpen}
           onToggleFavorite={toggleFavorite}
-          customConfig={featuredConfig}
         />
       )}
 
@@ -218,6 +217,7 @@ export default function CatalogPage() {
           onOpen={onOpen}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
+          customConfig={featuredConfig}
         />
       )}
 
