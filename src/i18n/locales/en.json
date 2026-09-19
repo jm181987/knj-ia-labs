@@ -565,7 +565,9 @@
       "cost": "Cost",
       "noUsage": "No usage has been recorded yet.",
       "topUsers": "Top users this month",
-      "topUsersDesc": "Helps detect high usage and how many credits are being recovered."
+      "topUsersDesc": "Helps detect high usage and how many credits are being recovered.",
+      "cost24h": "Cost last 24h",
+      "costTotal": "All-time cost"
     }
   },
   "guide": {
