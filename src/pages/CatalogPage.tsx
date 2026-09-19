@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Search, Sparkles, Wand2, Coins } from "lucide-react";
+import { Heart, Loader2, Search, Sparkles, Wand2, Coins } from "lucide-react";
 import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, computeModelSpecificMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,10 @@ import { useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModel
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { FeaturedModels } from "@/components/FeaturedModels";
+import { ObjectiveSelector } from "@/components/ObjectiveSelector";
+import { CatalogQuickAccess } from "@/components/CatalogQuickAccess";
+import { useCatalogPreferences } from "@/hooks/useCatalogPreferences";
+import { getModelRequirements, matchesCatalogSearch } from "@/lib/catalogExperience";
 
 function adminCost(basePrice: number | undefined, creditsPerUsd: number): number {
   if (!basePrice || basePrice <= 0) return 1;
@@ -32,6 +36,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState("");
   const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number; mpFeePct: number }>({ markup: 3, creditsPerUsd: 37, mpFeePct: 7.99 });
   const { isAdmin } = useAuth();
+  const { favoriteIds, recentIds, toggleFavorite, recordRecent } = useCatalogPreferences();
   const category = searchParams.get("cat") || "all";
   const setCategory = (id: string) => {
     if (id === "all") setSearchParams({});
@@ -65,14 +70,7 @@ export default function CatalogPage() {
     const q = search.trim().toLowerCase();
     return models
       .filter((m) => cat.match(m.type))
-      .filter((m) => {
-        if (!q) return true;
-        return (
-          m.model_id.toLowerCase().includes(q) ||
-          (m.description || "").toLowerCase().includes(q) ||
-          getBrand(m.model_id).toLowerCase().includes(q)
-        );
-      })
+      .filter((m) => matchesCatalogSearch(m, q))
       .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
   }, [models, search, category]);
 
@@ -83,9 +81,10 @@ export default function CatalogPage() {
   }, [models]);
 
   const onOpen = useCallback((m: WSCatalogModel) => {
+    recordRecent(m.model_id);
     setOpenModel(m);
     setValues({});
-  }, []);
+  }, [recordRecent]);
 
   const handleGenerate = async () => {
     if (!openModel) return;
@@ -160,10 +159,30 @@ export default function CatalogPage() {
       </section>
 
       {!loading && models.length > 0 && (
+        <ObjectiveSelector
+          models={models}
+          pricing={pricing}
+          onOpen={onOpen}
+        />
+      )}
+
+      {!loading && models.length > 0 && (
+        <CatalogQuickAccess
+          models={models}
+          favoriteIds={favoriteIds}
+          recentIds={recentIds}
+          onOpen={onOpen}
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
+
+      {!loading && models.length > 0 && (
         <FeaturedModels
           models={models}
           pricing={pricing}
           onOpen={onOpen}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
         />
       )}
 
@@ -211,6 +230,8 @@ export default function CatalogPage() {
           pricing={pricing}
           isAdmin={isAdmin}
           onOpen={onOpen}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
           t={t}
         />
       )}
@@ -248,12 +269,16 @@ const CatalogList = memo(function CatalogList({
   pricing,
   isAdmin,
   onOpen,
+  favoriteIds,
+  onToggleFavorite,
   t,
 }: {
   filtered: WSCatalogModel[];
   pricing: { markup: number; creditsPerUsd: number; mpFeePct: number };
   isAdmin: boolean;
   onOpen: (m: WSCatalogModel) => void;
+  favoriteIds: string[];
+  onToggleFavorite: (modelId: string) => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
 }) {
   const isMobile = useIsMobile();
@@ -266,19 +291,35 @@ const CatalogList = memo(function CatalogList({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((m) => {
           const desc = translatedDescs[m.model_id] || m.description || t("catalog.noDescription");
+          const requirements = getModelRequirements(m);
+          const favorite = favoriteIds.includes(m.model_id);
           return (
             <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-tight">{prettyName(m.model_id)}</CardTitle>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
+                  <div className="flex shrink-0 items-start gap-1">
                     <Badge variant="outline" className="text-[10px]">{getBrand(m.model_id)}</Badge>
+                    <button
+                      type="button"
+                      onClick={() => onToggleFavorite(m.model_id)}
+                      className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+                      aria-label={favorite ? t("catalog.quickAccess.removeFavorite") : t("catalog.quickAccess.addFavorite")}
+                      title={favorite ? t("catalog.quickAccess.removeFavorite") : t("catalog.quickAccess.addFavorite")}
+                    >
+                      <Heart className={favorite ? "h-3.5 w-3.5 fill-current text-primary" : "h-3.5 w-3.5"} />
+                    </button>
                   </div>
                 </div>
                 <CardDescription className="text-xs line-clamp-3">{desc}</CardDescription>
               </CardHeader>
               <CardContent className="pt-0 pb-2 flex-1 flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
+                {requirements.map((req) => (
+                  <Badge key={req} variant="outline" className="text-[9px]">
+                    {t(`catalog.requirements.${req}`)}
+                  </Badge>
+                ))}
                 <Badge variant="outline" className="text-[10px] gap-1 border-primary/40 text-primary">
                   <Coins className="h-2.5 w-2.5" />
                   {computeModelCost(m.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct)} cr

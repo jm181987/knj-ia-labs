@@ -5,6 +5,7 @@ import {
   Clapperboard,
   Coins,
   Image as ImageIcon,
+  Heart,
   PencilRuler,
   Sparkles,
   UserRound,
@@ -28,6 +29,8 @@ type FeaturedModelsProps = {
   models: WSCatalogModel[];
   pricing: PricingSettings;
   onOpen: (model: WSCatalogModel) => void;
+  favoriteIds?: string[];
+  onToggleFavorite?: (modelId: string) => void;
 };
 
 const GROUPS: Array<{ id: FeaturedGroup; icon: typeof Sparkles }> = [
@@ -39,7 +42,13 @@ const GROUPS: Array<{ id: FeaturedGroup; icon: typeof Sparkles }> = [
   { id: "audio", icon: AudioLines },
 ];
 
-export function FeaturedModels({ models, pricing, onOpen }: FeaturedModelsProps) {
+export function FeaturedModels({
+  models,
+  pricing,
+  onOpen,
+  favoriteIds = [],
+  onToggleFavorite,
+}: FeaturedModelsProps) {
   const { t } = useTranslation();
   const [group, setGroup] = useState<FeaturedGroup>("all");
   const resolved = useMemo(() => resolveFeaturedModels(models), [models]);
@@ -98,6 +107,7 @@ export function FeaturedModels({ models, pricing, onOpen }: FeaturedModelsProps)
 
         <div className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
           {visible.map(({ spec, model }) => {
+            const favorite = favoriteIds.includes(model.model_id);
             const cost = computeModelCost(
               model.base_price,
               pricing.markup,
@@ -122,10 +132,23 @@ export function FeaturedModels({ models, pricing, onOpen }: FeaturedModelsProps)
                       {spec.title || model.name}
                     </h3>
                   </div>
-                  <Badge className="shrink-0 gap-1 text-[10px]">
-                    <Sparkles className="h-2.5 w-2.5" />
-                    {t(spec.badgeKey)}
-                  </Badge>
+                  <div className="flex shrink-0 items-start gap-1">
+                    <Badge className="gap-1 text-[10px]">
+                      <Sparkles className="h-2.5 w-2.5" />
+                      {t(spec.badgeKey)}
+                    </Badge>
+                    {onToggleFavorite && (
+                      <button
+                        type="button"
+                        onClick={() => onToggleFavorite(model.model_id)}
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+                        title={favorite ? t("catalog.quickAccess.removeFavorite") : t("catalog.quickAccess.addFavorite")}
+                        aria-label={favorite ? t("catalog.quickAccess.removeFavorite") : t("catalog.quickAccess.addFavorite")}
+                      >
+                        <Heart className={favorite ? "h-3.5 w-3.5 fill-current text-primary" : "h-3.5 w-3.5"} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-foreground">

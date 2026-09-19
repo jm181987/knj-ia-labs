@@ -113,6 +113,61 @@
         "infiniteTalk": "Turns an image or video plus audio into talking avatars with natural lip sync.",
         "elevenLabs": "Expressive multilingual voices for voiceovers, narration and content."
       }
+    },
+    "objectives": {
+      "title": "What do you want to create?",
+      "subtitle": "Choose a goal and we'll show the most suitable models.",
+      "recommended": "Recommended for this task",
+      "from": "From",
+      "empty": "We couldn't find available models for this task.",
+      "items": {
+        "imageToVideo": {
+          "title": "Animate an image",
+          "description": "Turn a photo or design into video."
+        },
+        "textToVideo": {
+          "title": "Create video",
+          "description": "Generate video directly from text."
+        },
+        "createImage": {
+          "title": "Create image",
+          "description": "Generate images, assets and concepts from text."
+        },
+        "editImage": {
+          "title": "Edit image",
+          "description": "Change backgrounds, objects, style or composition."
+        },
+        "talkingAvatar": {
+          "title": "Make it talk",
+          "description": "Create talking avatars or portraits with lip sync."
+        },
+        "upscale": {
+          "title": "Improve quality",
+          "description": "Increase resolution, sharpness and detail."
+        },
+        "removeObjects": {
+          "title": "Remove objects",
+          "description": "Erase elements, backgrounds or imperfections."
+        },
+        "createVoice": {
+          "title": "Create voice",
+          "description": "Generate AI narration and voices."
+        }
+      }
+    },
+    "requirements": {
+      "text": "Text",
+      "image": "Image",
+      "audio": "Audio",
+      "video": "Video"
+    },
+    "quickAccess": {
+      "favorites": "My favorites",
+      "recents": "Recently used",
+      "noFavorites": "Heart models to find them quickly.",
+      "noRecents": "Models you open will appear here.",
+      "addFavorite": "Add to favorites",
+      "removeFavorite": "Remove from favorites"
     }
   },
   "userMenu": {
