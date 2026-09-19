@@ -252,7 +252,7 @@ export async function adminCleanBusinessData() {
     await client.query(`truncate table
       storage_upload_parts, storage_uploads, storage_objects,
       affiliate_commissions, affiliate_payouts, affiliate_referrals, affiliate_clicks, affiliates,
-      email_sends, email_templates, paypal_orders, subscriptions, payments, generations,
+      email_sends, email_templates, paypal_orders, subscriptions, payments, prompt_enhancer_usage, generations,
       credit_transactions, user_credits, user_roles, profiles, password_resets, rate_limits, app_users
       cascade`);
   });
