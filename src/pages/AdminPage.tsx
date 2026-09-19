@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
 import { EmailAdmin } from "@/components/admin/EmailAdmin";
+import { FeaturedModelsAdmin } from "@/components/admin/FeaturedModelsAdmin";
 import { useTranslation } from "react-i18next";
 
 interface UserRow {
@@ -579,6 +580,7 @@ export default function AdminPage() {
             <TabsTrigger value="transactions">{t("admin.tabTransactions")}</TabsTrigger>
             <TabsTrigger value="testimonials">Recomendaciones</TabsTrigger>
             <TabsTrigger value="emails"><Mail className="h-3 w-3 mr-1" /> Emails</TabsTrigger>
+            <TabsTrigger value="featured">{t("admin.tabFeatured")}</TabsTrigger>
             <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
           </TabsList>
         </div>
@@ -1123,6 +1125,10 @@ export default function AdminPage() {
 
         <TabsContent value="emails">
           <EmailAdmin />
+        </TabsContent>
+
+        <TabsContent value="featured">
+          <FeaturedModelsAdmin />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
