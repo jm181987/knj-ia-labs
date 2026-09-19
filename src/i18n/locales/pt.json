@@ -168,6 +168,15 @@
       "noRecents": "Os modelos que você abrir aparecerão aqui.",
       "addFavorite": "Adicionar aos favoritos",
       "removeFavorite": "Remover dos favoritos"
+    },
+    "promptEnhancer": {
+      "title": "Melhorador de prompt",
+      "subtitle": "Otimize sua ideia para o modelo selecionado sem mudar sua intenção.",
+      "action": "Melhorar prompt",
+      "improving": "Melhorando…",
+      "undo": "Desfazer",
+      "done": "Prompt melhorado",
+      "error": "Não foi possível melhorar o prompt"
     }
   },
   "userMenu": {
@@ -323,7 +332,15 @@
     "statusFailed": "Erro",
     "empty": "Ainda não há gerações",
     "emptyHint": "Vá para \"Gerar\" para criar seu primeiro conteúdo",
-    "model": "Modelo"
+    "model": "Modelo",
+    "creditsUsed": "cr usados",
+    "creditsRefunded": "cr devolvidos",
+    "copyPrompt": "Copiar prompt",
+    "promptCopied": "Prompt copiado",
+    "useAnotherModel": "Trocar modelo",
+    "repeat": "Repetir configuração",
+    "retry": "Tentar novamente",
+    "modelUnavailable": "Esse modelo não está mais disponível"
   },
   "gallery": {
     "title": "Galeria",
@@ -477,7 +494,23 @@
     "sortOrder": "Ordem de exibição",
     "activeDesc": "Visível para os usuários",
     "highlightedDesc": "Marcar como \"Mais popular\"",
-    "deletePkgConfirm": "Excluir este pacote? Não afeta pagamentos já feitos."
+    "deletePkgConfirm": "Excluir este pacote? Não afeta pagamentos já feitos.",
+    "tabFeatured": "Destaques",
+    "featured": {
+      "title": "Modelos em destaque",
+      "description": "Controle quais modelos aparecem no visor principal sem alterar código ou fazer deploy.",
+      "restore": "Restaurar padrões",
+      "search": "Buscar modelo para adicionar…",
+      "defaultsActive": "Não há configuração personalizada. O visor usa a seleção padrão da KNJ.",
+      "visibleName": "Nome visível",
+      "group": "Grupo",
+      "badge": "Badge",
+      "enabled": "Visível",
+      "strength": "Descrição curta / ponto forte",
+      "saved": "Modelos em destaque salvos",
+      "resetConfirm": "Restaurar a seleção padrão de modelos em destaque?",
+      "resetDone": "Seleção padrão restaurada"
+    }
   },
   "guide": {
     "badge": "Guia básico",
