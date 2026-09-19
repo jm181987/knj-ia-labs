@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Search, Sparkles, Wand2, Library, Coins } from "lucide-react";
+import { Loader2, Search, Sparkles, Wand2, Coins } from "lucide-react";
 import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, computeModelSpecificMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
@@ -13,40 +12,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
-import { ImageOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { FeaturedModels } from "@/components/FeaturedModels";
 
 function adminCost(basePrice: number | undefined, creditsPerUsd: number): number {
   if (!basePrice || basePrice <= 0) return 1;
   return Math.max(1, Math.ceil(basePrice * creditsPerUsd));
-}
-
-const FEATURED_MODEL_KEYWORDS = [
-  "wan-2.7",
-  "wan 2.7",
-  "wan2.7",
-  "seedance-2.0",
-  "seedance 2.0",
-  "seedance2.0",
-  "kling-3.0",
-  "kling 3.0",
-  "kling3.0",
-  "vidu-q3",
-  "vidu q3",
-  "seedream-4.5",
-  "seedream 4.5",
-  "seedream4.5",
-  "nano-banana",
-  "nano banana",
-  "gemini-image",
-  "infinite-talk",
-  "infinitetalk",
-];
-
-function isFeaturedModel(model: WSCatalogModel): boolean {
-  const haystack = `${model.model_id} ${model.name || ""}`.toLowerCase();
-  return FEATURED_MODEL_KEYWORDS.some((keyword) => haystack.includes(keyword));
 }
 
 export default function CatalogPage() {
@@ -101,11 +73,7 @@ export default function CatalogPage() {
           getBrand(m.model_id).toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => {
-        const featuredDiff = Number(isFeaturedModel(b)) - Number(isFeaturedModel(a));
-        if (featuredDiff !== 0) return featuredDiff;
-        return (b.sort_order || 0) - (a.sort_order || 0);
-      });
+      .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
   }, [models, search, category]);
 
   const counts = useMemo(() => {
@@ -190,6 +158,14 @@ export default function CatalogPage() {
           </p>
         </div>
       </section>
+
+      {!loading && models.length > 0 && (
+        <FeaturedModels
+          models={models}
+          pricing={pricing}
+          onOpen={onOpen}
+        />
+      )}
 
       {/* Buscador */}
       <div className="relative">
@@ -290,19 +266,12 @@ const CatalogList = memo(function CatalogList({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((m) => {
           const desc = translatedDescs[m.model_id] || m.description || t("catalog.noDescription");
-          const featured = isFeaturedModel(m);
           return (
-            <Card key={m.model_id} className={featured ? "border-primary/50 bg-primary/5 hover:border-primary transition-colors flex flex-col" : "hover:border-primary/50 transition-colors flex flex-col"}>
+            <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-tight">{prettyName(m.model_id)}</CardTitle>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    {featured && (
-                      <Badge className="gap-1 text-[10px]">
-                        <Sparkles className="h-2.5 w-2.5" />
-                        {t("catalog.featured")}
-                      </Badge>
-                    )}
                     <Badge variant="outline" className="text-[10px]">{getBrand(m.model_id)}</Badge>
                   </div>
                 </div>
