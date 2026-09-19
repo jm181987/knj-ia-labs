@@ -113,6 +113,61 @@
         "infiniteTalk": "Transforma imagem ou vídeo com áudio em avatares falantes com lip-sync natural.",
         "elevenLabs": "Vozes expressivas e multilíngues para locução, narração e conteúdo."
       }
+    },
+    "objectives": {
+      "title": "O que você quer criar?",
+      "subtitle": "Escolha o objetivo e mostramos os modelos mais adequados.",
+      "recommended": "Recomendados para esta tarefa",
+      "from": "A partir de",
+      "empty": "Não encontramos modelos disponíveis para esta tarefa.",
+      "items": {
+        "imageToVideo": {
+          "title": "Animar uma imagem",
+          "description": "Transforme uma foto ou design em vídeo."
+        },
+        "textToVideo": {
+          "title": "Criar vídeo",
+          "description": "Gere um vídeo diretamente a partir de texto."
+        },
+        "createImage": {
+          "title": "Criar imagem",
+          "description": "Gere imagens, peças e conceitos a partir de texto."
+        },
+        "editImage": {
+          "title": "Editar imagem",
+          "description": "Altere fundos, objetos, estilo ou composição."
+        },
+        "talkingAvatar": {
+          "title": "Fazer falar",
+          "description": "Crie avatares ou retratos com voz e lip-sync."
+        },
+        "upscale": {
+          "title": "Melhorar qualidade",
+          "description": "Aumente resolução, nitidez e detalhes."
+        },
+        "removeObjects": {
+          "title": "Remover objetos",
+          "description": "Apague elementos, fundos ou imperfeições."
+        },
+        "createVoice": {
+          "title": "Criar voz",
+          "description": "Gere narrações e vozes com IA."
+        }
+      }
+    },
+    "requirements": {
+      "text": "Texto",
+      "image": "Imagem",
+      "audio": "Áudio",
+      "video": "Vídeo"
+    },
+    "quickAccess": {
+      "favorites": "Meus favoritos",
+      "recents": "Usados recentemente",
+      "noFavorites": "Marque modelos com o coração para encontrá-los rápido.",
+      "noRecents": "Os modelos que você abrir aparecerão aqui.",
+      "addFavorite": "Adicionar aos favoritos",
+      "removeFavorite": "Remover dos favoritos"
     }
   },
   "userMenu": {
