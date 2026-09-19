@@ -168,6 +168,15 @@
       "noRecents": "Los modelos que abras aparecerán acá.",
       "addFavorite": "Agregar a favoritos",
       "removeFavorite": "Quitar de favoritos"
+    },
+    "promptEnhancer": {
+      "title": "Mejorador de prompt",
+      "subtitle": "Optimiza tu idea para el modelo seleccionado sin cambiar tu intención.",
+      "action": "Mejorar prompt",
+      "improving": "Mejorando…",
+      "undo": "Deshacer",
+      "done": "Prompt mejorado",
+      "error": "No se pudo mejorar el prompt"
     }
   },
   "userMenu": {
@@ -323,7 +332,15 @@
     "statusFailed": "Error",
     "empty": "No hay generaciones aún",
     "emptyHint": "Ve a \"Generar\" para crear tu primer contenido",
-    "model": "Modelo"
+    "model": "Modelo",
+    "creditsUsed": "cr usados",
+    "creditsRefunded": "cr devueltos",
+    "copyPrompt": "Copiar prompt",
+    "promptCopied": "Prompt copiado",
+    "useAnotherModel": "Cambiar modelo",
+    "repeat": "Repetir configuración",
+    "retry": "Reintentar",
+    "modelUnavailable": "Ese modelo ya no está disponible"
   },
   "gallery": {
     "title": "Galería",
@@ -477,7 +494,23 @@
     "sortOrder": "Orden de visualización",
     "activeDesc": "Visible para los usuarios",
     "highlightedDesc": "Marca como \"Más popular\"",
-    "deletePkgConfirm": "¿Eliminar este paquete? No afecta pagos ya realizados."
+    "deletePkgConfirm": "¿Eliminar este paquete? No afecta pagos ya realizados.",
+    "tabFeatured": "Destacados",
+    "featured": {
+      "title": "Modelos destacados",
+      "description": "Controlá qué modelos aparecen en el visor principal sin tocar código ni hacer deploy.",
+      "restore": "Restaurar defaults",
+      "search": "Buscar modelo para agregar…",
+      "defaultsActive": "No hay configuración personalizada. El visor usa la selección predeterminada de KNJ.",
+      "visibleName": "Nombre visible",
+      "group": "Grupo",
+      "badge": "Badge",
+      "enabled": "Visible",
+      "strength": "Descripción corta / fortaleza",
+      "saved": "Destacados guardados",
+      "resetConfirm": "¿Restaurar la selección predeterminada de modelos destacados?",
+      "resetDone": "Selección predeterminada restaurada"
+    }
   },
   "guide": {
     "badge": "Guía básica",
