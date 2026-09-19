@@ -19,6 +19,7 @@ import { WavespeedBalanceCard } from "@/components/WavespeedBalanceCard";
 import { TestimonialsAdmin } from "@/components/admin/TestimonialsAdmin";
 import { EmailAdmin } from "@/components/admin/EmailAdmin";
 import { FeaturedModelsAdmin } from "@/components/admin/FeaturedModelsAdmin";
+import { PromptEnhancerAdmin } from "@/components/admin/PromptEnhancerAdmin";
 import { useTranslation } from "react-i18next";
 
 interface UserRow {
@@ -581,6 +582,7 @@ export default function AdminPage() {
             <TabsTrigger value="testimonials">Recomendaciones</TabsTrigger>
             <TabsTrigger value="emails"><Mail className="h-3 w-3 mr-1" /> Emails</TabsTrigger>
             <TabsTrigger value="featured">{t("admin.tabFeatured")}</TabsTrigger>
+            <TabsTrigger value="prompt-costs">{t("admin.promptCosts.tab")}</TabsTrigger>
             <TabsTrigger value="settings">{t("admin.tabSettings")}</TabsTrigger>
           </TabsList>
         </div>
@@ -1129,6 +1131,10 @@ export default function AdminPage() {
 
         <TabsContent value="featured">
           <FeaturedModelsAdmin />
+        </TabsContent>
+
+        <TabsContent value="prompt-costs">
+          <PromptEnhancerAdmin />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">

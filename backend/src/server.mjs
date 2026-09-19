@@ -4,7 +4,8 @@ import { getAuthContext, login, register, bootstrapAdmin, publicUser } from './a
 import { executeData } from './data.mjs';
 import { executeRpc } from './rpc.mjs';
 import { startUpload, uploadPart, finishUpload, removeObjects, getObject } from './storage.mjs';
-import { wavespeedModels, wavespeedBalance, wavespeedGenerate, translateModel, improvePrompt } from './functions/providers.mjs';
+import { wavespeedModels, wavespeedBalance, wavespeedGenerate, translateModel } from './functions/providers.mjs';
+import { improvePrompt, promptEnhancerAdmin } from './functions/promptEnhancer.mjs';
 import { createPreference, createSubscription as createMpSubscription, cancelSubscription, webhook as mpWebhook, reconcile, syncPayment as syncMpPayment, health as mpHealth } from './functions/mercadopago.mjs';
 import { config as paypalConfig, createOrder, captureOrder, createSubscription as createPaypalSubscription, webhook as paypalWebhook } from './functions/paypal.mjs';
 import { publicAffiliate, selfAffiliate, adminAffiliate } from './functions/affiliate.mjs';
@@ -112,6 +113,7 @@ const functionHandlers = {
   'wavespeed-balance': async (_body, auth) => wavespeedBalance(auth),
   'wavespeed-generate': async (body, auth) => wavespeedGenerate(body, auth),
   'improve-prompt': async (body, auth) => improvePrompt(body, auth),
+  'prompt-enhancer-admin': async (body, auth) => promptEnhancerAdmin(body, auth),
   'translate-model': async (body) => translateModel(body),
   'translate-testimonials': async (body, auth) => translateTestimonials(body, auth),
   'mp-create-preference': async (body, auth, ctx) => createPreference(paymentBody(body), auth, paymentContext(ctx)),

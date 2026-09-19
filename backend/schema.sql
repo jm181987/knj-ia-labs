@@ -97,6 +97,25 @@ create table if not exists generations (
 create unique index if not exists generations_task_unique on generations(task_id) where task_id is not null;
 create index if not exists generations_user_created_idx on generations(user_id, created_at desc);
 
+
+create table if not exists prompt_enhancer_usage (
+  id uuid primary key,
+  user_id uuid references app_users(id) on delete set null,
+  model text not null,
+  input_tokens integer not null default 0,
+  output_tokens integer not null default 0,
+  total_tokens integer not null default 0,
+  token_source text not null default 'unknown' check (token_source in ('reported','estimated','unknown')),
+  cost_usd numeric(14,10) not null default 0,
+  charged_credits integer not null default 0,
+  used_fallback boolean not null default false,
+  status text not null check (status in ('success','failed')),
+  error text,
+  created_at timestamptz not null default now()
+);
+create index if not exists prompt_enhancer_usage_created_idx on prompt_enhancer_usage(created_at desc);
+create index if not exists prompt_enhancer_usage_user_created_idx on prompt_enhancer_usage(user_id, created_at desc);
+
 create table if not exists payments (
   id uuid primary key,
   user_id uuid not null references app_users(id) on delete cascade,
