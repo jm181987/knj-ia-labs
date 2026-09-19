@@ -76,6 +76,43 @@
       "3d": "3D",
       "video-edit": "Edit video",
       "transcribe": "Transcribe"
+    },
+    "featuredViewer": {
+      "eyebrow": "KNJ selection",
+      "title": "The best models, first",
+      "subtitle": "A short curated selection so you can choose quickly without browsing the full catalog.",
+      "useModel": "Use model",
+      "empty": "There are no models available in this category right now.",
+      "groups": {
+        "all": "All",
+        "video": "Video",
+        "image": "Image",
+        "edit": "Editing",
+        "avatar": "Avatar",
+        "audio": "Audio"
+      },
+      "badges": {
+        "cinematic": "Cinematic",
+        "balanced": "Balanced",
+        "audiovisual": "Audio + video",
+        "fast": "Fast",
+        "design": "Design",
+        "precision": "Precision",
+        "videoEdit": "Pro editing",
+        "avatar": "Avatar",
+        "voice": "Natural voice"
+      },
+      "strengths": {
+        "kling": "Smooth motion, strong prompt adherence and a cinematic finish.",
+        "seedance": "Versatile video generation with strong camera, motion and pacing control.",
+        "veo": "High-quality video with synchronized audio and strong overall realism.",
+        "nanoBanana": "High-quality images with fast generation and excellent prompt understanding.",
+        "seedream": "Strong for design, composition, typography and high-resolution image generation.",
+        "nanoBananaEdit": "Precise image editing, replacements, backgrounds and text-guided changes.",
+        "seedanceEdit": "Edits existing video from text instructions while preserving identity and motion.",
+        "infiniteTalk": "Turns an image or video plus audio into talking avatars with natural lip sync.",
+        "elevenLabs": "Expressive multilingual voices for voiceovers, narration and content."
+      }
     }
   },
   "userMenu": {

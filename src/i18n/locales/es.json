@@ -76,6 +76,43 @@
       "3d": "3D",
       "video-edit": "Editar video",
       "transcribe": "Transcribir"
+    },
+    "featuredViewer": {
+      "eyebrow": "Selección KNJ",
+      "title": "Los mejores modelos, primero",
+      "subtitle": "Una selección corta para elegir rápido sin recorrer todo el catálogo.",
+      "useModel": "Usar modelo",
+      "empty": "No hay modelos disponibles en esta categoría por el momento.",
+      "groups": {
+        "all": "Todos",
+        "video": "Video",
+        "image": "Imagen",
+        "edit": "Edición",
+        "avatar": "Avatar",
+        "audio": "Audio"
+      },
+      "badges": {
+        "cinematic": "Cinemático",
+        "balanced": "Equilibrado",
+        "audiovisual": "Audio + video",
+        "fast": "Rápido",
+        "design": "Diseño",
+        "precision": "Precisión",
+        "videoEdit": "Edición pro",
+        "avatar": "Avatar",
+        "voice": "Voz natural"
+      },
+      "strengths": {
+        "kling": "Movimiento fluido, buena adherencia al prompt y acabado cinematográfico.",
+        "seedance": "Generación de video versátil con gran control de cámara, movimiento y ritmo.",
+        "veo": "Video de alta calidad con audio sincronizado y muy buen realismo general.",
+        "nanoBanana": "Imágenes de alta calidad con generación rápida y excelente comprensión del prompt.",
+        "seedream": "Fuerte en diseño, composición, tipografía y generación de imágenes de alta resolución.",
+        "nanoBananaEdit": "Edición precisa de imágenes, reemplazos, fondos y cambios guiados por texto.",
+        "seedanceEdit": "Edita videos existentes con instrucciones de texto manteniendo mejor la identidad y el movimiento.",
+        "infiniteTalk": "Convierte imagen o video con audio en avatares parlantes con lip-sync natural.",
+        "elevenLabs": "Voces expresivas y multilingües para locuciones, narración y contenido."
+      }
     }
   },
   "userMenu": {
