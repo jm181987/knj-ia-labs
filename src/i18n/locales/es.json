@@ -113,6 +113,61 @@
         "infiniteTalk": "Convierte imagen o video con audio en avatares parlantes con lip-sync natural.",
         "elevenLabs": "Voces expresivas y multilingües para locuciones, narración y contenido."
       }
+    },
+    "objectives": {
+      "title": "¿Qué querés crear?",
+      "subtitle": "Elegí el objetivo y te mostramos los modelos más adecuados.",
+      "recommended": "Recomendados para esta tarea",
+      "from": "Desde",
+      "empty": "No encontramos modelos disponibles para esta tarea.",
+      "items": {
+        "imageToVideo": {
+          "title": "Animar una imagen",
+          "description": "Convertí una foto o diseño en video."
+        },
+        "textToVideo": {
+          "title": "Crear video",
+          "description": "Generá un video directamente desde texto."
+        },
+        "createImage": {
+          "title": "Crear imagen",
+          "description": "Generá imágenes, piezas y conceptos desde texto."
+        },
+        "editImage": {
+          "title": "Editar imagen",
+          "description": "Cambiá fondos, objetos, estilo o composición."
+        },
+        "talkingAvatar": {
+          "title": "Hacer hablar",
+          "description": "Creá avatares o retratos con voz y lip-sync."
+        },
+        "upscale": {
+          "title": "Mejorar calidad",
+          "description": "Aumentá resolución, nitidez y detalle."
+        },
+        "removeObjects": {
+          "title": "Eliminar objetos",
+          "description": "Borrá elementos, fondos o imperfecciones."
+        },
+        "createVoice": {
+          "title": "Crear voz",
+          "description": "Generá narraciones y voces con IA."
+        }
+      }
+    },
+    "requirements": {
+      "text": "Texto",
+      "image": "Imagen",
+      "audio": "Audio",
+      "video": "Video"
+    },
+    "quickAccess": {
+      "favorites": "Mis favoritos",
+      "recents": "Usados recientemente",
+      "noFavorites": "Marcá modelos con el corazón para encontrarlos rápido.",
+      "noRecents": "Los modelos que abras aparecerán acá.",
+      "addFavorite": "Agregar a favoritos",
+      "removeFavorite": "Quitar de favoritos"
     }
   },
   "userMenu": {
