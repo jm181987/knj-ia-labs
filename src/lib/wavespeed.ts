@@ -129,6 +129,13 @@ export type Generation = {
   created_at: string;
   aspect_ratio: string | null;
   duration: string | null;
+  parameters?: Record<string, unknown> | null;
+};
+
+export type GenerationCreditSummary = {
+  generation_id: string;
+  debited: number;
+  refunded: number;
 };
 
 export async function listGenerations(filters?: { type?: string; status?: string }): Promise<Generation[]> {
@@ -155,3 +162,25 @@ async function pollByTaskId(taskId: string) {
 export const checkVideoStatus = (taskId: string) => pollByTaskId(taskId);
 export const checkImageStatus = (taskId: string) => pollByTaskId(taskId);
 
+
+
+export async function listGenerationCreditSummaries(generationIds: string[]): Promise<Record<string, GenerationCreditSummary>> {
+  if (!generationIds.length) return {};
+  const { data, error } = await (supabase as any)
+    .from("credit_transactions")
+    .select("generation_id, amount, type")
+    .in("generation_id", generationIds);
+  if (error) throw error;
+
+  const map: Record<string, GenerationCreditSummary> = {};
+  for (const tx of data || []) {
+    const id = String(tx.generation_id || "");
+    if (!id) continue;
+    const current = map[id] || { generation_id: id, debited: 0, refunded: 0 };
+    const amount = Number(tx.amount || 0);
+    if (amount < 0 || tx.type === "debit") current.debited += Math.abs(amount);
+    if (amount > 0 && tx.type === "refund") current.refunded += amount;
+    map[id] = current;
+  }
+  return map;
+}
