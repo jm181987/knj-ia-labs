@@ -565,7 +565,9 @@
       "cost": "Costo",
       "noUsage": "Todavía no hay uso registrado.",
       "topUsers": "Usuarios con más uso este mes",
-      "topUsersDesc": "Ayuda a detectar consumo elevado y cuánto se está recuperando en créditos."
+      "topUsersDesc": "Ayuda a detectar consumo elevado y cuánto se está recuperando en créditos.",
+      "cost24h": "Costo últimas 24 h",
+      "costTotal": "Costo histórico"
     }
   },
   "guide": {
