@@ -168,6 +168,15 @@
       "noRecents": "Models you open will appear here.",
       "addFavorite": "Add to favorites",
       "removeFavorite": "Remove from favorites"
+    },
+    "promptEnhancer": {
+      "title": "Prompt enhancer",
+      "subtitle": "Optimize your idea for the selected model without changing your intent.",
+      "action": "Improve prompt",
+      "improving": "Improving…",
+      "undo": "Undo",
+      "done": "Prompt improved",
+      "error": "Could not improve the prompt"
     }
   },
   "userMenu": {
@@ -323,7 +332,15 @@
     "statusFailed": "Failed",
     "empty": "No generations yet",
     "emptyHint": "Go to \"Generate\" to create your first content",
-    "model": "Model"
+    "model": "Model",
+    "creditsUsed": "cr used",
+    "creditsRefunded": "cr refunded",
+    "copyPrompt": "Copy prompt",
+    "promptCopied": "Prompt copied",
+    "useAnotherModel": "Change model",
+    "repeat": "Repeat setup",
+    "retry": "Retry",
+    "modelUnavailable": "That model is no longer available"
   },
   "gallery": {
     "title": "Gallery",
@@ -477,7 +494,23 @@
     "sortOrder": "Display order",
     "activeDesc": "Visible to users",
     "highlightedDesc": "Mark as \"Most popular\"",
-    "deletePkgConfirm": "Delete this package? Existing payments are not affected."
+    "deletePkgConfirm": "Delete this package? Existing payments are not affected.",
+    "tabFeatured": "Featured",
+    "featured": {
+      "title": "Featured models",
+      "description": "Control which models appear in the main viewer without changing code or deploying.",
+      "restore": "Restore defaults",
+      "search": "Search for a model to add…",
+      "defaultsActive": "There is no custom configuration. The viewer is using KNJ's default selection.",
+      "visibleName": "Display name",
+      "group": "Group",
+      "badge": "Badge",
+      "enabled": "Visible",
+      "strength": "Short description / strength",
+      "saved": "Featured models saved",
+      "resetConfirm": "Restore the default featured model selection?",
+      "resetDone": "Default selection restored"
+    }
   },
   "guide": {
     "badge": "Basic guide",
