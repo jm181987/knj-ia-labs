@@ -181,6 +181,8 @@ export default function CatalogPage() {
           models={models}
           pricing={pricing}
           onOpen={onOpen}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
         />
       )}
 
