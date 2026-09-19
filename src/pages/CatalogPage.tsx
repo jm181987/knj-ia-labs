@@ -8,7 +8,7 @@ import { Heart, Loader2, Search, Sparkles, Wand2, Coins } from "lucide-react";
 import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, computeModelSpecificMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useTranslatedDescriptions, usePrewarmTopModels } from "@/hooks/useModelTranslation";
@@ -19,6 +19,8 @@ import { ObjectiveSelector } from "@/components/ObjectiveSelector";
 import { CatalogQuickAccess } from "@/components/CatalogQuickAccess";
 import { useCatalogPreferences } from "@/hooks/useCatalogPreferences";
 import { getModelRequirements, matchesCatalogSearch } from "@/lib/catalogExperience";
+import { PromptEnhancer } from "@/components/PromptEnhancer";
+import { fetchFeaturedModelConfig, type FeaturedModelConfigItem } from "@/lib/featuredModels";
 
 function adminCost(basePrice: number | undefined, creditsPerUsd: number): number {
   if (!basePrice || basePrice <= 0) return 1;
@@ -28,6 +30,7 @@ function adminCost(basePrice: number | undefined, creditsPerUsd: number): number
 export default function CatalogPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [models, setModels] = useState<WSCatalogModel[]>([]);
@@ -35,6 +38,7 @@ export default function CatalogPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [pricing, setPricing] = useState<{ markup: number; creditsPerUsd: number; mpFeePct: number }>({ markup: 3, creditsPerUsd: 37, mpFeePct: 7.99 });
+  const [featuredConfig, setFeaturedConfig] = useState<FeaturedModelConfigItem[] | null>(null);
   const { isAdmin } = useAuth();
   const { favoriteIds, recentIds, toggleFavorite, recordRecent } = useCatalogPreferences();
   const category = searchParams.get("cat") || "all";
@@ -48,6 +52,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     getPricingSettings().then(setPricing).catch(() => {});
+    fetchFeaturedModelConfig().then(setFeaturedConfig).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -82,9 +87,38 @@ export default function CatalogPage() {
 
   const onOpen = useCallback((m: WSCatalogModel) => {
     recordRecent(m.model_id);
+    let promptDraft = "";
+    try {
+      promptDraft = sessionStorage.getItem("knj.catalog.promptDraft") || "";
+      if (promptDraft) sessionStorage.removeItem("knj.catalog.promptDraft");
+    } catch {
+      promptDraft = "";
+    }
     setOpenModel(m);
-    setValues({});
+    setValues(promptDraft && m.request_schema?.properties?.prompt ? { prompt: promptDraft } : {});
   }, [recordRecent]);
+
+  useEffect(() => {
+    if (loading || models.length === 0) return;
+    const preset = (location.state as { generationPreset?: { modelPath?: string; values?: Record<string, unknown> } } | null)?.generationPreset;
+    if (!preset) return;
+
+    const normalizedPath = String(preset.modelPath || "").replace(/^\/api\/v3\//, "");
+    const model = models.find((item) => {
+      const apiPath = String(item.api_path || "").replace(/^\/api\/v3\//, "");
+      return normalizedPath && apiPath === normalizedPath;
+    });
+
+    if (model) {
+      recordRecent(model.model_id);
+      setOpenModel(model);
+      setValues({ ...(preset.values || {}) });
+    } else {
+      toast({ title: t("history.modelUnavailable"), variant: "destructive" });
+    }
+
+    navigate(location.pathname + location.search, { replace: true, state: null });
+  }, [loading, models, location.state, location.pathname, location.search, navigate, recordRecent, t, toast]);
 
   const handleGenerate = async () => {
     if (!openModel) return;
@@ -183,6 +217,7 @@ export default function CatalogPage() {
           onOpen={onOpen}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
+          customConfig={featuredConfig}
         />
       )}
 
@@ -386,6 +421,13 @@ function ModelDialogContent({
         </DialogDescription>
       </DialogHeader>
       <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+        {openModel.request_schema?.properties?.prompt && (
+          <PromptEnhancer
+            model={openModel}
+            prompt={String(values.prompt || "")}
+            onApply={(prompt) => setValues({ ...values, prompt })}
+          />
+        )}
         <DynamicSchemaForm
           schema={openModel.request_schema}
           values={values}

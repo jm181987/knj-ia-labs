@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { WSCatalogModel } from "@/lib/wavespeedCatalog";
 
 export type FeaturedGroup = "all" | "video" | "image" | "edit" | "avatar" | "audio";
@@ -6,9 +7,22 @@ export type FeaturedModelSpec = {
   id: string;
   group: Exclude<FeaturedGroup, "all">;
   queries: string[];
+  modelId?: string;
   title?: string;
-  badgeKey: string;
-  strengthKey: string;
+  badgeKey?: string;
+  strengthKey?: string;
+  badge?: string;
+  strength?: string;
+};
+
+export type FeaturedModelConfigItem = {
+  id: string;
+  model_id: string;
+  group: Exclude<FeaturedGroup, "all">;
+  title?: string;
+  badge?: string;
+  strength?: string;
+  enabled?: boolean;
 };
 
 export type ResolvedFeaturedModel = {
@@ -136,20 +150,37 @@ function modelHaystack(model: WSCatalogModel) {
 }
 
 function matchScore(model: WSCatalogModel, spec: FeaturedModelSpec): number {
+  if (spec.modelId && model.model_id === spec.modelId) return 1_000_000 + (model.sort_order || 0);
   const haystack = modelHaystack(model);
   const queryIndex = spec.queries.findIndex((query) => haystack.includes(query.toLowerCase()));
   if (queryIndex === -1) return -1;
-
-  // Prioriza el endpoint más específico definido en la configuración.
   const queryScore = (spec.queries.length - queryIndex) * 1000;
   return queryScore + (model.sort_order || 0);
 }
 
-export function resolveFeaturedModels(models: WSCatalogModel[]): ResolvedFeaturedModel[] {
+function customSpecs(config: FeaturedModelConfigItem[]): FeaturedModelSpec[] {
+  return config
+    .filter((item) => item.enabled !== false && item.model_id)
+    .map((item, index) => ({
+      id: item.id || item.model_id || `custom-${index}`,
+      group: item.group,
+      modelId: item.model_id,
+      queries: [item.model_id],
+      title: item.title,
+      badge: item.badge,
+      strength: item.strength,
+    }));
+}
+
+export function resolveFeaturedModels(
+  models: WSCatalogModel[],
+  customConfig: FeaturedModelConfigItem[] | null = null,
+): ResolvedFeaturedModel[] {
+  const specs = customConfig === null ? FEATURED_MODEL_SPECS : customSpecs(customConfig);
   const used = new Set<string>();
   const resolved: ResolvedFeaturedModel[] = [];
 
-  for (const spec of FEATURED_MODEL_SPECS) {
+  for (const spec of specs) {
     const match = models
       .filter((model) => !used.has(model.model_id))
       .map((model) => ({ model, score: matchScore(model, spec) }))
@@ -162,4 +193,42 @@ export function resolveFeaturedModels(models: WSCatalogModel[]): ResolvedFeature
   }
 
   return resolved;
+}
+
+export async function fetchFeaturedModelConfig(): Promise<FeaturedModelConfigItem[] | null> {
+  const { data, error } = await (supabase as any)
+    .from("app_settings")
+    .select("key, value")
+    .eq("key", "featured_models")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data || !Array.isArray(data.value)) return null;
+  return data.value as FeaturedModelConfigItem[];
+}
+
+export async function saveFeaturedModelConfig(config: FeaturedModelConfigItem[]) {
+  const payload = config.map((item, index) => ({
+    ...item,
+    id: item.id || item.model_id || `featured-${index}`,
+    enabled: item.enabled !== false,
+  }));
+  const { error } = await (supabase as any)
+    .from("app_settings")
+    .upsert(
+      {
+        key: "featured_models",
+        value: payload,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" },
+    );
+  if (error) throw error;
+}
+
+export async function resetFeaturedModelConfig() {
+  const { error } = await (supabase as any)
+    .from("app_settings")
+    .delete()
+    .eq("key", "featured_models");
+  if (error) throw error;
 }

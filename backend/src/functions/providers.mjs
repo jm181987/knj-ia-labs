@@ -8,6 +8,7 @@ import {
 } from '../rpc.mjs';
 
 const WAVESPEED_BASE = 'https://api.wavespeed.ai/api/v3';
+const WAVESPEED_LLM_BASE = 'https://llm.wavespeed.ai/v1';
 const GENERIC_PROVIDER_ERROR = 'El sistema no responde, intentá en unos minutos.';
 const RATE_LIMIT_PER_MINUTE = 10;
 let modelCache = null;
@@ -149,6 +150,78 @@ export async function wavespeedBalance(auth) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw Object.assign(new Error(data?.message || `WaveSpeed ${res.status}`), { status: 502 });
   return { balance_usd: data?.data?.balance ?? 0 };
+}
+
+export async function improvePrompt(body, auth) {
+  requireUser(auth);
+  const apiKey = requireEnv('WAVESPEED_API_KEY');
+  const prompt = String(body?.prompt || '').trim();
+  const modelName = String(body?.model_name || body?.model_id || 'AI model').slice(0, 160);
+  const modelType = String(body?.model_type || '').slice(0, 80);
+
+  if (prompt.length < 3) throw Object.assign(new Error('Prompt demasiado corto'), { status: 400 });
+  if (prompt.length > 3000) throw Object.assign(new Error('Prompt demasiado largo'), { status: 400 });
+
+  const system = [
+    'You are an expert prompt editor for generative image, video, avatar and audio models.',
+    'Rewrite the user prompt to produce a stronger result for the selected model.',
+    'Preserve the user intent, language, named subjects and important constraints.',
+    'Add useful concrete detail about subject, environment, composition, camera, lighting, movement, style and quality only when relevant.',
+    'For video, describe motion, camera movement, timing and continuity. For image, prioritize composition, lighting, materials and visual detail.',
+    'Do not add safety disclaimers, explanations, headings, quotation marks or metadata.',
+    'Return only the improved prompt, ready to paste into the generation model.',
+  ].join(' ');
+
+  const userContent = [
+    `Selected model: ${modelName}`,
+    `Model type: ${modelType || 'unknown'}`,
+    'Original prompt:',
+    prompt,
+  ].join('\n');
+
+  const candidateModels = ['qwen/qwen3.7-flash', 'google/gemini-2.5-flash'];
+  let lastError = null;
+
+  for (const model of candidateModels) {
+    try {
+      const res = await fetch(`${WAVESPEED_LLM_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(20_000),
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: userContent },
+          ],
+          temperature: 0.65,
+          max_tokens: 700,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        lastError = new Error(data?.error?.message || data?.message || `LLM HTTP ${res.status}`);
+        continue;
+      }
+
+      const improved = String(data?.choices?.[0]?.message?.content || '').trim();
+      if (!improved) {
+        lastError = new Error('LLM returned empty prompt');
+        continue;
+      }
+
+      return { code: 0, data: { prompt: improved, model } };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  console.error('[improve-prompt]', lastError);
+  return { code: 1, message: 'No se pudo mejorar el prompt en este momento.' };
 }
 
 export async function wavespeedGenerate(body, auth) {

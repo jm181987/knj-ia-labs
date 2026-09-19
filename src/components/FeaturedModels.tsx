@@ -22,6 +22,7 @@ import {
 import {
   resolveFeaturedModels,
   type FeaturedGroup,
+  type FeaturedModelConfigItem,
 } from "@/lib/featuredModels";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ type FeaturedModelsProps = {
   onOpen: (model: WSCatalogModel) => void;
   favoriteIds?: string[];
   onToggleFavorite?: (modelId: string) => void;
+  customConfig?: FeaturedModelConfigItem[] | null;
 };
 
 const GROUPS: Array<{ id: FeaturedGroup; icon: typeof Sparkles }> = [
@@ -48,10 +50,11 @@ export function FeaturedModels({
   onOpen,
   favoriteIds = [],
   onToggleFavorite,
+  customConfig = null,
 }: FeaturedModelsProps) {
   const { t } = useTranslation();
   const [group, setGroup] = useState<FeaturedGroup>("all");
-  const resolved = useMemo(() => resolveFeaturedModels(models), [models]);
+  const resolved = useMemo(() => resolveFeaturedModels(models, customConfig), [models, customConfig]);
 
   const visible = useMemo(
     () => resolved.filter(({ spec }) => group === "all" || spec.group === group),
@@ -135,7 +138,7 @@ export function FeaturedModels({
                   <div className="flex shrink-0 items-start gap-1">
                     <Badge className="gap-1 text-[10px]">
                       <Sparkles className="h-2.5 w-2.5" />
-                      {t(spec.badgeKey)}
+                      {spec.badge || (spec.badgeKey ? t(spec.badgeKey) : t("catalog.featured"))}
                     </Badge>
                     {onToggleFavorite && (
                       <button
@@ -152,7 +155,7 @@ export function FeaturedModels({
                 </div>
 
                 <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                  {t(spec.strengthKey)}
+                  {spec.strength || (spec.strengthKey ? t(spec.strengthKey) : model.description || t("catalog.noDescription"))}
                 </p>
 
                 <div className="mt-auto pt-5">
