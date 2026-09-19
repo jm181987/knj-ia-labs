@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Clock3, Heart, Sparkles, Wand2 } from "lucide-react";
+import { Clock3, Heart, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getBrand, prettyName, type WSCatalogModel } from "@/lib/wavespeedCatalog";
