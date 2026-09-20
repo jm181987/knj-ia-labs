@@ -118,7 +118,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="mx-auto max-w-5xl min-w-0 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("history.title")}</h1>
@@ -169,9 +169,9 @@ export default function HistoryPage() {
 
             return (
               <Card key={gen.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="shrink-0 flex items-center justify-center h-10 w-10 rounded-lg bg-accent">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <div className="shrink-0 flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-accent">
                       {gen.type === "video" ? (
                         <Video className="h-5 w-5 text-accent-foreground" />
                       ) : (
@@ -208,13 +208,13 @@ export default function HistoryPage() {
                       </div>
 
                       {gen.status === "completed" && gen.result_urls.length > 0 && (
-                        <div className="mt-3 flex gap-2 flex-wrap">
+                        <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                           {gen.result_urls.map((url, i) => (
                             <div key={i} className="relative overflow-hidden rounded-md border border-border/60 bg-muted">
                               {gen.type === "video" ? (
-                                <video src={url} controls className="h-28 max-w-full rounded-md" />
+                                <video src={url} controls className="h-auto max-h-56 w-full rounded-md sm:h-28 sm:w-auto" />
                               ) : (
-                                <img src={url} alt="" className="h-28 max-w-full rounded-md object-cover" />
+                                <img src={url} alt="" className="h-auto max-h-56 w-full rounded-md object-cover sm:h-28 sm:w-auto" />
                               )}
                               <a
                                 href={url}
@@ -236,17 +236,17 @@ export default function HistoryPage() {
                         <p className="text-xs text-destructive mt-2">{gen.error_message}</p>
                       )}
 
-                      <div className="mt-4 flex flex-wrap gap-2 border-t border-border/50 pt-3">
-                        <Button size="sm" variant="outline" onClick={() => copyPrompt(gen.prompt)}>
+                      <div className="mt-4 grid grid-cols-1 gap-2 border-t border-border/50 pt-3 sm:flex sm:flex-wrap">
+                        <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => copyPrompt(gen.prompt)}>
                           <Copy className="mr-1.5 h-3.5 w-3.5" />
                           {t("history.copyPrompt")}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => chooseAnotherModel(gen)}>
+                        <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => chooseAnotherModel(gen)}>
                           <Wand2 className="mr-1.5 h-3.5 w-3.5" />
                           {t("history.useAnotherModel")}
                         </Button>
                         {hasModelPath && (
-                          <Button size="sm" onClick={() => repeatGeneration(gen)}>
+                          <Button size="sm" className="w-full sm:w-auto" onClick={() => repeatGeneration(gen)}>
                             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                             {gen.status === "failed" ? t("history.retry") : t("history.repeat")}
                           </Button>
