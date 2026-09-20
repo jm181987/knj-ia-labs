@@ -100,10 +100,10 @@ export default function AffiliateAdminPage() {
   if (loading) return <div className="grid place-items-center min-h-[60vh]"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
+    <div className="mx-auto max-w-6xl min-w-0 space-y-5 px-0 py-2 sm:space-y-6 sm:px-4 sm:py-8">
       <h1 className="text-2xl font-bold">{t("affiliate.admin.title")}</h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-5">
         {[
           [t("affiliate.admin.stat_total"), stats?.total_affiliates ?? 0],
           [t("affiliate.admin.stat_approved"), stats?.approved ?? 0],
@@ -115,17 +115,19 @@ export default function AffiliateAdminPage() {
         ))}
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        <Button variant="outline" onClick={approvePending}>{t("affiliate.admin.approve_pending")}</Button>
-        <Button variant="outline" onClick={exportCsv}>{t("affiliate.admin.export_csv")}</Button>
+      <div className="grid gap-2 sm:flex sm:flex-wrap">
+        <Button className="w-full sm:w-auto" variant="outline" onClick={approvePending}>{t("affiliate.admin.approve_pending")}</Button>
+        <Button className="w-full sm:w-auto" variant="outline" onClick={exportCsv}>{t("affiliate.admin.export_csv")}</Button>
       </div>
 
       <Tabs defaultValue="affiliates">
-        <TabsList>
+        <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+          <TabsList className="w-max">
           <TabsTrigger value="affiliates">{t("affiliate.admin.tab_affiliates")}</TabsTrigger>
           <TabsTrigger value="payouts">{t("affiliate.admin.tab_payouts")}</TabsTrigger>
           <TabsTrigger value="commissions">{t("affiliate.admin.tab_commissions")}</TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent value="affiliates">
           <Card><CardContent className="p-0">
