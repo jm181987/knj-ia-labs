@@ -89,8 +89,8 @@ export default function AffiliateDashboard() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 space-y-6">
-      <div className="flex items-start justify-between flex-wrap gap-3">
+    <div className="mx-auto max-w-6xl min-w-0 space-y-5 px-0 py-2 sm:space-y-6 sm:px-4 sm:py-8">
+      <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <h1 className="text-2xl font-bold">{t("affiliate.dashboard.panel_title")}</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -98,17 +98,17 @@ export default function AffiliateDashboard() {
             <Badge variant="outline" className="capitalize"><Award className="h-3 w-3 mr-1" /> {aff.tier}</Badge>
           </div>
         </div>
-        <Button onClick={requestPayout} disabled={aff.status !== "approved"}>
+        <Button className="w-full sm:w-auto" onClick={requestPayout} disabled={aff.status !== "approved"}>
           <Wallet className="h-4 w-4 mr-2" /> {t("affiliate.dashboard.request_payout")}
         </Button>
       </div>
 
       <Card className="bg-gradient-to-br from-primary/15 to-transparent border-primary/30">
-        <CardContent className="p-6 space-y-3">
+        <CardContent className="p-4 sm:p-6 space-y-3">
           <div className="text-sm text-muted-foreground">{t("affiliate.dashboard.your_link")}</div>
-          <div className="flex flex-wrap gap-2">
-            <Input readOnly value={link} className="flex-1 min-w-[260px] bg-background" />
-            <Button onClick={() => { navigator.clipboard.writeText(link); toast({ title: t("affiliate.dashboard.copied") }); }}>
+          <div className="grid gap-2 sm:flex sm:flex-wrap">
+            <Input readOnly value={link} className="w-full min-w-0 flex-1 bg-background" />
+            <Button className="w-full sm:w-auto" onClick={() => { navigator.clipboard.writeText(link); toast({ title: t("affiliate.dashboard.copied") }); }}>
               <Copy className="h-4 w-4 mr-2" /> {t("affiliate.dashboard.copy")}
             </Button>
           </div>
@@ -116,7 +116,7 @@ export default function AffiliateDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-4">
         <StatCard icon={MousePointerClick} label={t("affiliate.dashboard.stat_clicks")} value={stats.clicks} />
         <StatCard icon={Users} label={t("affiliate.dashboard.stat_referrals")} value={stats.referrals} />
         <StatCard icon={TrendingUp} label={t("affiliate.dashboard.stat_conversions")} value={stats.conversions} />
