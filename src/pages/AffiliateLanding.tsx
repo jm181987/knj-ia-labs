@@ -16,29 +16,29 @@ export default function AffiliateLanding() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/40 bg-background/60 backdrop-blur sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <span className="font-bold">KNJ <span className="text-primary">IA</span></span>
           </Link>
           <div className="flex items-center gap-2">
             <LanguageSwitcher compact />
-            <Button asChild variant="default"><Link to="/auth?redirect=/app/affiliate">{t("affiliate.landing.cta_become")}</Link></Button>
+            <Button asChild variant="default" size="sm" className="px-2.5 sm:px-4"><Link to="/auth?redirect=/app/affiliate">{t("affiliate.landing.cta_become")}</Link></Button>
           </div>
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto px-4 py-20 text-center space-y-6">
+      <section className="max-w-6xl mx-auto px-4 py-14 sm:py-20 text-center space-y-5 sm:space-y-6">
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm">
           <TrendingUp className="h-4 w-4 text-primary" /> {t("affiliate.landing.badge")}
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">
           {t("affiliate.landing.title_pre")} <span className="text-primary">{t("affiliate.landing.title_highlight")}</span> {t("affiliate.landing.title_post")}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("affiliate.landing.subtitle")}</p>
-        <div className="flex justify-center gap-3 pt-4">
-          <Button size="lg" asChild><Link to="/auth?redirect=/app/affiliate">{t("affiliate.landing.cta_start")}</Link></Button>
-          <Button size="lg" variant="outline" asChild><a href="#planes">{t("affiliate.landing.cta_view")}</a></Button>
+        <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto">{t("affiliate.landing.subtitle")}</p>
+        <div className="flex flex-col justify-center gap-2 pt-4 sm:flex-row sm:gap-3">
+          <Button size="lg" className="w-full sm:w-auto" asChild><Link to="/auth?redirect=/app/affiliate">{t("affiliate.landing.cta_start")}</Link></Button>
+          <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild><a href="#planes">{t("affiliate.landing.cta_view")}</a></Button>
         </div>
       </section>
 

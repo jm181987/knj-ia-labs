@@ -110,7 +110,7 @@ export default function Landing() {
 
       {/* Header */}
       <header className="sticky top-0 z-20 backdrop-blur-md bg-background/60 border-b border-border/60">
-        <div className="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto h-16 px-3 sm:px-6 flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img src={knjLogo} alt="KNJ PRO" className="h-12 w-12 object-contain" />
             <span className="hidden sm:inline font-bold text-lg tracking-tight">
@@ -128,10 +128,10 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             <Link to="/app">
-              <Button variant="ghost" size="sm">{t("common.enter")}</Button>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">{t("common.enter")}</Button>
             </Link>
             <Link to="/app">
-              <Button size="sm" className="gap-1.5">
+              <Button size="sm" className="gap-1 px-2.5 sm:gap-1.5 sm:px-4">
                 {t("common.start")} <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -147,7 +147,7 @@ export default function Landing() {
               "radial-gradient(ellipse 50% 40% at 20% 0%, hsl(var(--primary) / 0.18), transparent 60%)",
           }}
         />
-        <div className="max-w-7xl mx-auto px-6 pt-10 pb-8 grid grid-cols-12 gap-6 items-end">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-8 grid grid-cols-12 gap-5 sm:gap-6 items-end">
           <div className="col-span-12 lg:col-span-8">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-sm border border-primary/30 bg-primary/5 mb-8 font-mono-tech">
               <span className="size-1.5 rounded-full bg-primary animate-pulse" />
@@ -182,7 +182,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border-t border-border/40 pt-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border-t border-border/40 pt-5">
           <Link to="/app">
             <Button size="lg" className="gap-2 shadow-elegant rounded-sm font-mono-tech text-xs uppercase tracking-wider">
               <Wand2 className="h-4 w-4" />
@@ -211,7 +211,7 @@ export default function Landing() {
         </div>
 
         {/* Showcase mosaic — asymmetric with technical labels */}
-        <div id="showcase" className="max-w-7xl mx-auto px-6 pb-24">
+        <div id="showcase" className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
           <div className="flex items-end justify-between mb-6">
             <span className="font-mono-tech text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
               [ Output_Archive · Realtime ]
@@ -306,7 +306,7 @@ export default function Landing() {
       <ToolsCarousel />
 
       {/* Features */}
-      <section id="features" className="border-t border-border/60 py-24">
+      <section id="features" className="border-t border-border/60 py-16 sm:py-24">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -342,7 +342,7 @@ export default function Landing() {
       <TestimonialsSection />
 
       {/* Savings comparison */}
-      <section id="savings" className="border-t border-border/60 py-24">
+      <section id="savings" className="border-t border-border/60 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -411,7 +411,7 @@ export default function Landing() {
 
       {/* Pricing modal */}
       <Dialog open={pricingOpen} onOpenChange={setPricingOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-5xl max-h-[calc(100dvh-1rem)] overflow-y-auto p-0 gap-0">
           <DialogHeader className="px-6 pt-6">
             <DialogTitle className="sr-only">Precios</DialogTitle>
           </DialogHeader>
@@ -422,7 +422,7 @@ export default function Landing() {
 
       {/* FAQ */}
       <section id="faq" className="border-t border-border/60 py-24">
-        <div className="max-w-3xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
               Preguntas frecuentes
@@ -452,7 +452,7 @@ export default function Landing() {
 
       {/* Final CTA */}
       <section className="border-t border-border/60 py-24">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
             {t("landing.finalCta1")} <span className="text-gradient">{t("landing.finalCtaHighlight")}</span>
           </h2>

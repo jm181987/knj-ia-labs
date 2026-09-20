@@ -99,6 +99,13 @@
     @apply border-border;
   }
 
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     background-image: var(--gradient-hero);
@@ -108,6 +115,21 @@
 
   h1, h2, h3, h4 {
     @apply tracking-tight;
+    overflow-wrap: anywhere;
+  }
+
+  img, video, canvas {
+    max-width: 100%;
+  }
+
+  button, a, input, textarea, select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 640px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
   }
 
   /* Scrollbars estilizadas para el tema oscuro */

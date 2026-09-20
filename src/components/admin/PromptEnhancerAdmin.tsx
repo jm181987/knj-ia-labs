@@ -175,7 +175,7 @@ export function PromptEnhancerAdmin() {
   return (
     <div className="space-y-4">
       <Card className="border-border/60 bg-card/80 backdrop-blur">
-        <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -183,7 +183,7 @@ export function PromptEnhancerAdmin() {
             </CardTitle>
             <CardDescription>{t("admin.promptCosts.description")}</CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={load}>
+          <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={load}>
             <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
             {t("history.refresh")}
           </Button>
@@ -455,9 +455,9 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3">
-      <div>
-        <Label>{label}</Label>
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-border/60 p-3 sm:items-center">
+      <div className="min-w-0 pr-2">
+        <Label className="leading-tight">{label}</Label>
         <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />

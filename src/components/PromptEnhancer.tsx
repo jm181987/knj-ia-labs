@@ -102,8 +102,8 @@ export function PromptEnhancer({ model, prompt, onApply }: PromptEnhancerProps) 
     : t("catalog.promptEnhancer.free");
 
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-      <div>
+    <div className="mb-4 flex flex-col items-stretch gap-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:py-2">
+      <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-semibold text-foreground">{t("catalog.promptEnhancer.title")}</p>
           {!quoteLoading && quote && quote.enabled && (
@@ -122,9 +122,9 @@ export function PromptEnhancer({ model, prompt, onApply }: PromptEnhancerProps) 
           </p>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-1 gap-2 xs:grid-cols-2 sm:flex">
         {previous !== null && (
-          <Button type="button" size="sm" variant="ghost" onClick={undo} disabled={loading}>
+          <Button type="button" size="sm" variant="ghost" className="w-full sm:w-auto" onClick={undo} disabled={loading}>
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
             {t("catalog.promptEnhancer.undo")}
           </Button>
@@ -133,6 +133,7 @@ export function PromptEnhancer({ model, prompt, onApply }: PromptEnhancerProps) 
           type="button"
           size="sm"
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={improve}
           disabled={loading || quoteLoading || quote?.enabled === false || prompt.trim().length < 3}
         >

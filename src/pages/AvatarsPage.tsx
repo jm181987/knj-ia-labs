@@ -103,7 +103,7 @@ export default function AvatarsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl min-w-0 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
           <UserCircle2 className="h-7 w-7 text-primary" />
@@ -115,10 +115,10 @@ export default function AvatarsPage() {
       </div>
 
       <Tabs value={mode} onValueChange={onModeChange}>
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="lipsync" className="gap-1.5"><Mic className="h-4 w-4" /> Hablar</TabsTrigger>
-          <TabsTrigger value="liveportrait" className="gap-1.5"><Wand2 className="h-4 w-4" /> Animar</TabsTrigger>
-          <TabsTrigger value="portrait" className="gap-1.5"><Sparkles className="h-4 w-4" /> Retrato</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="lipsync" className="gap-1 text-[11px] sm:gap-1.5 sm:text-sm"><Mic className="h-4 w-4" /> Hablar</TabsTrigger>
+          <TabsTrigger value="liveportrait" className="gap-1 text-[11px] sm:gap-1.5 sm:text-sm"><Wand2 className="h-4 w-4" /> Animar</TabsTrigger>
+          <TabsTrigger value="portrait" className="gap-1 text-[11px] sm:gap-1.5 sm:text-sm"><Sparkles className="h-4 w-4" /> Retrato</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lipsync">

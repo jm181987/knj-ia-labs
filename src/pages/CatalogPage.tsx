@@ -145,7 +145,7 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl min-w-0 space-y-4 sm:space-y-6">
       {/* Hero */}
       <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/40">
         {/* animated grid */}
@@ -176,7 +176,7 @@ export default function CatalogPage() {
         {/* shine sweep */}
         <div className="hero-shine" />
 
-        <div className="relative px-6 py-12 sm:py-16 text-center">
+        <div className="relative px-4 py-9 sm:px-6 sm:py-16 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium mb-5 animate-fade-in">
             <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             {t("catalog.heroBadge")}
@@ -233,14 +233,14 @@ export default function CatalogPage() {
       </div>
 
       {/* Categorías */}
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {CATEGORIES.map((c) => (
           <Button
             key={c.id}
             size="sm"
             variant={category === c.id ? "default" : "outline"}
             onClick={() => setCategory(c.id)}
-            className="rounded-full"
+            className="shrink-0 rounded-full"
           >
             <span className="mr-1.5">{c.emoji}</span>
             {t(`catalog.cat.${c.id}`, c.label)}
@@ -276,7 +276,7 @@ export default function CatalogPage() {
         <DialogContent
           onOpenAutoFocus={(event) => event.preventDefault()}
           onCloseAutoFocus={(event) => event.preventDefault()}
-          className="w-[calc(100vw-1rem)] max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden"
+          className="left-2 right-2 top-2 h-[calc(100dvh-1rem)] w-auto max-w-none translate-x-0 translate-y-0 sm:left-[50%] sm:right-auto sm:top-[50%] sm:h-auto sm:max-h-[85vh] sm:w-[calc(100vw-2rem)] sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 flex flex-col p-0 gap-0 overflow-hidden"
         >
           {openModel && (
             <ModelDialogContent
@@ -407,8 +407,8 @@ function ModelDialogContent({
   const desc = openModel.description;
   return (
     <>
-      <DialogHeader className="p-6 pb-3 border-b border-border/50 shrink-0">
-        <DialogTitle className="flex items-center gap-2">
+      <DialogHeader className="p-4 pb-3 sm:p-6 sm:pb-3 border-b border-border/50 shrink-0">
+        <DialogTitle className="flex min-w-0 flex-wrap items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           {prettyName(openModel.model_id)}
           <Badge variant="outline" className="ml-1 text-xs">{getBrand(openModel.model_id)}</Badge>
@@ -420,7 +420,7 @@ function ModelDialogContent({
           <span className="block mt-1 font-mono text-[10px] opacity-60">{openModel.model_id}</span>
         </DialogDescription>
       </DialogHeader>
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6">
         {openModel.request_schema?.properties?.prompt && (
           <PromptEnhancer
             model={openModel}
@@ -434,7 +434,7 @@ function ModelDialogContent({
           onChange={setValues}
         />
       </div>
-      <DialogFooter className="flex-row items-center justify-between gap-2 p-4 sm:p-6 pt-3 border-t border-border/50 shrink-0 sm:space-x-0">
+      <DialogFooter className="flex-col items-stretch gap-2 border-t border-border/50 p-3 pt-3 shrink-0 sm:flex-row sm:items-center sm:justify-between sm:p-6 sm:pt-3 sm:space-x-0">
         <Badge variant="outline" className="gap-1 border-primary/40 text-primary text-[10px] sm:text-xs shrink-0">
           <Coins className="h-3 w-3" />
           {computeModelCostDynamic(openModel.base_price, pricing.markup, pricing.creditsPerUsd, pricing.mpFeePct, values, openModel.request_schema?.properties, openModel.api_path || openModel.model_id)} {t("common.credits")}
@@ -444,9 +444,9 @@ function ModelDialogContent({
             ${((openModel.base_price ?? 0) * computeDynamicMultiplier(values, openModel.request_schema?.properties) * computeModelSpecificMultiplier(openModel.api_path || openModel.model_id, values)).toFixed(3)} WS · gratis
           </Badge>
         )}
-        <div className="flex gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
-          <Button size="sm" onClick={handleGenerate} disabled={submitting}>
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button size="sm" variant="ghost" className="w-full sm:w-auto" onClick={() => setOpenModel(null)} disabled={submitting}>{t("catalog.cancel")}</Button>
+          <Button size="sm" className="w-full sm:w-auto" onClick={handleGenerate} disabled={submitting}>
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
             {t("catalog.generate")}
           </Button>
