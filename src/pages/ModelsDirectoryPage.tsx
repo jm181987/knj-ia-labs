@@ -232,7 +232,7 @@ export default function ModelsDirectoryPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/75 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <img src={knjLogo} alt="KNJ PRO" className="h-11 w-11 object-contain" />
             <span className="hidden font-bold tracking-tight sm:inline">KNJ<span className="text-gradient"> PRO</span></span>
@@ -240,10 +240,10 @@ export default function ModelsDirectoryPage() {
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             <Link to="/">
-              <Button variant="ghost" size="sm">{t("modelsDirectory.backLanding")}</Button>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">{t("modelsDirectory.backLanding")}</Button>
             </Link>
             <Link to="/app">
-              <Button size="sm" className="gap-1.5">
+              <Button size="sm" className="gap-1 px-2.5 sm:gap-1.5 sm:px-4">
                 {t("common.start")} <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -251,7 +251,7 @@ export default function ModelsDirectoryPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-8 px-6 py-10">
+      <main className="mx-auto max-w-7xl min-w-0 space-y-6 px-4 py-8 sm:space-y-8 sm:px-6 sm:py-10">
         <section className="relative overflow-hidden border-b border-border/60 pb-8">
           <div className="inline-flex items-center gap-2 rounded-sm border border-primary/30 bg-primary/10 px-3 py-1 font-mono-tech text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -298,14 +298,14 @@ export default function ModelsDirectoryPage() {
             </Link>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {CATEGORIES.map((item) => (
               <Button
                 key={item.id}
                 size="sm"
                 variant={category === item.id ? "default" : "outline"}
                 onClick={() => setCategory(item.id)}
-                className="rounded-sm"
+                className="shrink-0 rounded-sm"
               >
                 <span className="mr-1.5">{item.emoji}</span>
                 {t(`catalog.cat.${item.id}`, item.label)}
