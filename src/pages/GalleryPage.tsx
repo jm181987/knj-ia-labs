@@ -39,7 +39,7 @@ export default function GalleryPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto max-w-6xl min-w-0 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("gallery.title")}</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">{t("gallery.subtitle")}</p>
@@ -52,7 +52,7 @@ export default function GalleryPage() {
       </Alert>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
           <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
           <TabsTrigger value="video" className="gap-1"><Video className="h-3 w-3" /> {t("gallery.videos")}</TabsTrigger>
           <TabsTrigger value="image" className="gap-1"><Image className="h-3 w-3" /> {t("gallery.images")}</TabsTrigger>
@@ -80,10 +80,10 @@ export default function GalleryPage() {
               ) : (
                 <img src={item.url} alt={item.prompt} className="w-full h-full object-cover" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-end p-3">
                 <p className="text-xs text-white line-clamp-2">{item.prompt}</p>
               </div>
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <a
                   href={item.url}
                   download
@@ -102,7 +102,7 @@ export default function GalleryPage() {
       )}
 
       <Dialog open={!!preview} onOpenChange={() => setPreview(null)}>
-        <DialogContent className="max-w-4xl p-2">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl max-h-[calc(100dvh-1rem)] overflow-auto p-2">
           {preview?.type === "video" ? (
             <video src={preview.url} controls autoPlay className="w-full rounded-lg" />
           ) : preview ? (
