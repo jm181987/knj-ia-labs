@@ -168,7 +168,10 @@ export async function handler(req, res) {
         displayName: body.display_name ?? body.displayName,
         whatsapp: body.whatsapp,
       });
-      return sendJson(res, 200, result);
+      // Normalize the freshly-created user through the same profile payload used
+      // by login and /me. This keeps the first session shape identical to relogins.
+      const user = await mePayload({ user: result.user, isAdmin: false });
+      return sendJson(res, 200, { user: user || result.user, token: result.token });
     }
 
     if (url.pathname === '/api/auth/me' && req.method === 'GET') {
