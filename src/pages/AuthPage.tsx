@@ -80,7 +80,13 @@ export default function AuthPage() {
         toast({ title: t("auth.welcomeBack") });
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : t("auth.authError");
+      const msg = err instanceof Error
+        ? err.message
+        : err && typeof err === "object" && "message" in err
+          ? String((err as { message?: unknown }).message || t("auth.authError"))
+          : typeof err === "string"
+            ? err
+            : t("auth.authError");
       const friendly = msg.includes("Invalid login credentials")
         ? t("auth.invalidCredentials")
         : msg.includes("already registered")
