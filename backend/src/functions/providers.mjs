@@ -245,14 +245,26 @@ export async function wavespeedGenerate(body, auth) {
     }
   }
   if (action === 'submit') {
-    const { type, modelPath, modelLabel, prompt, payload = {}, basePrice } = body;
+    const { type, modelPath, modelLabel, prompt, payload = {}, basePrice, displayedCost } = body;
     if (!modelPath || !prompt) throw Object.assign(new Error('modelPath y prompt requeridos'), { status: 400 });
     const allowed = await checkAndIncrementRateLimit(user.id, RATE_LIMIT_PER_MINUTE);
     if (!allowed) return { code: 3, message: 'Demasiadas generaciones. Esperá un minuto antes de intentar de nuevo.' };
     const settings = await pricingSettings();
     const isAdmin = auth.isAdmin || await hasRole(user.id, 'admin');
     const effectivePrice = (Number(basePrice) || 0) * dynamicMultiplier(payload) * modelSpecificMultiplier(modelPath, payload);
-    const cost = computeCost(effectivePrice, settings.markup, settings.creditsPerUsd, settings.mpFeePct);
+    const serverCost = computeCost(effectivePrice, settings.markup, settings.creditsPerUsd, settings.mpFeePct);
+    const clientCost = Number(displayedCost);
+    // Billing invariant: never debit more credits than the amount explicitly
+    // shown to the user before generation. A mismatch is rejected instead of
+    // silently charging the higher server estimate.
+    if (!isAdmin && (!Number.isFinite(clientCost) || clientCost < 1)) {
+      return { code: 4, message: 'No se pudo confirmar el precio. Actualizá el modelo e intentá nuevamente.' };
+    }
+    if (!isAdmin && serverCost > Math.ceil(clientCost)) {
+      console.warn('[pricing-mismatch]', { userId: user.id, modelPath, displayedCost: clientCost, serverCost, basePrice, payload });
+      return { code: 4, message: `El precio cambió de ${Math.ceil(clientCost)} a ${serverCost} créditos. No se realizó ningún cobro. Volvé a abrir el modelo para confirmar el precio actualizado.` };
+    }
+    const cost = isAdmin ? serverCost : Math.min(serverCost, Math.ceil(clientCost));
     if (!isAdmin) {
       try { await debitCreditsForUser(user.id, cost, `Generación: ${modelLabel || modelPath}`); }
       catch (e) {
@@ -284,7 +296,7 @@ export async function wavespeedGenerate(body, auth) {
       [id, type || 'image', prompt, user.id, modelLabel || modelPath, payload.aspect_ratio || payload.size || null,
        payload.duration != null ? String(payload.duration) : null, payload.negative_prompt || null,
        payload.image || payload.image_url || null, taskId,
-       JSON.stringify({ modelPath, basePrice, costCredits: cost, ...payload, user_id: user.id })],
+       JSON.stringify({ modelPath, basePrice, displayedCostCredits: Number.isFinite(clientCost) ? Math.ceil(clientCost) : null, serverCostCredits: serverCost, costCredits: cost, ...payload, user_id: user.id })],
     );
     await query(
       `update credit_transactions set generation_id=$1 where id=(
