@@ -27,6 +27,7 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { LandingPricing } from "@/components/LandingPricing";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchCatalog } from "@/lib/wavespeedCatalog";
 import {
   Accordion,
   AccordionContent,
@@ -88,8 +89,16 @@ const faqItems = [
 export default function Landing() {
   const { t } = useTranslation();
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [modelCount, setModelCount] = useState<number | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  useEffect(() => {
+    let active = true;
+    fetchCatalog()
+      .then((models) => { if (active) setModelCount(models.length); })
+      .catch(() => { if (active) setModelCount(null); });
+    return () => { active = false; };
+  }, []);
   const handlePricingClick = () => {
     if (!user) {
       navigate("/auth?redirect=/app/pricing");
@@ -167,7 +176,7 @@ export default function Landing() {
               <div className="space-y-1.5">
                 <div className="flex justify-between border-b border-border/60 pb-1">
                   <span className="text-muted-foreground/60 uppercase tracking-wider">Models</span>
-                  <span className="tabular-nums">700+</span>
+                  <span className="tabular-nums">{modelCount ?? "—"}</span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-1">
                   <span className="text-muted-foreground/60 uppercase tracking-wider">Latency</span>
