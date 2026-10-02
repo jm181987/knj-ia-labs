@@ -137,6 +137,17 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
       payload: args.values,
       userId: args.userId,
       basePrice: args.model.base_price ?? 0,
+      // Price the user saw before clicking Generate. The backend must never
+      // silently debit more than this amount.
+      displayedCost: computeModelCostDynamic(
+        args.model.base_price,
+        (await getPricingSettings()).markup,
+        (await getPricingSettings()).creditsPerUsd,
+        (await getPricingSettings()).mpFeePct,
+        args.values,
+        args.model.request_schema?.properties,
+        modelPath,
+      ),
     },
   });
   if (error) return { code: 1, message: error.message };
