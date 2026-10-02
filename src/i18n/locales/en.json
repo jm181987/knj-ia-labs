@@ -40,7 +40,7 @@
     "pricing": "Pricing"
   },
   "catalog": {
-    "heroBadge": "Powered by KNJ · 700+ models",
+    "heroBadge": "Powered by KNJ · Generative AI",
     "heroTitle1": "Create",
     "heroTitleHighlight": "images",
     "heroTitle2": "and cinematic videos with AI",
@@ -227,7 +227,7 @@
     "ctaPlatform": "Enter the platform"
   },
   "tools": {
-    "poweredBy": "Powered by KNJ · 700+ models",
+    "poweredBy": "Powered by KNJ · Generative AI",
     "title1": "Available",
     "titleHighlight": "tools",
     "sub": "Sora 2, Veo 3.1, Kling 2.5, Seedance, Nano Banana 2 and many more, in one panel."
@@ -275,7 +275,7 @@
     }
   },
   "generate": {
-    "heroBadge": "Powered by KNJ · 700+ models",
+    "heroBadge": "Powered by KNJ · Generative AI",
     "heroTitle1": "Create",
     "heroTitleHighlight": "images",
     "heroTitle2": "and cinematic videos with AI",
