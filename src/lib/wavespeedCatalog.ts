@@ -155,6 +155,19 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
   const modelPath = args.model.api_path.replace(/^\/api\/v3\//, "");
   const dbType = mapDbType(args.model.type);
   const normalizedValues = normalizeValuesForSchema(args.values, args.model.request_schema?.properties);
+  // Duration-like fields are inconsistent across provider schemas. When the
+  // schema declares a numeric field (or a numeric enum), guarantee a JSON
+  // number immediately before submission.
+  for (const key of ["duration", "num_seconds", "seconds", "video_length"]) {
+    if (!(key in normalizedValues)) continue;
+    const prop = args.model.request_schema?.properties?.[key];
+    const sample = prop?.enum?.find((v) => v !== null && v !== undefined);
+    const expectsNumber = prop?.type === "integer" || prop?.type === "number" || (!prop?.type && typeof sample === "number");
+    if (expectsNumber && typeof normalizedValues[key] === "string") {
+      const n = Number(normalizedValues[key]);
+      if (Number.isFinite(n)) normalizedValues[key] = prop?.type === "integer" ? Math.trunc(n) : n;
+    }
+  }
   const prompt = (normalizedValues.prompt as string) || `${prettyName(args.model.model_id)} generation`;
 
   const { data, error } = await supabase.functions.invoke("wavespeed-generate", {
