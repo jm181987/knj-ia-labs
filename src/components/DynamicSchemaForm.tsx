@@ -104,7 +104,28 @@ function FieldRenderer({
     return (
       <div className="space-y-1.5">
         <Label className="text-sm">{labelShort}</Label>
-        <Select value={String(value ?? prop.default ?? "")} onValueChange={(v) => setValue(v)}>
+        <Select
+          value={String(value ?? prop.default ?? "")}
+          onValueChange={(v) => {
+            // Select always returns strings. Preserve the API schema type so
+            // numeric duration/seconds enums are sent as numbers, not "5".
+            if (prop.type === "integer") {
+              const n = Number(v);
+              setValue(Number.isFinite(n) ? Math.trunc(n) : v);
+              return;
+            }
+            if (prop.type === "number") {
+              const n = Number(v);
+              setValue(Number.isFinite(n) ? n : v);
+              return;
+            }
+            if (prop.type === "boolean") {
+              setValue(v === "true");
+              return;
+            }
+            setValue(v);
+          }}
+        >
           <SelectTrigger>
             <SelectValue placeholder={t("catalog.form.selectPlaceholder", { field: labelShort.toLowerCase() })} />
           </SelectTrigger>
