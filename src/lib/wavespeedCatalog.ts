@@ -122,10 +122,36 @@ export type SubmitDynamicArgs = {
   userId?: string;
 };
 
+function normalizeValuesForSchema(
+  values: Record<string, unknown>,
+  properties: Record<string, WSSchemaProp> | undefined,
+): Record<string, unknown> {
+  if (!properties) return values;
+  const normalized: Record<string, unknown> = { ...values };
+  for (const [key, prop] of Object.entries(properties)) {
+    const value = normalized[key];
+    if (value === undefined || value === null || value === "") continue;
+    if (prop.type === "integer" && typeof value === "string") {
+      const n = Number(value);
+      if (Number.isFinite(n)) normalized[key] = Math.trunc(n);
+    } else if (prop.type === "number" && typeof value === "string") {
+      const n = Number(value);
+      if (Number.isFinite(n)) normalized[key] = n;
+    } else if (prop.type === "string" && typeof value !== "string") {
+      // Some providers intentionally model duration as a string enum.
+      normalized[key] = String(value);
+    } else if (prop.type === "boolean" && typeof value === "string" && (value === "true" || value === "false")) {
+      normalized[key] = value === "true";
+    }
+  }
+  return normalized;
+}
+
 export async function submitDynamic(args: SubmitDynamicArgs) {
   const modelPath = args.model.api_path.replace(/^\/api\/v3\//, "");
   const dbType = mapDbType(args.model.type);
-  const prompt = (args.values.prompt as string) || `${prettyName(args.model.model_id)} generation`;
+  const normalizedValues = normalizeValuesForSchema(args.values, args.model.request_schema?.properties);
+  const prompt = (normalizedValues.prompt as string) || `${prettyName(args.model.model_id)} generation`;
 
   const { data, error } = await supabase.functions.invoke("wavespeed-generate", {
     body: {
@@ -134,7 +160,7 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
       modelPath,
       modelLabel: prettyName(args.model.model_id),
       prompt,
-      payload: args.values,
+      payload: normalizedValues,
       userId: args.userId,
       basePrice: args.model.base_price ?? 0,
       // Price the user saw before clicking Generate. The backend must never
@@ -144,7 +170,7 @@ export async function submitDynamic(args: SubmitDynamicArgs) {
         (await getPricingSettings()).markup,
         (await getPricingSettings()).creditsPerUsd,
         (await getPricingSettings()).mpFeePct,
-        args.values,
+        normalizedValues,
         args.model.request_schema?.properties,
         modelPath,
       ),
