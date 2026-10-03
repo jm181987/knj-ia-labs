@@ -109,12 +109,14 @@ function FieldRenderer({
           onValueChange={(v) => {
             // Select always returns strings. Preserve the API schema type so
             // numeric duration/seconds enums are sent as numbers, not "5".
+            const enumSample = prop.enum?.find((opt) => opt !== null && opt !== undefined);
+            const numericEnum = typeof enumSample === "number";
             if (prop.type === "integer") {
               const n = Number(v);
               setValue(Number.isFinite(n) ? Math.trunc(n) : v);
               return;
             }
-            if (prop.type === "number") {
+            if (prop.type === "number" || (!prop.type && numericEnum)) {
               const n = Number(v);
               setValue(Number.isFinite(n) ? n : v);
               return;
