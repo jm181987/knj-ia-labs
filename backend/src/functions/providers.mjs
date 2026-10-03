@@ -98,8 +98,11 @@ async function providerCall(modelPath, payload, apiKey) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const error = new Error(data?.message || data?.error || `provider HTTP ${res.status}`);
+    const rawDetail = data?.message ?? data?.error ?? data?.detail ?? data?.data?.message ?? `provider HTTP ${res.status}`;
+    const detail = typeof rawDetail === 'string' ? rawDetail : JSON.stringify(rawDetail);
+    const error = new Error(detail || `provider HTTP ${res.status}`);
     error.providerStatus = res.status;
+    error.providerBody = data;
     throw error;
   }
   return data;
@@ -281,8 +284,22 @@ export async function wavespeedGenerate(body, auth) {
       healthSetting(true, null).catch(() => {});
     } catch (e) {
       await refund(`Reembolso (error proveedor): ${modelLabel || modelPath}`);
-      healthSetting(false, null, e instanceof Error ? e.message : String(e)).catch(() => {});
-      return { code: 1, message: isAdmin ? `Proveedor ${e.providerStatus || ''}: ${e.message}`.trim() : GENERIC_PROVIDER_ERROR };
+      const providerMessage = e instanceof Error ? e.message : String(e);
+      console.error('[wavespeed-submit]', {
+        userId: user.id,
+        modelPath,
+        providerStatus: e?.providerStatus,
+        providerMessage,
+        providerBody: e?.providerBody,
+        payload,
+      });
+      healthSetting(false, null, providerMessage).catch(() => {});
+      // 4xx responses are validation/request errors, not provider downtime.
+      // Return the useful validation detail so the UI can identify the bad field.
+      if (Number(e?.providerStatus) >= 400 && Number(e?.providerStatus) < 500) {
+        return { code: 1, message: `La IA rechazó un parámetro: ${providerMessage}` };
+      }
+      return { code: 1, message: isAdmin ? `Proveedor ${e?.providerStatus || ''}: ${providerMessage}`.trim() : GENERIC_PROVIDER_ERROR };
     }
     const taskId = ws?.data?.id || ws?.id;
     if (!taskId) {
