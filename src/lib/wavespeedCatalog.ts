@@ -131,7 +131,11 @@ function normalizeValuesForSchema(
   for (const [key, prop] of Object.entries(properties)) {
     const value = normalized[key];
     if (value === undefined || value === null || value === "") continue;
-    if (prop.type === "integer" && typeof value === "string") {
+    const enumSample = prop.enum?.find((opt) => opt !== null && opt !== undefined);
+    if (!prop.type && typeof enumSample === "number" && typeof value === "string") {
+      const n = Number(value);
+      if (Number.isFinite(n)) normalized[key] = n;
+    } else if (prop.type === "integer" && typeof value === "string") {
       const n = Number(value);
       if (Number.isFinite(n)) normalized[key] = Math.trunc(n);
     } else if (prop.type === "number" && typeof value === "string") {
