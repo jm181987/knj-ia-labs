@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Heart, Loader2, Search, Sparkles, Wand2, Coins } from "lucide-react";
+import { Heart, Loader2, Search, Sparkles, Wand2, Coins, ImageIcon, Video } from "lucide-react";
 import { fetchCatalog, CATEGORIES, getBrand, prettyName, submitDynamic, getPricingSettings, computeModelCost, computeModelCostDynamic, computeDynamicMultiplier, computeModelSpecificMultiplier, type WSCatalogModel } from "@/lib/wavespeedCatalog";
 import { DynamicSchemaForm } from "@/components/DynamicSchemaForm";
 import { useToast } from "@/hooks/use-toast";
@@ -78,6 +78,13 @@ export default function CatalogPage() {
       .filter((m) => matchesCatalogSearch(m, q))
       .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
   }, [models, search, category]);
+
+  const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video">("all");
+  const mediaFiltered = useMemo(() => filtered.filter((m) => {
+    if (mediaFilter === "all") return true;
+    const req = getModelRequirements(m);
+    return req.includes(mediaFilter);
+  }), [filtered, mediaFilter]);
 
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -232,6 +239,17 @@ export default function CatalogPage() {
         />
       </div>
 
+      <div className="flex flex-wrap items-center gap-2" aria-label="Filtrar por archivo requerido">
+        <span className="text-xs text-muted-foreground mr-1">Necesito subir:</span>
+        {(["all", "image", "video"] as const).map((kind) => (
+          <Button key={kind} size="sm" variant={mediaFilter === kind ? "default" : "outline"} onClick={() => setMediaFilter(kind)} className="gap-1.5">
+            {kind === "image" && <ImageIcon className="h-3.5 w-3.5" />}
+            {kind === "video" && <Video className="h-3.5 w-3.5" />}
+            {kind === "all" ? "Todos" : kind === "image" ? "Imagen" : "Video"}
+          </Button>
+        ))}
+      </div>
+
       {/* Categorías */}
       <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {CATEGORIES.map((c) => (
@@ -261,7 +279,7 @@ export default function CatalogPage() {
         </div>
       ) : (
         <CatalogList
-          filtered={filtered}
+          filtered={mediaFiltered}
           pricing={pricing}
           isAdmin={isAdmin}
           onOpen={onOpen}
