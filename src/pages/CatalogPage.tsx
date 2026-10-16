@@ -27,6 +27,19 @@ function adminCost(basePrice: number | undefined, creditsPerUsd: number): number
   return Math.max(1, Math.ceil(basePrice * creditsPerUsd));
 }
 
+function needsUpload(m: WSCatalogModel, kind: "image" | "video") {
+    const props = m.request_schema?.properties || {};
+    return Object.entries(props).some(([key, prop]) => {
+      if (prop["x-hidden"] || prop.type !== "string" || prop.enum?.length) return false;
+      const k = key.toLowerCase();
+      const description = (prop.description || "").toLowerCase();
+      const isImage = /image|img|photo|portrait|reference|first_frame|last_frame|mask|init_image/.test(k);
+      const isVideo = /video|clip|driving|driver|motion_reference/.test(k);
+      if (kind === "image") return isImage && !/output|result|width|height|size|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
+      return isVideo && !/output|result|duration|length|fps|frames|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
+    });
+}
+
 export default function CatalogPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -80,18 +93,7 @@ export default function CatalogPage() {
   }, [models, search, category]);
 
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video">("all");
-  const needsUpload = (m: WSCatalogModel, kind: "image" | "video") => {
-    const props = m.request_schema?.properties || {};
-    return Object.entries(props).some(([key, prop]) => {
-      if (prop["x-hidden"] || prop.type !== "string" || prop.enum?.length) return false;
-      const k = key.toLowerCase();
-      const description = (prop.description || "").toLowerCase();
-      const isImage = /image|img|photo|portrait|reference|first_frame|last_frame|mask|init_image/.test(k);
-      const isVideo = /video|clip|driving|driver|motion_reference/.test(k);
-      if (kind === "image") return isImage && !/output|result|width|height|size|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
-      return isVideo && !/output|result|duration|length|fps|frames|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
-    });
-  };
+
   const mediaFiltered = useMemo(() => filtered.filter((m) => {
     if (mediaFilter === "all") return true;
     return needsUpload(m, mediaFilter);
