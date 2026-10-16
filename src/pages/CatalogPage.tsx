@@ -80,10 +80,21 @@ export default function CatalogPage() {
   }, [models, search, category]);
 
   const [mediaFilter, setMediaFilter] = useState<"all" | "image" | "video">("all");
+  const needsUpload = (m: WSCatalogModel, kind: "image" | "video") => {
+    const props = m.request_schema?.properties || {};
+    return Object.entries(props).some(([key, prop]) => {
+      if (prop["x-hidden"] || prop.type !== "string" || prop.enum?.length) return false;
+      const k = key.toLowerCase();
+      const description = (prop.description || "").toLowerCase();
+      const isImage = /image|img|photo|portrait|reference|first_frame|last_frame|mask|init_image/.test(k);
+      const isVideo = /video|clip|driving|driver|motion_reference/.test(k);
+      if (kind === "image") return isImage && !/output|result|width|height|size|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
+      return isVideo && !/output|result|duration|length|fps|frames|resolution|format|quality|prompt/.test(k) && !/output|generated/.test(description);
+    });
+  };
   const mediaFiltered = useMemo(() => filtered.filter((m) => {
     if (mediaFilter === "all") return true;
-    const req = getModelRequirements(m);
-    return req.includes(mediaFilter);
+    return needsUpload(m, mediaFilter);
   }), [filtered, mediaFilter]);
 
   const counts = useMemo(() => {
@@ -240,12 +251,12 @@ export default function CatalogPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2" aria-label="Filtrar por archivo requerido">
-        <span className="text-xs text-muted-foreground mr-1">Necesito subir:</span>
+        <span className="text-xs text-muted-foreground mr-1">Quiero cargar mi archivo para editarlo:</span>
         {(["all", "image", "video"] as const).map((kind) => (
           <Button key={kind} size="sm" variant={mediaFilter === kind ? "default" : "outline"} onClick={() => setMediaFilter(kind)} className="gap-1.5">
             {kind === "image" && <ImageIcon className="h-3.5 w-3.5" />}
             {kind === "video" && <Video className="h-3.5 w-3.5" />}
-            {kind === "all" ? "Todos" : kind === "image" ? "Imagen" : "Video"}
+            {kind === "all" ? "Todas las IAs" : kind === "image" ? "Mi imagen" : "Mi video"}
           </Button>
         ))}
       </div>
@@ -346,6 +357,8 @@ const CatalogList = memo(function CatalogList({
           const desc = translatedDescs[m.model_id] || m.description || t("catalog.noDescription");
           const requirements = getModelRequirements(m);
           const favorite = favoriteIds.includes(m.model_id);
+          const acceptsImage = needsUpload(m, "image");
+          const acceptsVideo = needsUpload(m, "video");
           return (
             <Card key={m.model_id} className="hover:border-primary/50 transition-colors flex flex-col">
               <CardHeader className="pb-2">
@@ -368,6 +381,8 @@ const CatalogList = memo(function CatalogList({
               </CardHeader>
               <CardContent className="pt-0 pb-2 flex-1 flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="text-[10px]">{m.type}</Badge>
+                {acceptsImage && <Badge variant="outline" className="text-[10px] gap-1 border-primary/40"><ImageIcon className="h-3 w-3" /> Permite subir imagen</Badge>}
+                {acceptsVideo && <Badge variant="outline" className="text-[10px] gap-1 border-primary/40"><Video className="h-3 w-3" /> Permite subir video</Badge>}
                 {requirements.map((req) => (
                   <Badge key={req} variant="outline" className="text-[9px]">
                     {t(`catalog.requirements.${req}`)}
